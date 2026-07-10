@@ -101,7 +101,11 @@ export function useAppStore() {
   useEffect(() => { LS.set("rateBCV",  rateBCV);  }, [rateBCV]);
   useEffect(() => { LS.set("wishlist", wishlist); }, [wishlist]);
   useEffect(() => { LS.set("design",   design);   }, [design]);
-  useEffect(() => { LS.set("banners",  banners);  }, [banners]);
+  // Sync localStorage — banners sin base64 (demasiado pesado para LS)
+  useEffect(() => {
+    const lightBanners = banners.map(b => ({ ...b, imgBase64: "" }));
+    LS.set("banners", lightBanners);
+  }, [banners]);
 
   // ── PRODUCTS ─────────────────────────────────────────────────────────────
   const setProducts = useCallback((fn: (prev: Product[]) => Product[]) => {
