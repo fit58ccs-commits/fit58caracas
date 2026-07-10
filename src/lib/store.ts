@@ -205,6 +205,20 @@ export function useAppStore() {
 
   // ── BANNERS ───────────────────────────────────────────────────────────────
   const updateBanner = useCallback(async (id: string, updates: Partial<Banner>) => {
+    // Si hay imagen en base64, subirla a Storage y usar la URL pública
+    if (updates.imgBase64 && updates.imgBase64.startsWith("data:")) {
+      try {
+        const res  = await fetch(updates.imgBase64);
+        const blob = await res.blob();
+        const file = new File([blob], `banner-${id}-${Date.now()}.jpg`, { type: blob.type });
+        const url  = await sbUploadImage(file, "banners");
+        if (url) {
+          updates = { ...updates, img: url, imgBase64: "" };
+        }
+      } catch (e) {
+        console.warn("Error uploading banner image:", e);
+      }
+    }
     setBannersState(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
     await sbUpdateBanner(id, updates);
   }, []);
