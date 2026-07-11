@@ -189,7 +189,7 @@ function dbToProduct(row: Record<string, unknown>): Product {
     id:       String(row.id),
     name:     String(row.name     ?? ""),
     category: String(row.category ?? ""),
-    desc:     String(row.desc     ?? ""),
+    desc:     String(row["desc"]   ?? ""),
     price:    Number(row.price    ?? 0),
     stock:    Number(row.stock    ?? 0),
     badge:    row.badge != null ? String(row.badge) : null,
@@ -202,7 +202,7 @@ function productToDb(p: Partial<Product>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (p.name      !== undefined) out.name      = p.name;
   if (p.category  !== undefined) out.category  = p.category;
-  if (p.desc      !== undefined) out.desc      = p.desc;
+  if (p.desc      !== undefined) out['"desc"']  = p.desc;
   if (p.price     !== undefined) out.price     = p.price;
   if (p.stock     !== undefined) out.stock     = p.stock;
   if (p.badge     !== undefined) out.badge     = p.badge;
@@ -239,7 +239,7 @@ function dbToBanner(row: Record<string, unknown>): Banner {
   return {
     id:           String(row.id),
     tag:          String(row.tag          ?? ""),
-    title:        String(row.title        ?? ""),
+    title:        String(row.title ?? "").replace(/\\n/g, "\n"),
     subtitle:     String(row.subtitle     ?? ""),
     cta:          String(row.cta          ?? ""),
     bgColor:      String(row.bg_color     ?? "#f0f4e8"),
@@ -249,6 +249,13 @@ function dbToBanner(row: Record<string, unknown>): Banner {
     btnTextColor: String(row.btn_text_color ?? "#ffffff"),
     img:          String(row.img          ?? ""),
     order:        Number(row.order_index  ?? 0),
+    active:       row.active !== false,
+    titleSize:    Number(row.title_size   ?? 72),
+    subtitleSize: Number(row.subtitle_size ?? 14),
+    btnSize:      Number(row.btn_size     ?? 11),
+    btnPaddingX:  Number(row.btn_padding_x ?? 28),
+    btnPaddingY:  Number(row.btn_padding_y ?? 12),
+    btnRadius:    Number(row.btn_radius   ?? 10),
   };
 }
 

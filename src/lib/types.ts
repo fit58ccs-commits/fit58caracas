@@ -1,5 +1,3 @@
-// ─── Data Models ────────────────────────────────────────────────────────────
-
 export interface Product {
   id: string;
   name: string;
@@ -8,8 +6,8 @@ export interface Product {
   price: number;
   stock: number;
   badge?: string | null;
-  images: string[];   // max 3
-  img: string;        // = images[0], for backwards compat
+  images: string[];
+  img: string;
   createdAt?: string;
 }
 
@@ -27,6 +25,13 @@ export interface Banner {
   img: string;
   imgBase64?: string;
   order?: number;
+  active: boolean;          // nuevo: ocultar/mostrar
+  titleSize?: number;       // nuevo: tamaño fuente título (px)
+  subtitleSize?: number;    // nuevo: tamaño fuente subtítulo (px)
+  btnSize?: number;         // nuevo: tamaño fuente botón (px)
+  btnPaddingX?: number;     // nuevo: padding horizontal botón
+  btnPaddingY?: number;     // nuevo: padding vertical botón
+  btnRadius?: number;       // nuevo: border-radius botón
 }
 
 export interface Order {
@@ -56,8 +61,6 @@ export interface OrderForm {
   receipt?: string | null;
 }
 
-/** rate      = tasa de precios (Binance/paralelo) — calcula Bs. en productos, SOLO admin la ve */
-/** rateBCV   = tasa BCV/Euro  — solo informativa en catálogo cliente, NO calcula precios       */
 export interface ExchangeRate {
   value: number;
   mode: "bcv" | "euro" | "custom";
@@ -80,11 +83,20 @@ export interface DesignConfig {
   brandName: string;
   brandSub: string;
   navLinks: NavLink[];
+  tickerItems: string[];    // nuevo: textos barra negra
+  trustItems: TrustItem[];  // nuevo: textos barra blanca
 }
 
 export interface NavLink {
   id: string;
   label: string;
   url: string;
+  active: boolean;
+}
+
+export interface TrustItem {
+  id: string;
+  icon: string;   // emoji o nombre de icono
+  text: string;
   active: boolean;
 }

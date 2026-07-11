@@ -1,13 +1,21 @@
 import type { Product, Banner, DesignConfig } from "./types";
 
-export const CATEGORIES    = ["Todos","Aceites","Bebidas","Dulces","Frutos","Pastas"];
+export const CATEGORIES      = ["Todos","Aceites","Bebidas","Dulces","Frutos","Pastas"];
 export const PAYMENT_METHODS = ["Efectivo (USD)","Pago Móvil","Zelle","PayPal","Efectivo (Bs.)"];
-export const TICKER_ITEMS  = [
+
+export const DEFAULT_TICKER_ITEMS = [
   "✦ Envío gratis en pedidos mayores a $30",
   "✦ Productos 100% importados y certificados",
   "✦ Atención vía WhatsApp · Lun–Sáb 8am–6pm",
   "✦ Nuevos productos cada semana",
   "✦ Garantía de frescura en cada entrega",
+];
+
+export const DEFAULT_TRUST_ITEMS = [
+  { id:"t1", icon:"award",  text:"Calidad certificada",    active:true },
+  { id:"t2", icon:"globe",  text:"Importado directamente", active:true },
+  { id:"t3", icon:"truck",  text:"Entrega a domicilio",    active:true },
+  { id:"t4", icon:"shield", text:"Garantía de frescura",   active:true },
 ];
 
 export const SAMPLE_PRODUCTS: Product[] = [
@@ -44,18 +52,21 @@ export const SAMPLE_PRODUCTS: Product[] = [
 ];
 
 export const DEFAULT_BANNERS: Banner[] = [
-  { id:"b1", tag:"NUEVO INGRESO", title:"Aceite\nde Oliva",
+  { id:"b1", active:true, tag:"NUEVO INGRESO", title:"Aceite\nde Oliva",
     subtitle:"Extra Virgen · Prensado en frío · Cosecha selecta", cta:"COMPRAR AHORA",
     bgColor:"#f0f4e8", accentColor:"#5a8a00", textColor:"#111111", btnColor:"#111111", btnTextColor:"#ffffff",
-    img:"https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=700&q=90" },
-  { id:"b2", tag:"CAFÉ PREMIUM", title:"Gourmet\nMolido",
+    img:"https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=700&q=90",
+    titleSize:72, subtitleSize:14, btnSize:11, btnPaddingX:28, btnPaddingY:12, btnRadius:10 },
+  { id:"b2", active:true, tag:"CAFÉ PREMIUM", title:"Gourmet\nMolido",
     subtitle:"Tostado artesanal · Origen único · 250g", cta:"VER PRODUCTO",
     bgColor:"#f5ede6", accentColor:"#7a3a00", textColor:"#111111", btnColor:"#7a3a00", btnTextColor:"#ffffff",
-    img:"https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=700&q=90" },
-  { id:"b3", tag:"100% NATURAL", title:"Miel\nde Abeja",
+    img:"https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=700&q=90",
+    titleSize:72, subtitleSize:14, btnSize:11, btnPaddingX:28, btnPaddingY:12, btnRadius:10 },
+  { id:"b3", active:true, tag:"100% NATURAL", title:"Miel\nde Abeja",
     subtitle:"Recolección directa · Sin conservantes · Cruda", cta:"DESCUBRIR",
     bgColor:"#fdf5e0", accentColor:"#a07000", textColor:"#111111", btnColor:"#a07000", btnTextColor:"#ffffff",
-    img:"https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=700&q=90" },
+    img:"https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=700&q=90",
+    titleSize:72, subtitleSize:14, btnSize:11, btnPaddingX:28, btnPaddingY:12, btnRadius:10 },
 ];
 
 export const DEFAULT_DESIGN: DesignConfig = {
@@ -70,4 +81,6 @@ export const DEFAULT_DESIGN: DesignConfig = {
     { id:"n3", label:"Recetas",  url:"#recetas",  active:true },
     { id:"n4", label:"Nosotros", url:"#nosotros", active:true },
   ],
+  tickerItems: [...DEFAULT_TICKER_ITEMS],
+  trustItems:  [...DEFAULT_TRUST_ITEMS],
 };

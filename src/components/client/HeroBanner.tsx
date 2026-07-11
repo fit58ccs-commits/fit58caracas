@@ -6,7 +6,7 @@ import type { Banner } from "@/lib/types";
 export function HeroBanner({ banners }: { banners: Banner[] }) {
   const [idx, setIdx] = useState(0);
   const slide  = banners[idx] ?? banners[0];
-  const imgSrc = slide.imgBase64 || slide.img;
+  const imgSrc = slide.img || "";
 
   useEffect(() => {
     const t = setInterval(() => setIdx(i => (i + 1) % banners.length), 5500);
@@ -14,111 +14,108 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
   }, [banners.length]);
 
   return (
-    <section
-      className="relative overflow-hidden transition-[background] duration-700"
-      style={{ minHeight: "clamp(400px,55vw,560px)" }}>
+    <section className="relative overflow-hidden" style={{ minHeight: "clamp(280px,50vw,520px)" }}>
 
-      {/* ── Imagen de fondo full-cover ── */}
+      {/* Fondo de color base */}
+      <div className="absolute inset-0 z-[0] transition-colors duration-700"
+        style={{ background: slide.bgColor }}/>
+
+      {/* Imagen full-cover */}
       {imgSrc && (
-        <div
-          key={`bg-${idx}`}
-          className="absolute inset-0 z-[0] animate-hero-img"
+        <div key={`bg-${idx}`} className="absolute inset-0 z-[1]"
           style={{
             backgroundImage:    `url(${imgSrc})`,
             backgroundSize:     "cover",
-            backgroundPosition: "center",
+            backgroundPosition: "center top",
             backgroundRepeat:   "no-repeat",
-          }}
-        />
+          }}/>
       )}
 
-      {/* Overlay degradado sobre la imagen para legibilidad del texto */}
-      <div
-        className="absolute inset-0 z-[1]"
+      {/* Overlay — más opaco en móvil para legibilidad */}
+      <div className="absolute inset-0 z-[2]"
         style={{
           background: imgSrc
-            ? `linear-gradient(90deg, ${slide.bgColor}f0 0%, ${slide.bgColor}cc 40%, ${slide.bgColor}44 70%, transparent 100%)`
+            ? `linear-gradient(90deg, ${slide.bgColor}ee 0%, ${slide.bgColor}cc 45%, ${slide.bgColor}66 70%, ${slide.bgColor}11 100%)`
             : slide.bgColor,
-        }}
-      />
+        }}/>
 
-      {/* Barra de acento izquierda */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-1.5 z-[2] transition-colors duration-700"
-        style={{ background: slide.accentColor, boxShadow: `4px 0 24px ${slide.accentColor}55` }}
-      />
-
-      {/* Orb decorativo */}
-      <div
-        className="absolute -top-1/3 right-[5%] w-[480px] h-[480px] rounded-full pointer-events-none z-[1]"
-        style={{ background: `radial-gradient(circle, ${slide.accentColor}18 0%, transparent 70%)` }}
-      />
+      {/* Barra acento */}
+      <div className="absolute left-0 top-0 bottom-0 w-1 md:w-1.5 z-[3]"
+        style={{ background: slide.accentColor, boxShadow: `4px 0 20px ${slide.accentColor}44` }}/>
 
       {/* Contenido */}
-      <div
-        className="relative z-[2] max-w-[1280px] mx-auto px-7 h-full flex items-center"
-        style={{ minHeight: "clamp(400px,55vw,560px)" }}>
+      <div className="relative z-[3] max-w-[1280px] mx-auto px-5 md:px-7 flex items-center"
+        style={{ minHeight: "clamp(280px,50vw,520px)" }}>
 
-        <div key={`txt-${idx}`} className="animate-hero-text max-w-[520px]">
+        <div key={`txt-${idx}`} className="w-full md:max-w-[520px]" style={{ paddingTop:32, paddingBottom:48 }}>
+
           {/* Tag */}
-          <div
-            className="inline-flex items-center gap-1.5 text-white text-[9px] font-black tracking-[2.5px] px-3.5 py-1.5 mb-5"
+          <div className="inline-flex items-center gap-1.5 text-white font-black tracking-[2px] px-3 py-1 mb-4 text-[8px] md:text-[9px]"
             style={{ background: slide.accentColor }}>
-            <Sparkles size={9} />{slide.tag}
+            <Sparkles size={8}/>{slide.tag}
           </div>
 
           {/* Título */}
-          <h1
-            className="font-black uppercase leading-[0.88] mb-5 whitespace-pre-line"
+          <h1 className="font-black uppercase whitespace-pre-line mb-3 md:mb-5"
             style={{
-              fontSize:      "clamp(44px,7vw,82px)",
-              letterSpacing: "-2px",
+              fontSize:      `clamp(28px, ${slide.titleSize ?? 72}px, ${slide.titleSize ?? 72}px)`,
+              lineHeight:    0.9,
+              letterSpacing: "-1.5px",
               color:         slide.textColor,
-              textShadow:    imgSrc ? "0 2px 20px rgba(0,0,0,0.15)" : "none",
             }}>
-            {slide.title}
+            {(slide.title || "")}
           </h1>
 
           {/* Subtítulo */}
-          <p
-            className="text-sm leading-relaxed mb-8 max-w-sm"
-            style={{ color: slide.textColor + "bb" }}>
+          <p className="leading-relaxed mb-5 md:mb-8 max-w-xs md:max-w-sm"
+            style={{ fontSize: slide.subtitleSize ?? 14, color: slide.textColor + "aa" }}>
             {slide.subtitle}
           </p>
 
           {/* Botones */}
-          <div className="flex gap-3 flex-wrap mb-8">
+          <div className="flex gap-2 md:gap-3 flex-wrap mb-5 md:mb-8">
             <button
-              className="btn-primary flex items-center gap-2 px-8 py-3.5 text-[11px] font-black tracking-[1.5px] uppercase rounded-xl border border-white/10"
+              className="flex items-center gap-2 font-black uppercase border border-white/10 transition-all"
               style={{
+                fontSize:      slide.btnSize ?? 11,
+                letterSpacing: "1.5px",
+                padding:       `${slide.btnPaddingY ?? 12}px ${slide.btnPaddingX ?? 28}px`,
+                borderRadius:  slide.btnRadius ?? 10,
                 background:    slide.btnColor,
                 color:         slide.btnTextColor,
                 backdropFilter:"blur(8px)",
-                boxShadow:     `0 6px 24px ${slide.btnColor}66`,
+                boxShadow:     `0 4px 20px ${slide.btnColor}55`,
               }}>
-              {slide.cta} <ArrowRight size={14} />
+              {slide.cta} <ArrowRight size={13}/>
             </button>
             <button
-              className="glass-card px-6 py-3.5 text-[11px] font-bold tracking-widest uppercase rounded-xl cursor-pointer border-white/50"
-              style={{ color: slide.textColor }}>
+              className="glass-card font-bold uppercase cursor-pointer"
+              style={{
+                fontSize:      slide.btnSize ?? 11,
+                letterSpacing: "1px",
+                padding:       `${slide.btnPaddingY ?? 12}px ${Math.round((slide.btnPaddingX ?? 28) * 0.7)}px`,
+                borderRadius:  slide.btnRadius ?? 10,
+                color:         slide.textColor,
+                border:        "1px solid rgba(255,255,255,0.5)",
+              }}>
               VER CATÁLOGO
             </button>
           </div>
 
-          {/* Trust badges */}
-          <div className="flex gap-4 flex-wrap">
+          {/* Trust badges — solo desktop */}
+          <div className="hidden md:flex gap-4 flex-wrap">
             {[
-              { icon: <Shield size={11} />,    text: "Certificado" },
-              { icon: <Truck size={11} />,     text: "Envío rápido" },
-              { icon: <RotateCcw size={11} />, text: "Garantía" },
+              { icon:<Shield size={11}/>,    text:"Certificado"  },
+              { icon:<Truck size={11}/>,     text:"Envío rápido" },
+              { icon:<RotateCcw size={11}/>, text:"Garantía"     },
             ].map(({ icon, text }) => (
               <div key={text}
                 className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full"
                 style={{
-                  background: "rgba(255,255,255,0.55)",
+                  background:     "rgba(255,255,255,0.55)",
                   backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255,255,255,0.5)",
-                  color: slide.textColor,
+                  border:         "1px solid rgba(255,255,255,0.5)",
+                  color:          slide.textColor,
                 }}>
                 {icon}{text}
               </div>
@@ -128,28 +125,23 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
       </div>
 
       {/* Dots */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 z-[3]">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-[4]">
         {banners.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIdx(i)}
+          <button key={i} onClick={() => setIdx(i)}
             className="rounded-full border-none cursor-pointer p-0 transition-all duration-200"
-            style={{ width: i === idx ? 32 : 8, height: 8, background: i === idx ? "#fff" : "rgba(255,255,255,0.45)" }}
-          />
+            style={{ width: i===idx ? 24 : 6, height: 6, background: i===idx ? "#fff" : "rgba(255,255,255,0.4)" }}/>
         ))}
       </div>
 
-      {/* Flechas */}
+      {/* Flechas — solo desktop */}
       {[
-        { dir: "left",  onClick: () => setIdx(i => (i - 1 + banners.length) % banners.length), icon: <ChevronLeft size={18} /> },
-        { dir: "right", onClick: () => setIdx(i => (i + 1) % banners.length),                  icon: <ChevronRight size={18} /> },
+        { dir:"left",  onClick:()=>setIdx(i=>(i-1+banners.length)%banners.length), icon:<ChevronLeft size={16}/> },
+        { dir:"right", onClick:()=>setIdx(i=>(i+1)%banners.length),                icon:<ChevronRight size={16}/> },
       ].map(({ dir, onClick, icon }) => (
-        <button
-          key={dir}
-          onClick={onClick}
-          className="absolute top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center z-[3] cursor-pointer border-none transition-all duration-200"
+        <button key={dir} onClick={onClick}
+          className="hidden md:flex absolute top-1/2 -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center z-[4] cursor-pointer border-none transition-all"
           style={{
-            [dir]: 20,
+            [dir]:         16,
             background:    "rgba(255,255,255,0.75)",
             backdropFilter:"blur(8px)",
             boxShadow:     "0 4px 16px rgba(0,0,0,0.12)",
