@@ -9,11 +9,24 @@ export default function ClientApp() {
   return (
     <ToastProvider>
       <div className="min-h-screen font-[Inter,sans-serif]">
-        {/* Enlace discreto al admin — solo visible para el dueño */}
+
+        {/* Botón admin — pequeño, esquina superior derecha, sin tapar nada */}
         <a href="/admin"
-          className="fixed top-3.5 right-3.5 z-[9999] px-4 py-1.5 rounded-full text-[10px] font-black tracking-[1.2px] uppercase border-none cursor-pointer bg-white/78 backdrop-blur-2xl text-neutral-400 hover:text-neutral-700 transition-all"
-          style={{ boxShadow:"0 4px 14px rgba(0,0,0,0.08)", border:"1px solid rgba(255,255,255,0.6)" }}>
-          Admin
+          style={{
+            position:"fixed", bottom:24, right:16, zIndex:9999,
+            padding:"5px 10px", borderRadius:20,
+            fontSize:9, fontWeight:700, letterSpacing:"1px",
+            textTransform:"uppercase", textDecoration:"none",
+            background:"rgba(255,255,255,0.70)",
+            backdropFilter:"blur(12px)",
+            border:"1px solid rgba(200,200,200,0.5)",
+            color:"#aaa",
+            boxShadow:"0 2px 8px rgba(0,0,0,0.06)",
+            transition:"all 0.2s",
+          }}
+          onMouseEnter={e=>(e.currentTarget.style.color="#555")}
+          onMouseLeave={e=>(e.currentTarget.style.color="#aaa")}>
+          admin
         </a>
 
         {store.loading && (

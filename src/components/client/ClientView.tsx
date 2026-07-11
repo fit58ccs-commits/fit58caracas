@@ -100,8 +100,12 @@ export function ClientView({ store }: { store: Store }) {
           ))}
         </div>
 
-        {/* Product grid */}
-        <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))" }}>
+        {/* Product grid — 2 cols mobile, 3 tablet, 4 desktop */}
+        <div style={{
+          display:"grid", gap:16,
+          gridTemplateColumns:"repeat(2,1fr)",
+        }}
+          className="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {filtered.map(p => (
             <ProductCard
               key={p.id}

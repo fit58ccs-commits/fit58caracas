@@ -53,8 +53,9 @@ export const fileToBase64 = (file: File): Promise<string> =>
 
 // ─── App Store hook ──────────────────────────────────────────────────────────
 export function useAppStore() {
-  // ── State (arranca con caché localStorage, luego Supabase lo reemplaza) ──
-  const [products,  setProductsState]  = useState<Product[]>(() => LS.get("products", SAMPLE_PRODUCTS));
+  // Arranca vacío — Supabase es la fuente de verdad
+  // localStorage solo como caché de velocidad si ya existe
+  const [products,  setProductsState]  = useState<Product[]>(() => LS.get("products", []));
   const [orders,    setOrdersState]    = useState<Order[]>(() => LS.get("orders", []));
   const [rate,      setRateState]      = useState<ExchangeRate>(() => LS.get("rate",    { value: 36.5,  mode: "custom" as const }));
   const [rateBCV,   setRateBCVState]   = useState<ExchangeRate>(() => LS.get("rateBCV", { value: 46.20, mode: "bcv"    as const }));
@@ -69,6 +70,7 @@ export function useAppStore() {
     let cancelled = false;
     async function load() {
       try {
+        // Cargar todo en paralelo para máxima velocidad
         const [prods, ords, bans, r, rBCV, des] = await Promise.all([
           sbGetProducts(),
           sbGetOrders(),
@@ -78,12 +80,20 @@ export function useAppStore() {
           sbGetDesign(DEFAULT_DESIGN),
         ]);
         if (cancelled) return;
-        if (prods.length)     { setProductsState(prods); LS.set("products", prods); }
-        if (ords.length)      { setOrdersState(ords);    LS.set("orders",   ords);  }
-        if (bans.length)      { setBannersState(bans);   LS.set("banners",  bans);  }
-        setRateState(r);      LS.set("rate",    r);
+
+        // Siempre usar los datos de Supabase (fuente de verdad)
+        // Si Supabase devuelve vacío, no sobrescribir con datos demo
+        if (prods.length) { setProductsState(prods); LS.set("products", prods); }
+        if (ords.length)  { setOrdersState(ords);    LS.set("orders",   ords);  }
+        // Banners: siempre usar los de Supabase si existen
+        if (bans.length) {
+          const lightBans = bans.map(b => ({ ...b, imgBase64: "" }));
+          setBannersState(bans);
+          LS.set("banners", lightBans);
+        }
+        setRateState(r);       LS.set("rate",    r);
         setRateBCVState(rBCV); LS.set("rateBCV", rBCV);
-        setDesignState(des);  LS.set("design",  des);
+        setDesignState(des);   LS.set("design",  des);
       } catch (e) {
         console.warn("[store] Supabase load failed, using localStorage cache:", e);
       } finally {
