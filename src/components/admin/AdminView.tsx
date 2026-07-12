@@ -4,6 +4,7 @@ import { AdminShell, type AdminSection } from "./AdminShell";
 import { BannerManager }    from "./BannerManager";
 import { InventoryManager } from "./InventoryManager";
 import { OrdersManager }    from "./OrdersManager";
+import { ReviewsManager }   from "./ReviewsManager";
 import { RatesSection, DesignSection } from "./RatesDesign";
 import { BIModule }         from "./BIModule";
 import { SAMPLE_PRODUCTS, DEFAULT_BANNERS } from "@/lib/data";
@@ -44,6 +45,7 @@ export function AdminView({ store, userEmail, onSignOut }: {
       )}
       {section === "inventory" && (
         <InventoryManager products={store.products} rate={store.rate}
+          categories={store.design.categories}
           onAdd={p => store.addProduct(p)}
           onUpdate={(id, data) => store.updateProduct(id, data)}
           onDelete={store.deleteProduct}
@@ -66,6 +68,15 @@ export function AdminView({ store, userEmail, onSignOut }: {
       )}
       {section === "design" && (
         <DesignSection design={store.design} onSave={store.setDesign}/>
+      )}
+      {section === "reviews" && (
+        <ReviewsManager reviews={store.reviews} products={store.products}
+          onApprove={store.approveReview}
+          onReject={store.rejectReview}
+          onDelete={store.deleteReview}/>
+      )}
+      {section === "bi" && (
+        <BIModule orders={store.orders} products={store.products} rate={store.rate.value}/>
       )}
     </AdminShell>
   );

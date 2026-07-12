@@ -5,6 +5,7 @@ import { Navbar }                          from "./Navbar";
 import { HeroBanner }                      from "./HeroBanner";
 import { ProductCard, ProductDetailModal } from "./ProductCard";
 import { CartDrawer }                      from "./CartDrawer";
+import { ReviewSection }                   from "./ReviewSection";
 import { DEFAULT_TICKER_ITEMS, DEFAULT_TRUST_ITEMS } from "@/lib/data";
 import { fmt$, fmtBs }                    from "@/lib/store";
 import type { Product }                    from "@/lib/types";
@@ -119,7 +120,8 @@ export function ClientView({ store }: { store: Store }) {
               inCart={store.cart.find(i => i.id === p.id)?.qty ?? 0}
               wishlisted={store.wishlist.includes(p.id)}
               onWishlist={() => store.toggleWishlist(p.id)}
-              onDetail={() => setSelectedProduct(p)}/>
+              onDetail={() => setSelectedProduct(p)}
+              reviews={store.reviews}/>
           ))}
           {filtered.length === 0 && (
             <div className="col-span-full text-center py-16 text-neutral-300">
@@ -260,8 +262,15 @@ export function ClientView({ store }: { store: Store }) {
         <ProductDetailModal product={selectedProduct} rate={store.rate.value}
           onAdd={() => store.addToCart(selectedProduct)}
           inCart={store.cart.find(i=>i.id===selectedProduct.id)?.qty??0}
-          onClose={() => setSelectedProduct(null)}/>
+          onClose={() => setSelectedProduct(null)}
+          reviews={store.reviews}/>
       )}
+
+      {/* Sección de Reseñas */}
+      <ReviewSection
+        products={store.products}
+        reviews={store.reviews}
+        onSubmitReview={store.addReview}/>
 
       {cartOpen && (
         <CartDrawer cart={store.cart} rate={store.rate.value} cartTotal={store.cartTotal}

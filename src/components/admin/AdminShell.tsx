@@ -3,12 +3,13 @@ import { LayoutDashboard, Package, ClipboardList, TrendingUp, Palette, Image, Se
 import { useState } from "react";
 import type { DesignConfig } from "@/lib/types";
 
-export type AdminSection = "bi" | "banners" | "inventory" | "orders" | "rates" | "design";
+export type AdminSection = "bi" | "banners" | "inventory" | "orders" | "reviews" | "rates" | "design";
 
 const NAV: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: "bi",        label: "BI",         icon: <BarChart2 size={16} /> },
   { id: "inventory", label: "Inventario", icon: <Package size={16} /> },
   { id: "orders",    label: "Pedidos",    icon: <ClipboardList size={16} /> },
+  { id: "reviews",   label: "Reseñas",    icon: <Star size={16} /> },
   { id: "rates",     label: "Tasas",      icon: <TrendingUp size={16} /> },
   { id: "design",    label: "Diseño",     icon: <Palette size={16} /> },
   { id: "banners",   label: "Banners",    icon: <Image size={16} /> },

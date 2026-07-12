@@ -10,7 +10,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { useState, useEffect, useCallback } from "react";
-import type { Product, Banner, Order, ExchangeRate, DesignConfig, CartItem } from "./types";
+import type { Product, Banner, Order, ExchangeRate, DesignConfig, CartItem, Review } from "./types";
 import { SAMPLE_PRODUCTS, DEFAULT_BANNERS, DEFAULT_DESIGN } from "./data";
 import {
   sbGetProducts, sbAddProduct, sbUpdateProduct, sbDeleteProduct,
@@ -63,6 +63,7 @@ export function useAppStore() {
   const [wishlist,  setWishlistState]  = useState<string[]>(() => LS.get("wishlist", []));
   const [design,    setDesignState]    = useState<DesignConfig>(() => LS.get("design", DEFAULT_DESIGN));
   const [banners,   setBannersState]   = useState<Banner[]>(() => LS.get("banners", DEFAULT_BANNERS));
+  const [reviews,   setReviewsState]   = useState<Review[]>(() => LS.get("reviews", []));
   const [loading,   setLoading]        = useState(true);
 
   // ── Carga inicial desde Supabase ─────────────────────────────────────────
@@ -223,7 +224,24 @@ export function useAppStore() {
     await sbSetDesign(d);
   }, []);
 
-  // ── BANNERS ───────────────────────────────────────────────────────────────
+  useEffect(() => { LS.set("reviews", reviews); }, [reviews]);
+
+  const addReview = useCallback((r: Omit<Review, "id" | "date" | "approved">) => {
+    const newR: Review = { ...r, id: genId(), date: new Date().toISOString(), approved: false };
+    setReviewsState(prev => [newR, ...prev]);
+  }, []);
+
+  const approveReview = useCallback((id: string) => {
+    setReviewsState(prev => prev.map(r => r.id === id ? { ...r, approved: true } : r));
+  }, []);
+
+  const rejectReview = useCallback((id: string) => {
+    setReviewsState(prev => prev.filter(r => r.id !== id));
+  }, []);
+
+  const deleteReview = useCallback((id: string) => {
+    setReviewsState(prev => prev.filter(r => r.id !== id));
+  }, []);
   const updateBanner = useCallback(async (id: string, updates: Partial<Banner>) => {
     if (updates.imgBase64 && updates.imgBase64.startsWith("data:")) {
       try {
@@ -253,7 +271,7 @@ export function useAppStore() {
 
   return {
     // estado
-    products, orders, rate, rateBCV, cart, wishlist, design, banners,
+    products, orders, rate, rateBCV, cart, wishlist, design, banners, reviews,
     cartTotal, cartCount, loading,
     // productos
     setProducts, addProduct, updateProduct, deleteProduct,
@@ -267,6 +285,8 @@ export function useAppStore() {
     setRate, setRateBCV,
     // diseño
     setDesign,
+    // reseñas
+    addReview, approveReview, rejectReview, deleteReview,
     // banners
     setBanners, updateBanner,
   };
