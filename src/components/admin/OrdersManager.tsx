@@ -112,6 +112,42 @@ export function OrdersManager({ orders, search, rate = 36.5, onToggleStatus, onC
               ))}
             </div>
 
+            {/* Pagos del cliente */}
+            {o.form?.payments && o.form.payments.length > 0 ? (
+              <div className="border-t border-neutral-100/80 pt-3 mb-3 flex flex-col gap-2">
+                {o.form.payments.filter((p: import("@/lib/types").PaymentEntry) => p.method).map((p: import("@/lib/types").PaymentEntry, pidx: number) => (
+                  <div key={pidx} className="flex items-center gap-3 flex-wrap">
+                    <div className="flex justify-between flex-1 text-xs">
+                      <span className="text-neutral-500 font-semibold">{p.method}</span>
+                      <span className="font-black text-green-600">{fmt$(p.amount)}</span>
+                    </div>
+                    {p.receipt && p.receipt.startsWith("data:") && (
+                      <a href={p.receipt} target="_blank" rel="noreferrer">
+                        <img src={p.receipt} alt="comprobante"
+                          className="w-16 h-12 object-cover rounded-lg border-2 border-green-300 cursor-pointer hover:scale-105 transition-transform"
+                          title="Ver comprobante de pago"/>
+                      </a>
+                    )}
+                  </div>
+                ))}
+                {(o.form.balance ?? 0) > 0 && (
+                  <div className="flex justify-between text-xs font-black text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">
+                    <span>⚠️ Saldo pendiente</span>
+                    <span>{fmt$(o.form.balance ?? 0)}</span>
+                  </div>
+                )}
+              </div>
+            ) : o.form?.receipt && o.form.receipt.startsWith("data:") && (
+              <div className="border-t border-neutral-100/80 pt-3 mb-3">
+                <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide mb-1.5">Comprobante de pago</p>
+                <a href={o.form.receipt} target="_blank" rel="noreferrer">
+                  <img src={o.form.receipt} alt="comprobante"
+                    className="w-24 h-18 object-cover rounded-lg border-2 border-green-300 cursor-pointer hover:scale-105 transition-transform"
+                    title="Ver comprobante"/>
+                </a>
+              </div>
+            )}
+
             {/* Footer */}
             <div className="flex justify-between items-center flex-wrap gap-2 border-t border-neutral-100/80 pt-3">
               <div className="flex items-center gap-2 flex-wrap">

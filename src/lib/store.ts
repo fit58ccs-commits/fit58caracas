@@ -194,7 +194,7 @@ export function useAppStore() {
     cancelReason?: string
   ) => {
     setOrdersState(prev => prev.map(o => o.id === id ? { ...o, status, ...(cancelReason ? { cancelReason } : {}) } : o));
-    await sbUpdateOrderStatus(id, status);
+    await sbUpdateOrderStatus(id, status, cancelReason);
   }, []);
 
   const deleteOrder = useCallback((id: string) => {

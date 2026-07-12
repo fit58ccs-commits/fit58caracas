@@ -73,15 +73,24 @@ export interface CartItem {
   img: string;
 }
 
+export interface PaymentEntry {
+  method:  string;
+  amount:  number;         // monto pagado con este método
+  receipt?: string | null; // base64 o nombre del comprobante
+}
+
 export interface OrderForm {
-  name: string;
-  phone: string;
-  time: string;
-  address: string;
-  method: string;
+  name:     string;
+  phone:    string;
+  time:     string;
+  address:  string;
+  method:   string;        // método principal (backwards compat)
   receipt?: string | null;
-  lat?: number;
-  lng?: number;
+  lat?:     number;
+  lng?:     number;
+  payments?: PaymentEntry[]; // pagos combinados
+  totalPaid?: number;
+  balance?:   number;
 }
 
 export interface ExchangeRate {

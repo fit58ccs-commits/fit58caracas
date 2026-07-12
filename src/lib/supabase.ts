@@ -80,13 +80,13 @@ export async function sbSaveOrder(order: Order): Promise<boolean> {
 
 export async function sbUpdateOrderStatus(
   id: string,
-  status: "pending" | "processed" | "cancelled"
+  status: "pending" | "processed" | "cancelled",
+  cancelReason?: string
 ): Promise<boolean> {
   const sb = createClient();
-  const { error } = await sb
-    .from("orders")
-    .update({ status })
-    .eq("id", id);
+  const updates: Record<string, unknown> = { status };
+  if (cancelReason) updates.cancel_reason = cancelReason;
+  const { error } = await sb.from("orders").update(updates).eq("id", id);
   if (error) { console.error("[sbUpdateOrderStatus]", error.message); return false; }
   return true;
 }
