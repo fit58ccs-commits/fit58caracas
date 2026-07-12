@@ -50,11 +50,14 @@ export function AdminView({ store, userEmail, onSignOut }: {
           onReset={() => store.setProducts(() => SAMPLE_PRODUCTS)}/>
       )}
       {section === "orders" && (
-        <OrdersManager orders={store.orders} search={search}
+        <OrdersManager orders={store.orders} search={search} rate={store.rate.value}
           onToggleStatus={id => {
             const o = store.orders.find(x => x.id === id);
-            if (o) store.updateOrderStatus(id, o.status === "pending" ? "processed" : "pending");
-          }}/>
+            if (o && o.status !== "cancelled") store.updateOrderStatus(id, o.status === "pending" ? "processed" : "pending");
+          }}
+          onCancel={(id, reason) => store.updateOrderStatus(id, "cancelled", reason)}
+          onDelete={id => store.deleteOrder(id)}
+        />
       )}
       {section === "rates" && (
         <RatesSection rate={store.rate} onSaveRate={store.setRate}

@@ -189,10 +189,16 @@ export function useAppStore() {
 
   const updateOrderStatus = useCallback(async (
     id: string,
-    status: Order["status"]
+    status: Order["status"],
+    cancelReason?: string
   ) => {
-    setOrdersState(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+    setOrdersState(prev => prev.map(o => o.id === id ? { ...o, status, ...(cancelReason ? { cancelReason } : {}) } : o));
     await sbUpdateOrderStatus(id, status);
+  }, []);
+
+  const deleteOrder = useCallback((id: string) => {
+    setOrdersState(prev => prev.filter(o => o.id !== id));
+    // Note: we don't delete from Supabase to keep history — just hide locally
   }, []);
 
   // ── WISHLIST ──────────────────────────────────────────────────────────────
@@ -254,7 +260,7 @@ export function useAppStore() {
     // carrito
     addToCart, removeFromCart, updateCartQty, clearCart,
     // pedidos
-    saveOrder, updateOrderStatus,
+    saveOrder, updateOrderStatus, deleteOrder,
     // wishlist
     toggleWishlist,
     // tasas
