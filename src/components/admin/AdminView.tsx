@@ -21,7 +21,8 @@ export function AdminView({ store }: { store: Store }) {
 
   return (
     <AdminShell section={section} onSection={setSection}
-      pendingOrders={pendingOrders} search={search} onSearch={setSearch}>
+      pendingOrders={pendingOrders} search={search} onSearch={setSearch}
+      design={store.design}>
 
       {section === "dashboard" && (
         <Dashboard products={store.products} orders={store.orders}/>
