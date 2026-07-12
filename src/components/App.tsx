@@ -56,7 +56,7 @@ export default function App() {
           </div>
         )}
 
-        {view==="client" ? <ClientView store={store}/> : <AdminView store={store}/>}
+        {view==="client" ? <ClientView store={store}/> : <AdminView store={store} userEmail={user?.email ?? ""} onSignOut={signOut}/>}
       </div>
     </ToastProvider>
   );

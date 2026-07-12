@@ -1,5 +1,5 @@
 "use client";
-import { LayoutDashboard, Package, ClipboardList, TrendingUp, Palette, Image, Bell, Search, Menu, X, Star } from "lucide-react";
+import { LayoutDashboard, Package, ClipboardList, TrendingUp, Palette, Image, Search, Menu, X, Star, LogOut } from "lucide-react";
 import { useState } from "react";
 import type { DesignConfig } from "@/lib/types";
 
@@ -21,10 +21,12 @@ interface ShellProps {
   search: string;
   onSearch: (v: string) => void;
   design: DesignConfig;
+  userEmail: string;
+  onSignOut: () => void;
   children: React.ReactNode;
 }
 
-export function AdminShell({ section, onSection, pendingOrders, search, onSearch, design, children }: ShellProps) {
+export function AdminShell({ section, onSection, pendingOrders, search, onSearch, design, userEmail, onSignOut, children }: ShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const logoSrc = design.logoBase64 || design.logoUrl;
@@ -113,34 +115,41 @@ export function AdminShell({ section, onSection, pendingOrders, search, onSearch
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
-        <header className="glass border-b border-neutral-200/60 px-7 h-14 flex items-center gap-4 sticky top-0 z-[50] rounded-none">
-          <button className="md:hidden flex items-center border-none bg-none cursor-pointer" onClick={() => setMobileOpen(true)}>
+        <header className="glass border-b border-neutral-200/60 px-4 md:px-7 h-14 flex items-center gap-3 sticky top-0 z-[50] rounded-none">
+          <button className="md:hidden flex items-center border-none bg-none cursor-pointer shrink-0" onClick={() => setMobileOpen(true)}>
             <Menu size={20}/>
           </button>
-          <span className="text-[11px] font-black text-black uppercase tracking-widest">
+          <span className="text-[11px] font-black text-black uppercase tracking-widest hidden md:block">
             {NAV.find(n => n.id === section)?.label}
           </span>
           <div className="flex-1"/>
-          <div className="flex items-center gap-2 neumorph-inset bg-[#f0f2f5] rounded-full px-4 py-2">
+
+          {/* Buscador */}
+          <div className="flex items-center gap-2 neumorph-inset bg-[#f0f2f5] rounded-full px-3 py-1.5 hidden md:flex">
             <Search size={13} className="text-neutral-400"/>
             <input value={search} onChange={e => onSearch(e.target.value)} placeholder="Buscar pedidos..."
-              className="border-none outline-none text-xs text-neutral-700 bg-transparent w-40 font-[inherit]"/>
+              className="border-none outline-none text-xs text-neutral-700 bg-transparent w-32 font-[inherit]"/>
           </div>
-          <button className="fluent-hover relative w-9 h-9 border border-neutral-200/80 bg-white/65 backdrop-blur-sm flex items-center justify-center rounded-xl cursor-pointer">
-            <Bell size={15} className="text-neutral-500"/>
-            {pendingOrders > 0 && (
-              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-red-500"
-                style={{ boxShadow:"0 0 6px rgba(229,62,62,0.6)" }}/>
-            )}
+
+          {/* Email */}
+          {userEmail && (
+            <div className="hidden md:flex items-center gap-1.5 text-[10px] text-neutral-500 font-semibold glass px-3 py-1.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block shrink-0"/>
+              <span className="max-w-[140px] truncate">{userEmail}</span>
+            </div>
+          )}
+
+          {/* ← Tienda */}
+          <a href="/"
+            className="flex items-center gap-1 text-[10px] font-bold tracking-wide uppercase no-underline glass text-neutral-500 hover:text-neutral-800 transition-all px-3 py-1.5 rounded-full">
+            ← Tienda
+          </a>
+
+          {/* Salir */}
+          <button onClick={onSignOut}
+            className="flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase border-none cursor-pointer glass text-neutral-500 hover:bg-red-50 hover:text-red-500 transition-all px-3 py-1.5 rounded-full">
+            <LogOut size={12}/> Salir
           </button>
-          {/* Logo/avatar en topbar */}
-          {logoSrc
-            ? <img src={logoSrc} alt="logo" className="w-9 h-9 rounded-xl object-cover border border-neutral-200/60"
-                onError={e => (e.currentTarget.style.display="none")}/>
-            : <div className="neumorph w-9 h-9 rounded-xl flex items-center justify-center shrink-0">
-                <Star size={14} className="text-black fill-black"/>
-              </div>
-          }
         </header>
 
         {/* Content */}
