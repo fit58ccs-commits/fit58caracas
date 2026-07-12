@@ -70,20 +70,6 @@ export function ClientView({ store }: { store: Store }) {
         }
       </div>
 
-      {/* ── Trust bar blanca (editable) ── */}
-      {trustItems.length > 0 && (
-        <div className="glass border-t border-b border-neutral-200/50 rounded-none">
-          <div className="max-w-[1280px] mx-auto px-7 py-4 flex justify-center gap-[clamp(16px,4vw,60px)] flex-wrap">
-            {trustItems.map(({ id, icon, text }) => (
-              <div key={id} className="flex items-center gap-2 text-neutral-600">
-                <span className="text-neutral-400">{TRUST_ICONS[icon] ?? <Shield size={15}/>}</span>
-                <span className="text-xs font-semibold">{text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Catalog */}
       <main className="max-w-[1280px] mx-auto px-4 md:px-7 py-8 pb-36 animate-fade-up">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-3">

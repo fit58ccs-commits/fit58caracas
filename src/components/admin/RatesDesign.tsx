@@ -482,41 +482,6 @@ export function DesignSection({
           </Btn>
         </div>
 
-        {/* Trust bar barra blanca */}
-        <div className="glass-card p-6 rounded-2xl" style={{ gridColumn:"1 / -1" }}>
-          <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-1">BARRA BLANCA DE CONFIANZA</p>
-          <p className="text-[10px] text-neutral-400 mb-4">
-            Iconos: award · globe · truck · shield
-          </p>
-          <div className="flex flex-col gap-2 mb-3">
-            {(draft.trustItems || []).map((item: import("@/lib/types").TrustItem, idx: number) => (
-              <div key={item.id} className="flex items-center gap-2 flex-wrap">
-                <select value={item.icon}
-                  onChange={e => { const a=[...(draft.trustItems||[])]; a[idx]={...a[idx],icon:e.target.value}; F("trustItems",a); }}
-                  className="field-input border border-neutral-200/80 px-2.5 py-2 text-sm bg-white/72 rounded-lg font-[inherit] w-28">
-                  {["award","globe","truck","shield"].map(ic => <option key={ic} value={ic}>{ic}</option>)}
-                </select>
-                <input value={item.text}
-                  onChange={e => { const a=[...(draft.trustItems||[])]; a[idx]={...a[idx],text:e.target.value}; F("trustItems",a); }}
-                  className="field-input flex-1 border border-neutral-200/80 px-3 py-2 text-sm bg-white/72 rounded-lg font-[inherit] min-w-[140px]"
-                  placeholder="Texto del beneficio"/>
-                <label className="flex items-center gap-1 text-[9px] font-bold text-neutral-500 uppercase cursor-pointer">
-                  <input type="checkbox" checked={item.active} className="accent-green-600"
-                    onChange={e => { const a=[...(draft.trustItems||[])]; a[idx]={...a[idx],active:e.target.checked}; F("trustItems",a); }}/>
-                  Visible
-                </label>
-                <button onClick={() => F("trustItems",(draft.trustItems||[]).filter((_: import("@/lib/types").TrustItem,i: number)=>i!==idx))}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 cursor-pointer bg-transparent border border-red-200/80">
-                  <Trash2 size={13}/>
-                </button>
-              </div>
-            ))}
-          </div>
-          <Btn variant="ghost" onClick={() => F("trustItems",[...(draft.trustItems||[]),{id:genId(),icon:"shield",text:"Nuevo beneficio",active:true}])}>
-            <Plus size={13}/> AÑADIR ITEM
-          </Btn>
-        </div>
-
         {/* ── Notificaciones ── */}
         <div style={{ gridColumn:"1 / -1" }}>
           <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-3 flex items-center gap-1.5">
