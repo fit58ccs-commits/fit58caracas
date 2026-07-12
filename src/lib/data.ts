@@ -73,8 +73,8 @@ export const DEFAULT_DESIGN: DesignConfig = {
   primaryColor:"#111111", secondaryColor:"#22a85a", bgColor:"#f5f5f5",
   textColor:"#111111", accentColor:"#3b82f6", fontFamily:"Inter",
   logoUrl:"", logoBase64:"", bannerUrl:"", bannerBase64:"",
-  heroTitle:"Délice Gourmet", heroSubtitle:"Productos importados de calidad premium",
-  ctaText:"COMPRAR AHORA", brandName:"DÉLICE", brandSub:"GOURMET",
+  heroTitle:"Fit +58 Caracas", heroSubtitle:"Tu tienda de confianza",
+  ctaText:"COMPRAR AHORA", brandName:"FIT +58", brandSub:"GOURMET",
   navLinks:[
     { id:"n1", label:"Inicio",   url:"#inicio",   active:true },
     { id:"n2", label:"Tienda",   url:"#tienda",   active:true },

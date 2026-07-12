@@ -15,7 +15,7 @@ import { SAMPLE_PRODUCTS, DEFAULT_BANNERS, DEFAULT_DESIGN } from "./data";
 import {
   sbGetProducts, sbAddProduct, sbUpdateProduct, sbDeleteProduct,
   sbGetOrders, sbSaveOrder, sbUpdateOrderStatus,
-  sbGetBanners, sbUpdateBanner,
+  sbGetBanners, sbUpdateBanner, sbInsertBanner, sbDeleteBanner,
   sbGetRate, sbGetRateBCV, sbSetRate, sbSetRateBCV,
   sbGetDesign, sbSetDesign,
   sbUploadImage,
@@ -233,7 +233,16 @@ export function useAppStore() {
   }, []);
 
   const setBanners = useCallback((fn: (prev: Banner[]) => Banner[]) => {
-    setBannersState(fn);
+    setBannersState(prev => {
+      const next = fn(prev);
+      // Detectar banners añadidos
+      const addedBanners = next.filter(b => !prev.find(p => p.id === b.id));
+      addedBanners.forEach(b => sbInsertBanner(b));
+      // Detectar banners eliminados
+      const deletedIds = prev.filter(b => !next.find(n => n.id === b.id)).map(b => b.id);
+      deletedIds.forEach(id => sbDeleteBanner(id));
+      return next;
+    });
   }, []);
 
   return {

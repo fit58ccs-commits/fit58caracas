@@ -46,14 +46,14 @@ export function NotifSettings() {
   const testPush = async () => {
     setTesting(true);
     const { sendLocalPush } = await import("@/lib/notifications");
-    await sendLocalPush("🛒 Prueba — Délice Gourmet", "Notificación push funcionando correctamente", "/admin");
+    await sendLocalPush("🛒 Prueba — Fit +58 Caracas", "Notificación push funcionando correctamente", "/admin");
     toast("Notificación de prueba enviada", "✓");
     setTesting(false);
   };
 
   const testTelegram = async () => {
     setTesting(true);
-    const ok = await sendTelegram("🛒 *Prueba — Délice Gourmet*\n\nConexión de Telegram funcionando correctamente ✅");
+    const ok = await sendTelegram("🛒 *Prueba — Fit +58 Caracas*\n\nConexión de Telegram funcionando correctamente ✅");
     if (ok) toast("Mensaje de Telegram enviado", "✓");
     else     toast("Error — revisa el token y chat ID", "❌");
     setTesting(false);

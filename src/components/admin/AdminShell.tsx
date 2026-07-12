@@ -30,7 +30,7 @@ export function AdminShell({ section, onSection, pendingOrders, search, onSearch
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const logoSrc = design.logoBase64 || design.logoUrl;
-  const brandName = design.brandName || "DÉLICE";
+  const brandName = design.brandName || "FIT +58";
   const brandSub  = design.brandSub  || "GOURMET";
 
   const Sidebar = ({ overlay = false }: { overlay?: boolean }) => (

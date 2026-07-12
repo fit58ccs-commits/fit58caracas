@@ -1,8 +1,8 @@
 /**
- * Service Worker — Délice Gourmet PWA
+ * Service Worker — Fit +58 Caracas PWA
  * Maneja: cache offline + notificaciones push
  */
-const CACHE_NAME = "delice-v1";
+const CACHE_NAME = "fit58-v1";
 const STATIC_ASSETS = ["/", "/manifest.json"];
 
 /* ── Instalación: pre-cachear assets básicos ── */
@@ -43,7 +43,7 @@ self.addEventListener("push", (e) => {
   if (!e.data) return;
   const data = e.data.json();
   e.waitUntil(
-    self.registration.showNotification(data.title || "Délice Gourmet", {
+    self.registration.showNotification(data.title || "Fit +58 Caracas", {
       body:    data.body  || "Tienes un nuevo pedido",
       icon:    data.icon  || "/icons/icon-192.png",
       badge:   "/icons/icon-192.png",

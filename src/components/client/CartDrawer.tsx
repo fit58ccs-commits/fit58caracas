@@ -63,7 +63,7 @@ export function CartDrawer({ cart, rate, cartTotal, onRemove, onUpdateQty, onClo
   const handleConfirm = () => {
     const mapsLink = `https://maps.google.com/?q=${coords.lat},${coords.lng}`;
     const msg = encodeURIComponent([
-      `🛒 *NUEVO PEDIDO — Délice Gourmet*`, "─────────────────────────",
+      `🛒 *NUEVO PEDIDO — Fit +58 Caracas*`, "─────────────────────────",
       ...cart.map(i => `• ${i.name} ×${i.qty} → ${fmt$(i.price * i.qty)}`),
       "─────────────────────────",
       `💰 *Total: ${fmt$(cartTotal)} | ${fmtBs(cartTotal, rate)}*`, "─────────────────────────",

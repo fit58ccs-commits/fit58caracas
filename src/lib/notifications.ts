@@ -1,14 +1,14 @@
 /**
  * notifications.ts
  * ─────────────────────────────────────────────────────────────
- * Sistema de notificaciones para Délice Gourmet
+ * Sistema de notificaciones para Fit +58 Caracas
  * 
  * CANALES:
  *   1. Push PWA  → notificación en el teléfono del ADMIN (si instaló la PWA)
  *   2. Telegram  → mensaje al bot del admin al recibir un pedido
  * 
  * CONFIGURACIÓN (guardar en Admin → Diseño → Notificaciones):
- *   localStorage: delice_notif_config = { telegramToken, telegramChatId, pushEnabled }
+ *   localStorage: fit58_notif_config = { telegramToken, telegramChatId, pushEnabled }
  * ─────────────────────────────────────────────────────────────
  */
 
@@ -20,13 +20,13 @@ export interface NotifConfig {
 
 export function getNotifConfig(): NotifConfig {
   try {
-    const raw = localStorage.getItem("delice_notif_config");
+    const raw = localStorage.getItem("fit58_notif_config");
     return raw ? JSON.parse(raw) : { telegramToken: "", telegramChatId: "", pushEnabled: false };
   } catch { return { telegramToken: "", telegramChatId: "", pushEnabled: false }; }
 }
 
 export function saveNotifConfig(cfg: NotifConfig) {
-  localStorage.setItem("delice_notif_config", JSON.stringify(cfg));
+  localStorage.setItem("fit58_notif_config", JSON.stringify(cfg));
 }
 
 /* ── REGISTRO DEL SERVICE WORKER ─────────────────────────── */
@@ -122,7 +122,7 @@ export async function notifyNewOrder(order: {
   // 2. Telegram
   if (cfg.telegramToken && cfg.telegramChatId) {
     const msg = [
-      `🛒 *NUEVO PEDIDO — Délice Gourmet*`,
+      `🛒 *NUEVO PEDIDO — Fit +58 Caracas*`,
       `─────────────────────────────`,
       items,
       `─────────────────────────────`,

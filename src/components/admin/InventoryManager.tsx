@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Plus, Upload, Trash2, Edit3, Save, Download, FileSpreadsheet, AlertCircle, Package } from "lucide-react";
-import { fileToBase64, genId, fmt$, fmtBs } from "@/lib/store";
+import { genId, fmt$, fmtBs } from "@/lib/store";
+import { sbUploadImage } from "@/lib/supabase";
 import { SAMPLE_PRODUCTS } from "@/lib/data";
 import { Btn, Field, Select, Modal } from "../ui/Primitives";
 import { useToast } from "../ui/Toast";
@@ -44,8 +45,18 @@ function ImagePicker({ images, onChange }: { images: string[]; onChange: (imgs: 
 
   const addFiles = async (files: FileList) => {
     const toAdd = Array.from(files).slice(0, remaining);
-    const b64s = await Promise.all(toAdd.map(fileToBase64));
-    onChange([...images, ...b64s]);
+    const toast_fn = (msg: string) => console.log(msg); // simple log
+    const urls: string[] = [];
+    for (const file of toAdd) {
+      const url = await sbUploadImage(file, "products");
+      if (url) {
+        urls.push(url);
+      } else {
+        // Fallback: usar URL temporal del objeto local
+        urls.push(URL.createObjectURL(file));
+      }
+    }
+    onChange([...images, ...urls]);
   };
 
   return (

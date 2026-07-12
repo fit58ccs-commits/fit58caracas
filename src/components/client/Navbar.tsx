@@ -31,7 +31,7 @@ export function Navbar({ design, cartCount, search, onSearch, onCartOpen }: Navb
               </div>
           }
           <div className="leading-none">
-            <div className="text-sm font-black text-black tracking-wide">{design.brandName || "DÉLICE"}</div>
+            <div className="text-sm font-black text-black tracking-wide">{design.brandName || "FIT +58"}</div>
             <div className="text-[8px] font-bold text-neutral-400 tracking-[3px]">{design.brandSub || "GOURMET"}</div>
           </div>
         </div>

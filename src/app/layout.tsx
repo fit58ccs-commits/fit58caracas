@@ -3,13 +3,13 @@ import "./globals.css";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title:       "Délice Gourmet — Productos importados de calidad premium",
+  title:       "Fit +58 Caracas — Tu tienda de confianza",
   description: "Tienda de productos gourmet importados.",
   manifest:    "/manifest.json",
   appleWebApp: {
     capable:          true,
     statusBarStyle:   "default",
-    title:            "Délice Gourmet",
+    title:            "Fit +58 Caracas",
   },
   icons: {
     icon:  "/icons/icon-192.png",
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-        <meta name="apple-mobile-web-app-title" content="Délice"/>
+        <meta name="apple-mobile-web-app-title" content="Fit +58"/>
         <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
       </head>
       <body className="font-[Inter,sans-serif] bg-[#f0f2f5] antialiased">

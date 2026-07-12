@@ -107,11 +107,77 @@ export async function sbGetBanners(): Promise<Banner[]> {
 
 export async function sbUpdateBanner(id: string, updates: Partial<Banner>): Promise<boolean> {
   const sb = createClient();
-  const { error } = await sb
-    .from("banners")
-    .update(bannerToDb(updates as Banner))
-    .eq("id", id);
-  if (error) { console.error("[sbUpdateBanner]", error.message); return false; }
+  // Solo enviar columnas base que siempre existen en la tabla
+  const base: Record<string, unknown> = {};
+  if (updates.tag          !== undefined) base.tag            = updates.tag;
+  if (updates.title        !== undefined) base.title          = updates.title;
+  if (updates.subtitle     !== undefined) base.subtitle       = updates.subtitle;
+  if (updates.cta          !== undefined) base.cta            = updates.cta;
+  if (updates.bgColor      !== undefined) base.bg_color       = updates.bgColor;
+  if (updates.accentColor  !== undefined) base.accent_color   = updates.accentColor;
+  if (updates.textColor    !== undefined) base.text_color     = updates.textColor;
+  if (updates.btnColor     !== undefined) base.btn_color      = updates.btnColor;
+  if (updates.btnTextColor !== undefined) base.btn_text_color = updates.btnTextColor;
+  if (updates.img          !== undefined) base.img            = updates.img;
+  if (updates.order        !== undefined) base.order_index    = updates.order;
+
+  // Columnas extendidas (pueden no existir si no se corrió la migración)
+  const extended: Record<string, unknown> = {};
+  if (updates.active       !== undefined) extended.active         = updates.active;
+  if (updates.showTag      !== undefined) extended.show_tag       = updates.showTag;
+  if (updates.showTitle    !== undefined) extended.show_title     = updates.showTitle;
+  if (updates.showSubtitle !== undefined) extended.show_subtitle  = updates.showSubtitle;
+  if (updates.showCta      !== undefined) extended.show_cta       = updates.showCta;
+  if (updates.ctaUrl       !== undefined) extended.cta_url        = updates.ctaUrl;
+  if (updates.contentX     !== undefined) extended.content_x      = updates.contentX;
+  if (updates.contentY     !== undefined) extended.content_y      = updates.contentY;
+  if (updates.titleSize    !== undefined) extended.title_size     = updates.titleSize;
+  if (updates.subtitleSize !== undefined) extended.subtitle_size  = updates.subtitleSize;
+  if (updates.btnSize      !== undefined) extended.btn_size       = updates.btnSize;
+  if (updates.btnPaddingX  !== undefined) extended.btn_padding_x  = updates.btnPaddingX;
+  if (updates.btnPaddingY  !== undefined) extended.btn_padding_y  = updates.btnPaddingY;
+  if (updates.btnRadius    !== undefined) extended.btn_radius     = updates.btnRadius;
+
+  // Primero actualizar columnas base (siempre funcionan)
+  const { error: baseErr } = await sb.from("banners").update(base).eq("id", id);
+  if (baseErr) { console.error("[sbUpdateBanner base]", baseErr.message); return false; }
+
+  // Luego intentar columnas extendidas (falla silenciosamente si no existen)
+  if (Object.keys(extended).length > 0) {
+    const { error: extErr } = await sb.from("banners").update(extended).eq("id", id);
+    if (extErr) console.warn("[sbUpdateBanner extended - run banner_migration_v3.sql]", extErr.message);
+  }
+
+  return true;
+}
+
+export async function sbInsertBanner(banner: Banner): Promise<boolean> {
+  const sb = createClient();
+  const base = {
+    id:            banner.id,
+    tag:           banner.tag,
+    title:         banner.title,
+    subtitle:      banner.subtitle,
+    cta:           banner.cta,
+    bg_color:      banner.bgColor,
+    accent_color:  banner.accentColor,
+    text_color:    banner.textColor,
+    btn_color:     banner.btnColor,
+    btn_text_color:banner.btnTextColor,
+    img:           banner.img || "",
+    order_index:   banner.order ?? 0,
+  };
+  const { error } = await sb.from("banners").insert([base]);
+  if (error) { console.error("[sbInsertBanner]", error.message); return false; }
+  // Update extended columns separately
+  await sbUpdateBanner(banner.id, banner);
+  return true;
+}
+
+export async function sbDeleteBanner(id: string): Promise<boolean> {
+  const sb = createClient();
+  const { error } = await sb.from("banners").delete().eq("id", id);
+  if (error) { console.error("[sbDeleteBanner]", error.message); return false; }
   return true;
 }
 
