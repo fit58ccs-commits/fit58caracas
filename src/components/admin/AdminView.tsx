@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { AdminShell, type AdminSection } from "./AdminShell";
-import { Dashboard }        from "./Dashboard";
 import { BannerManager }    from "./BannerManager";
 import { InventoryManager } from "./InventoryManager";
 import { OrdersManager }    from "./OrdersManager";
@@ -18,7 +17,7 @@ export function AdminView({ store, userEmail, onSignOut }: {
   userEmail:  string;
   onSignOut:  () => void;
 }) {
-  const [section, setSection] = useState<AdminSection>("dashboard");
+  const [section, setSection] = useState<AdminSection>("bi");
   const [search,  setSearch]  = useState("");
 
   const pendingOrders = store.orders.filter(o => o.status === "pending").length;
@@ -32,8 +31,8 @@ export function AdminView({ store, userEmail, onSignOut }: {
       userEmail={userEmail}
       onSignOut={onSignOut}>
 
-      {section === "dashboard" && (
-        <Dashboard products={store.products} orders={store.orders}/>
+      {section === "bi" && (
+        <BIModule orders={store.orders} products={store.products} rate={store.rate.value}/>
       )}
       {section === "banners" && (
         <BannerManager
@@ -64,9 +63,6 @@ export function AdminView({ store, userEmail, onSignOut }: {
       )}
       {section === "design" && (
         <DesignSection design={store.design} onSave={store.setDesign}/>
-      )}
-      {section === "bi" && (
-        <BIModule orders={store.orders} products={store.products} rate={store.rate.value}/>
       )}
     </AdminShell>
   );
