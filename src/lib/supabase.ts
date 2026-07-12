@@ -239,9 +239,10 @@ function dbToBanner(row: Record<string, unknown>): Banner {
   return {
     id:           String(row.id),
     tag:          String(row.tag          ?? ""),
-    title:        String(row.title ?? "").replace(/\\n/g, "\n"),
+    title:        String(row.title ?? "").replace(/\n/g, "\n"),
     subtitle:     String(row.subtitle     ?? ""),
     cta:          String(row.cta          ?? ""),
+    ctaUrl:       row.cta_url ? String(row.cta_url) : "#tienda",
     bgColor:      String(row.bg_color     ?? "#f0f4e8"),
     accentColor:  String(row.accent_color ?? "#5a8a00"),
     textColor:    String(row.text_color   ?? "#111111"),
@@ -250,12 +251,16 @@ function dbToBanner(row: Record<string, unknown>): Banner {
     img:          String(row.img          ?? ""),
     order:        Number(row.order_index  ?? 0),
     active:       row.active !== false,
-    titleSize:    Number(row.title_size   ?? 72),
+    showTag:      row.show_tag      !== false,
+    showTitle:    row.show_title    !== false,
+    showSubtitle: row.show_subtitle !== false,
+    showCta:      row.show_cta      !== false,
+    titleSize:    Number(row.title_size    ?? 64),
     subtitleSize: Number(row.subtitle_size ?? 14),
-    btnSize:      Number(row.btn_size     ?? 11),
-    btnPaddingX:  Number(row.btn_padding_x ?? 28),
+    btnSize:      Number(row.btn_size      ?? 11),
+    btnPaddingX:  Number(row.btn_padding_x ?? 24),
     btnPaddingY:  Number(row.btn_padding_y ?? 12),
-    btnRadius:    Number(row.btn_radius   ?? 10),
+    btnRadius:    Number(row.btn_radius    ?? 10),
   };
 }
 
@@ -265,6 +270,7 @@ function bannerToDb(b: Partial<Banner>): Record<string, unknown> {
   if (b.title        !== undefined) out.title          = b.title;
   if (b.subtitle     !== undefined) out.subtitle       = b.subtitle;
   if (b.cta          !== undefined) out.cta            = b.cta;
+  if (b.ctaUrl       !== undefined) out.cta_url        = b.ctaUrl;
   if (b.bgColor      !== undefined) out.bg_color       = b.bgColor;
   if (b.accentColor  !== undefined) out.accent_color   = b.accentColor;
   if (b.textColor    !== undefined) out.text_color     = b.textColor;
@@ -273,5 +279,16 @@ function bannerToDb(b: Partial<Banner>): Record<string, unknown> {
   if (b.img          !== undefined) out.img            = b.img;
   if (b.imgBase64    !== undefined) out.img_base64     = b.imgBase64;
   if (b.order        !== undefined) out.order_index    = b.order;
+  if (b.active       !== undefined) out.active         = b.active;
+  if (b.showTag      !== undefined) out.show_tag       = b.showTag;
+  if (b.showTitle    !== undefined) out.show_title     = b.showTitle;
+  if (b.showSubtitle !== undefined) out.show_subtitle  = b.showSubtitle;
+  if (b.showCta      !== undefined) out.show_cta       = b.showCta;
+  if (b.titleSize    !== undefined) out.title_size     = b.titleSize;
+  if (b.subtitleSize !== undefined) out.subtitle_size  = b.subtitleSize;
+  if (b.btnSize      !== undefined) out.btn_size       = b.btnSize;
+  if (b.btnPaddingX  !== undefined) out.btn_padding_x  = b.btnPaddingX;
+  if (b.btnPaddingY  !== undefined) out.btn_padding_y  = b.btnPaddingY;
+  if (b.btnRadius    !== undefined) out.btn_radius     = b.btnRadius;
   return out;
 }

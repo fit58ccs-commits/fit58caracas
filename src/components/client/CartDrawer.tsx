@@ -79,7 +79,7 @@ export function CartDrawer({ cart, rate, cartTotal, onRemove, onUpdateQty, onClo
   const secondBtn  = "flex-1 flex items-center justify-center gap-1.5 py-3.5 text-[10px] font-bold tracking-widest uppercase rounded-xl cursor-pointer transition-all duration-200 bg-white/65 backdrop-blur-sm text-neutral-600 border border-neutral-200/80 hover:bg-white/85";
 
   return (
-    <div className="fixed inset-0 z-[200] flex">
+    <div className="fixed inset-0 z-[150] flex">
       <div className="animate-overlay-in absolute inset-0 bg-black/45 backdrop-blur-md" onClick={onClose} />
       <div className="animate-drawer-in glass absolute right-0 top-0 bottom-0 w-full max-w-[440px] flex flex-col shadow-[−16px_0_80px_rgba(0,0,0,0.20)] overflow-y-auto rounded-none">
 

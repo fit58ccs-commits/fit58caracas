@@ -17,6 +17,7 @@ export interface Banner {
   title: string;
   subtitle: string;
   cta: string;
+  ctaUrl?: string;          // URL/ancla a la que lleva el botón CTA
   bgColor: string;
   accentColor: string;
   textColor: string;
@@ -25,13 +26,19 @@ export interface Banner {
   img: string;
   imgBase64?: string;
   order?: number;
-  active: boolean;          // nuevo: ocultar/mostrar
-  titleSize?: number;       // nuevo: tamaño fuente título (px)
-  subtitleSize?: number;    // nuevo: tamaño fuente subtítulo (px)
-  btnSize?: number;         // nuevo: tamaño fuente botón (px)
-  btnPaddingX?: number;     // nuevo: padding horizontal botón
-  btnPaddingY?: number;     // nuevo: padding vertical botón
-  btnRadius?: number;       // nuevo: border-radius botón
+  active: boolean;
+  // Visibilidad de campos
+  showTag?: boolean;
+  showTitle?: boolean;
+  showSubtitle?: boolean;
+  showCta?: boolean;
+  // Tamaños
+  titleSize?: number;
+  subtitleSize?: number;
+  btnSize?: number;
+  btnPaddingX?: number;
+  btnPaddingY?: number;
+  btnRadius?: number;
 }
 
 export interface Order {
@@ -83,8 +90,8 @@ export interface DesignConfig {
   brandName: string;
   brandSub: string;
   navLinks: NavLink[];
-  tickerItems: string[];    // nuevo: textos barra negra
-  trustItems: TrustItem[];  // nuevo: textos barra blanca
+  tickerItems: string[];
+  trustItems: TrustItem[];
 }
 
 export interface NavLink {
@@ -96,7 +103,7 @@ export interface NavLink {
 
 export interface TrustItem {
   id: string;
-  icon: string;   // emoji o nombre de icono
+  icon: string;
   text: string;
   active: boolean;
 }
