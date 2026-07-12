@@ -70,7 +70,12 @@ export function CartDrawer({ cart, rate, cartTotal, onRemove, onUpdateQty, onClo
       `👤 ${form.name}`, `📱 ${form.phone}`, `⏰ ${form.time}`,
       `📍 ${form.address}`, `🗺 ${mapsLink}`, `💳 ${form.method}`,
     ].join("\n"));
+    const orderId = Date.now().toString(36);
     onSaveOrder({ cart, total: cartTotal, form, mapsLink });
+    // Notificaciones: push PWA + Telegram
+    import("@/lib/notifications").then(({ notifyNewOrder }) => {
+      notifyNewOrder({ id: orderId, total: cartTotal, cart, form });
+    });
     window.open(`https://wa.me/584120000000?text=${msg}`, "_blank");
   };
 

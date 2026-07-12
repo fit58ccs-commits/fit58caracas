@@ -1,4 +1,5 @@
 "use client";
+import { NotifSettings } from "./NotifSettings";
 import { useState } from "react";
 import {
   RefreshCw, Save, Plus, Trash2, ExternalLink, Upload,
@@ -192,6 +193,14 @@ export function RatesSection({
               </div>
             </div>
           ))}
+        </div>
+
+        {/* ── Notificaciones ── */}
+        <div style={{ gridColumn:"1 / -1" }}>
+          <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-3 flex items-center gap-1.5">
+            🔔 Notificaciones de Pedidos
+          </p>
+          <NotifSettings/>
         </div>
 
       </div>
@@ -470,6 +479,14 @@ export function DesignSection({
           <Btn variant="ghost" onClick={() => F("trustItems",[...(draft.trustItems||[]),{id:genId(),icon:"shield",text:"Nuevo beneficio",active:true}])}>
             <Plus size={13}/> AÑADIR ITEM
           </Btn>
+        </div>
+
+        {/* ── Notificaciones ── */}
+        <div style={{ gridColumn:"1 / -1" }}>
+          <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-3 flex items-center gap-1.5">
+            🔔 Notificaciones de Pedidos
+          </p>
+          <NotifSettings/>
         </div>
 
       </div>
