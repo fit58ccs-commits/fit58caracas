@@ -208,21 +208,24 @@ export function InventoryManager({
     toast("Producto añadido","📦");
   };
 
-  // Descargar plantilla Excel (CSV bien formateado)
+  // Descargar plantilla Excel con formato profesional
   const downloadTemplate = () => {
+    // Genera un CSV con BOM para que Excel lo abra correctamente
+    const bom  = "\uFEFF";
     const rows = [
       ["name","category","desc","price","stock","badge","img"],
-      ["Aceite de Oliva Extra Virgen","Aceites","500ml · Prensado en frío","8.50","48","BESTSELLER","https://url-imagen.com/img.jpg"],
-      ["Café Gourmet Molido","Bebidas","250g · Tueste artesanal","6.00","30","NUEVO",""],
-      ["Miel Pura de Abeja","Dulces","350g · Sin conservantes","7.25","5","BAJO STOCK",""],
+      ["Aceite de Oliva Extra Virgen","Aceites","500ml · Prensado en frío · Cosecha selecta","8.50","48","BESTSELLER","https://url-imagen.com/img.jpg"],
+      ["Café Gourmet Molido","Bebidas","250g · Tueste artesanal · Origen único","6.00","30","NUEVO",""],
+      ["Miel Pura de Abeja","Dulces","350g · Sin conservantes · Cruda","7.25","5","BAJO STOCK",""],
+      ["","","","","","",""],
+      ["","","","","","",""],
+      ["","","","","","",""],
     ];
-    // BOM para que Excel lo abra correctamente con tildes
-    const bom   = "\uFEFF";
-    const csv   = bom + rows.map(r => r.map(v => `"${v}"`).join(",")).join("\r\n");
-    const blob  = new Blob([csv], { type:"text/csv;charset=utf-8;" });
-    const a     = document.createElement("a");
-    a.href      = URL.createObjectURL(blob);
-    a.download  = "plantilla_fit58_productos.csv";
+    const csv  = bom + rows.map(r => r.map(v => `"${v}"`).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+    const a    = document.createElement("a");
+    a.href     = URL.createObjectURL(blob);
+    a.download = "Plantilla_Fit58_Productos.csv";
     a.click();
   };
 
