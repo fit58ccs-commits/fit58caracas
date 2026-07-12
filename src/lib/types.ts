@@ -8,7 +8,20 @@ export interface Product {
   badge?: string | null;
   images: string[];
   img: string;
+  specSheet?: string;   // URL imagen ficha técnica
   createdAt?: string;
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  orderId?: string;
+  author: string;
+  rating: number;       // 1-5
+  comment: string;
+  serviceRating?: number;
+  date: string;
+  approved: boolean;
 }
 
 export interface Banner {
@@ -17,7 +30,7 @@ export interface Banner {
   title: string;
   subtitle: string;
   cta: string;
-  ctaUrl?: string;          // URL/ancla a la que lleva el botón CTA
+  ctaUrl?: string;
   bgColor: string;
   accentColor: string;
   textColor: string;
@@ -27,15 +40,12 @@ export interface Banner {
   imgBase64?: string;
   order?: number;
   active: boolean;
-  // Visibilidad de campos
   showTag?: boolean;
   showTitle?: boolean;
   showSubtitle?: boolean;
   showCta?: boolean;
-  // Posición del contenido en el banner
   contentX?: "left" | "center" | "right";
   contentY?: "top" | "center" | "bottom";
-  // Tamaños
   titleSize?: number;
   subtitleSize?: number;
   btnSize?: number;
@@ -47,11 +57,12 @@ export interface Banner {
 export interface Order {
   id: string;
   date: string;
-  status: "pending" | "processed";
+  status: "pending" | "processed" | "cancelled";
   total: number;
   cart: CartItem[];
   form: OrderForm;
   mapsLink?: string;
+  cancelReason?: string;
 }
 
 export interface CartItem {
@@ -69,11 +80,21 @@ export interface OrderForm {
   address: string;
   method: string;
   receipt?: string | null;
+  lat?: number;
+  lng?: number;
 }
 
 export interface ExchangeRate {
   value: number;
   mode: "bcv" | "euro" | "custom";
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;          // "Pago Móvil", "Zelle", etc.
+  details: string;       // Datos bancarios / número / usuario
+  active: boolean;
+  needsReceipt: boolean; // Si requiere comprobante
 }
 
 export interface DesignConfig {
@@ -95,6 +116,9 @@ export interface DesignConfig {
   navLinks: NavLink[];
   tickerItems: string[];
   trustItems: TrustItem[];
+  categories: string[];          // Categorías editables
+  paymentMethods: PaymentMethod[]; // Métodos de pago con datos
+  whatsappNumber: string;        // Número WhatsApp del negocio
 }
 
 export interface NavLink {

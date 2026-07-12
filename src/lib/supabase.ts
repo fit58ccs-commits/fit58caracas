@@ -80,7 +80,7 @@ export async function sbSaveOrder(order: Order): Promise<boolean> {
 
 export async function sbUpdateOrderStatus(
   id: string,
-  status: "pending" | "processed"
+  status: "pending" | "processed" | "cancelled"
 ): Promise<boolean> {
   const sb = createClient();
   const { error } = await sb

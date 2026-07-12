@@ -306,52 +306,88 @@ export function DesignSection({
             </Select>
             <div className="neumorph mt-3 p-3.5 rounded-xl">
               <p style={{ fontFamily: draft.fontFamily }} className="text-base font-bold text-black mb-1">
-                {draft.brandName || "Délice Gourmet"}
+                {draft.brandName || "Fit +58 Caracas"}
               </p>
               <p style={{ fontFamily: draft.fontFamily }} className="text-xs text-neutral-400">
-                {draft.heroSubtitle || "Productos importados de calidad premium"}
+                {draft.heroSubtitle || "Tu tienda de confianza"}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Texts + Preview */}
-        <div className="glass-card p-6 rounded-2xl">
-          <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-4">Textos Clave & CTA</p>
-          <div className="flex flex-col gap-3.5">
-            {([
-              { k: "heroTitle",    label: "Título Hero" },
-              { k: "heroSubtitle", label: "Subtítulo / Tagline" },
-              { k: "ctaText",      label: "Texto Botón CTA" },
-            ] as const).map(f => (
-              <Field
-                key={f.k} label={f.label}
-                value={(draft[f.k as keyof DesignConfig] as string) || ""}
-                onChange={e => F(f.k as keyof DesignConfig, e.target.value as DesignConfig[typeof f.k])}
-              />
-            ))}
-          </div>
-          <p className="text-[9px] font-black text-neutral-300 tracking-[1.5px] uppercase mt-4 mb-2">Vista Previa en Vivo</p>
-          <div className="neumorph rounded-xl overflow-hidden">
-            <div className="p-5" style={{ background: draft.bgColor, borderLeft: `4px solid ${draft.primaryColor}` }}>
-              <p className="text-[9px] font-black mb-1.5 tracking-[2px] uppercase" style={{ color: draft.secondaryColor }}>
-                NUEVO INGRESO
-              </p>
-              <h3 className="text-xl font-black uppercase leading-tight mb-1.5"
-                style={{ fontFamily: draft.fontFamily, color: draft.textColor }}>
-                {draft.heroTitle}
-              </h3>
-              <p className="text-[11px] mb-3" style={{ fontFamily: draft.fontFamily, color: draft.textColor + "99" }}>
-                {draft.heroSubtitle}
-              </p>
-              <button className="text-[10px] font-black px-5 py-2 rounded-lg text-white border-none cursor-pointer tracking-wide"
-                style={{ background: draft.primaryColor, fontFamily: draft.fontFamily }}>
-                {draft.ctaText}
-              </button>
+
+
+        {/* WhatsApp + Categorías */}
+        <div className="glass-card p-6 rounded-2xl" style={{ gridColumn:"1 / -1" }}>
+          <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-4">WhatsApp & Categorías</p>
+          <div className="grid gap-4" style={{ gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))" }}>
+            <div>
+              <Field label="Número WhatsApp (con código de país)"
+                hint="Ej: 584141013137"
+                value={(draft.whatsappNumber || "")}
+                onChange={e => F("whatsappNumber", e.target.value)}
+                placeholder="584141013137"/>
+              <p className="text-[9px] text-neutral-400 mt-1">Sin +, sin espacios, sin guiones</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-2">Categorías del Catálogo</p>
+              <div className="flex flex-col gap-2 mb-2">
+                {(draft.categories || []).map((cat: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input value={cat}
+                      onChange={e => { const a=[...(draft.categories||[])]; a[idx]=e.target.value; setDraft((d:DesignConfig)=>({...d,categories:a})); }}
+                      className="field-input flex-1 border border-neutral-200/80 px-3 py-2 text-sm bg-white/72 rounded-lg font-[inherit]"/>
+                    <button onClick={() => setDraft((d:DesignConfig)=>({...d,categories:(draft.categories||[]).filter((_:string,i:number)=>i!==idx)}))}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 cursor-pointer bg-transparent border border-red-200/80">
+                      <Trash2 size={13}/>
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <Btn variant="ghost" onClick={() => setDraft((d:DesignConfig)=>({...d,categories:[...(draft.categories||[]),"Nueva categoría"]}))}>
+                <Plus size={13}/> AÑADIR CATEGORÍA
+              </Btn>
             </div>
           </div>
-          <Btn variant="primary" className="mt-4 w-full" onClick={save}>
-            <Save size={13} /> APLICAR Y GUARDAR
+        </div>
+
+        {/* Métodos de Pago */}
+        <div className="glass-card p-6 rounded-2xl" style={{ gridColumn:"1 / -1" }}>
+          <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-1">Métodos de Pago</p>
+          <p className="text-[10px] text-neutral-400 mb-4">El cliente verá los datos de pago al seleccionar el método en el checkout</p>
+          <div className="flex flex-col gap-3 mb-3">
+            {(draft.paymentMethods || []).map((pm: import("@/lib/types").PaymentMethod, idx: number) => (
+              <div key={pm.id} className="glass-card rounded-xl p-4 flex flex-col gap-2"
+                style={{ opacity: pm.active ? 1 : 0.5 }}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <input value={pm.name}
+                    onChange={e => { const a=[...(draft.paymentMethods||[])]; a[idx]={...a[idx],name:e.target.value}; setDraft((d:DesignConfig)=>({...d,paymentMethods:a})); }}
+                    className="field-input flex-1 border border-neutral-200/80 px-3 py-2 text-sm bg-white/72 rounded-lg font-[inherit] font-bold"
+                    placeholder="Nombre del método"/>
+                  <label className="flex items-center gap-1 text-[9px] font-bold text-neutral-500 uppercase cursor-pointer whitespace-nowrap">
+                    <input type="checkbox" checked={pm.active} className="accent-green-600"
+                      onChange={e => { const a=[...(draft.paymentMethods||[])]; a[idx]={...a[idx],active:e.target.checked}; setDraft((d:DesignConfig)=>({...d,paymentMethods:a})); }}/>
+                    Activo
+                  </label>
+                  <label className="flex items-center gap-1 text-[9px] font-bold text-neutral-500 uppercase cursor-pointer whitespace-nowrap">
+                    <input type="checkbox" checked={pm.needsReceipt} className="accent-black"
+                      onChange={e => { const a=[...(draft.paymentMethods||[])]; a[idx]={...a[idx],needsReceipt:e.target.checked}; setDraft((d:DesignConfig)=>({...d,paymentMethods:a})); }}/>
+                    Requiere comprobante
+                  </label>
+                  <button onClick={() => setDraft((d:DesignConfig)=>({...d,paymentMethods:(draft.paymentMethods||[]).filter((_:import("@/lib/types").PaymentMethod,i:number)=>i!==idx)}))}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 cursor-pointer bg-transparent border border-red-200/80">
+                    <Trash2 size={13}/>
+                  </button>
+                </div>
+                <textarea value={pm.details} rows={3}
+                  onChange={e => { const a=[...(draft.paymentMethods||[])]; a[idx]={...a[idx],details:e.target.value}; setDraft((d:DesignConfig)=>({...d,paymentMethods:a})); }}
+                  className="field-input w-full border border-neutral-200/80 px-3 py-2 text-sm bg-white/72 rounded-lg font-[inherit] resize-none"
+                  placeholder={"Banco: Banesco\nNúmero: 04XX-XXXXXXX\nNombre: Tu Nombre\nCédula: V-XXXXXXXX"}/>
+              </div>
+            ))}
+          </div>
+          <Btn variant="ghost" onClick={() => setDraft((d:DesignConfig)=>({...d,paymentMethods:[...(draft.paymentMethods||[]),{id:genId(),name:"Nuevo método",details:"",active:true,needsReceipt:false}]}))}>
+            <Plus size={13}/> AÑADIR MÉTODO DE PAGO
           </Btn>
         </div>
 

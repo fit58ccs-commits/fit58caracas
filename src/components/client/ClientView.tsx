@@ -5,7 +5,7 @@ import { Navbar }                          from "./Navbar";
 import { HeroBanner }                      from "./HeroBanner";
 import { ProductCard, ProductDetailModal } from "./ProductCard";
 import { CartDrawer }                      from "./CartDrawer";
-import { CATEGORIES, DEFAULT_TICKER_ITEMS, DEFAULT_TRUST_ITEMS } from "@/lib/data";
+import { DEFAULT_TICKER_ITEMS, DEFAULT_TRUST_ITEMS } from "@/lib/data";
 import { fmt$, fmtBs }                    from "@/lib/store";
 import type { Product }                    from "@/lib/types";
 import type { useAppStore }               from "@/lib/store";
@@ -96,7 +96,7 @@ export function ClientView({ store }: { store: Store }) {
 
         {/* Category pills */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
-          {CATEGORIES.map(cat => (
+          {["Todos", ...(store.design.categories || ["Aceites","Bebidas","Dulces","Frutos","Pastas"])].map(cat => (
             <button key={cat} onClick={() => setCategory(cat)}
               className="cat-pill px-4 py-1.5 rounded-full text-[10px] md:text-[11px] font-bold tracking-wide uppercase whitespace-nowrap shrink-0 cursor-pointer"
               style={{
@@ -266,7 +266,8 @@ export function ClientView({ store }: { store: Store }) {
       {cartOpen && (
         <CartDrawer cart={store.cart} rate={store.rate.value} cartTotal={store.cartTotal}
           onRemove={store.removeFromCart} onUpdateQty={store.updateCartQty}
-          onClose={() => setCartOpen(false)} onSaveOrder={store.saveOrder}/>
+          onClose={() => setCartOpen(false)} onSaveOrder={store.saveOrder}
+          design={{ whatsappNumber: store.design.whatsappNumber, paymentMethods: store.design.paymentMethods }}/>
       )}
     </div>
   );
