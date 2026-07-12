@@ -255,6 +255,8 @@ function dbToBanner(row: Record<string, unknown>): Banner {
     showTitle:    row.show_title    !== false,
     showSubtitle: row.show_subtitle !== false,
     showCta:      row.show_cta      !== false,
+    contentX:     (row.content_x as 'left'|'center'|'right') ?? 'left',
+    contentY:     (row.content_y as 'top'|'center'|'bottom') ?? 'center',
     titleSize:    Number(row.title_size    ?? 64),
     subtitleSize: Number(row.subtitle_size ?? 14),
     btnSize:      Number(row.btn_size      ?? 11),
@@ -284,6 +286,8 @@ function bannerToDb(b: Partial<Banner>): Record<string, unknown> {
   if (b.showTitle    !== undefined) out.show_title     = b.showTitle;
   if (b.showSubtitle !== undefined) out.show_subtitle  = b.showSubtitle;
   if (b.showCta      !== undefined) out.show_cta       = b.showCta;
+  if (b.contentX    !== undefined) out.content_x      = b.contentX;
+  if (b.contentY    !== undefined) out.content_y      = b.contentY;
   if (b.titleSize    !== undefined) out.title_size     = b.titleSize;
   if (b.subtitleSize !== undefined) out.subtitle_size  = b.subtitleSize;
   if (b.btnSize      !== undefined) out.btn_size       = b.btnSize;

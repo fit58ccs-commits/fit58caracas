@@ -358,6 +358,33 @@ function BannerEditModal({ banner, isNew, onSave, onClose }: {
           <Slider label="Padding horiz" value={draft.btnPaddingX??24} min={8}  max={60} onChange={v=>F("btnPaddingX",v)}/>
           <Slider label="Padding vert"  value={draft.btnPaddingY??12} min={4}  max={32} onChange={v=>F("btnPaddingY",v)}/>
           <Slider label="Redondeo (px)" value={draft.btnRadius??10}   min={0}  max={40} onChange={v=>F("btnRadius",v)}/>
+
+          {/* Posición del contenido */}
+          <p className="text-[9px] font-black text-neutral-300 tracking-[2px] uppercase mt-3 m-0">Posición del Contenido</p>
+          <div className="glass-card rounded-xl p-3">
+            <p className="text-[9px] text-neutral-400 mb-2">Mueve el texto y botones dentro del banner para cubrir el espacio que prefieras</p>
+
+            {/* Grid visual 3×3 */}
+            <div className="grid gap-1 mb-3" style={{ gridTemplateColumns:"repeat(3,1fr)", gridTemplateRows:"repeat(3,1fr)" }}>
+              {(["top","center","bottom"] as const).map(y =>
+                (["left","center","right"] as const).map(x => {
+                  const active = (draft.contentX??"left")===x && (draft.contentY??"center")===y;
+                  return (
+                    <button key={`${y}-${x}`}
+                      onClick={()=>{ setDraft(d=>({...d, contentX:x, contentY:y})); }}
+                      className="h-10 rounded-lg border-none cursor-pointer transition-all flex items-center justify-center"
+                      style={{ background:active?"rgba(17,17,17,0.88)":"rgba(240,242,245,0.8)", color:active?"#fff":"#bbb" }}
+                      title={`${y} ${x}`}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:"currentColor" }}/>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            <p className="text-[9px] text-neutral-400">
+              Posición actual: <strong className="text-neutral-600">{draft.contentY??"center"} · {draft.contentX??"left"}</strong>
+            </p>
+          </div>
         </div>
       </div>
     </Modal>

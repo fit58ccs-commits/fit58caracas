@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Sparkles, ArrowRight, Shield, Truck, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from "lucide-react";
 import type { Banner } from "@/lib/types";
 
 export function HeroBanner({ banners }: { banners: Banner[] }) {
@@ -12,7 +12,7 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
     return () => clearInterval(t);
   }, [banners.length]);
 
-  const title = (slide.title || "").replace(/\\n/g, "\n").replace(/\\\\n/g, "\n");
+  const title        = (slide.title || "").replace(/\\n/g, "\n");
   const showTag      = slide.showTag      !== false;
   const showTitle    = slide.showTitle    !== false;
   const showSubtitle = slide.showSubtitle !== false;
@@ -24,12 +24,24 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
   const btnPaddingY  = slide.btnPaddingY  ?? 12;
   const btnRadius    = slide.btnRadius    ?? 10;
 
+  // Posición del contenido: por defecto izquierda-centro
+  const posX = (slide as Banner & { contentX?: string }).contentX ?? "left";
+  const posY = (slide as Banner & { contentY?: string }).contentY ?? "center";
+
+  const alignMap: Record<string, string> = {
+    left: "flex-start", center: "center", right: "flex-end"
+  };
+  const justifyMap: Record<string, string> = {
+    top: "flex-start", center: "center", bottom: "flex-end"
+  };
+
   const handleCta = () => {
-    if (slide.ctaUrl) {
-      if (slide.ctaUrl.startsWith("#")) {
-        document.getElementById(slide.ctaUrl.slice(1))?.scrollIntoView({ behavior: "smooth" });
+    const url = (slide as Banner & { ctaUrl?: string }).ctaUrl;
+    if (url) {
+      if (url.startsWith("#")) {
+        document.getElementById(url.slice(1))?.scrollIntoView({ behavior: "smooth" });
       } else {
-        window.open(slide.ctaUrl, "_blank");
+        window.open(url, "_blank");
       }
     } else {
       document.getElementById("tienda")?.scrollIntoView({ behavior: "smooth" });
@@ -38,18 +50,14 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
 
   return (
     <section className="relative overflow-hidden"
-      style={{
-        /* Móvil: altura fija compacta; tablet+: más alta */
-        minHeight: "clamp(200px, 45vw, 500px)",
-      }}>
+      style={{ minHeight: "clamp(200px, 44vw, 500px)" }}>
 
       {/* Fondo color */}
-      <div className="absolute inset-0 z-[0] transition-colors duration-700"
-        style={{ background: slide.bgColor }}/>
+      <div className="absolute inset-0 z-[0]" style={{ background: slide.bgColor }}/>
 
       {/* Imagen full-cover */}
       {slide.img && (
-        <div key={`bg-${idx}`} className="absolute inset-0 z-[1]"
+        <div key={`bg-${idx}-${slide.img}`} className="absolute inset-0 z-[1]"
           style={{
             backgroundImage:    `url(${slide.img})`,
             backgroundSize:     "cover",
@@ -58,33 +66,40 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
           }}/>
       )}
 
-      {/* Overlay degradado */}
-      <div className="absolute inset-0 z-[2]"
-        style={{
-          background: slide.img
-            ? `linear-gradient(90deg, ${slide.bgColor}f0 0%, ${slide.bgColor}cc 40%, ${slide.bgColor}55 70%, ${slide.bgColor}11 100%)`
-            : slide.bgColor,
-        }}/>
+      {/* Overlay degradado — solo si hay imagen */}
+      {slide.img && (
+        <div className="absolute inset-0 z-[2]"
+          style={{
+            background: posX === "right"
+              ? `linear-gradient(270deg, ${slide.bgColor}f0 0%, ${slide.bgColor}bb 40%, ${slide.bgColor}44 70%, transparent 100%)`
+              : `linear-gradient(90deg, ${slide.bgColor}f0 0%, ${slide.bgColor}bb 40%, ${slide.bgColor}44 70%, transparent 100%)`,
+          }}/>
+      )}
 
-      {/* Barra acento */}
+      {/* Barra acento izquierda */}
       <div className="absolute left-0 top-0 bottom-0 w-1 md:w-1.5 z-[3]"
         style={{ background: slide.accentColor }}/>
 
-      {/* Contenido */}
-      <div className="relative z-[3] max-w-[1280px] mx-auto flex items-center"
+      {/* Contenido — posicionable */}
+      <div className="absolute inset-0 z-[3] flex"
         style={{
-          minHeight: "clamp(200px, 45vw, 500px)",
-          padding: "clamp(20px, 4vw, 48px) clamp(20px, 4vw, 40px)",
+          alignItems:     justifyMap[posY] || "center",
+          justifyContent: alignMap[posX]  || "flex-start",
+          padding:        "clamp(20px, 4vw, 56px) clamp(24px, 5vw, 72px)",
         }}>
 
-        <div key={`txt-${idx}`} style={{ maxWidth: "min(520px, 90%)" }}>
+        <div key={`txt-${idx}`}
+          style={{
+            maxWidth:  "min(520px, 88%)",
+            textAlign: posX === "center" ? "center" : "left",
+          }}>
 
           {/* Tag */}
           {showTag && slide.tag && (
             <div className="inline-flex items-center gap-1.5 text-white font-black mb-3"
               style={{
                 background:    slide.accentColor,
-                fontSize:      "clamp(7px, 1.5vw, 9px)",
+                fontSize:      "clamp(7px, 1.4vw, 9px)",
                 letterSpacing: "2.5px",
                 padding:       "4px 10px",
               }}>
@@ -93,14 +108,14 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
           )}
 
           {/* Título */}
-          {showTitle && (
+          {showTitle && title && (
             <h1 className="font-black uppercase whitespace-pre-line"
               style={{
-                fontSize:      `clamp(24px, ${titleSize * 0.06}vw + 16px, ${titleSize}px)`,
-                lineHeight:    0.88,
+                fontSize:      `clamp(22px, ${titleSize * 0.055}vw + 14px, ${titleSize}px)`,
+                lineHeight:    0.9,
                 letterSpacing: "-1px",
                 color:         slide.textColor,
-                margin:        "0 0 clamp(6px,1.5vw,16px) 0",
+                margin:        "0 0 clamp(6px, 1.5vw, 14px)",
               }}>
               {title}
             </h1>
@@ -109,26 +124,26 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
           {/* Subtítulo */}
           {showSubtitle && slide.subtitle && (
             <p style={{
-              fontSize:  `clamp(11px, ${subtitleSize * 0.04}vw + 8px, ${subtitleSize}px)`,
-              color:     slide.textColor + "aa",
+              fontSize:   `clamp(10px, ${subtitleSize * 0.038}vw + 8px, ${subtitleSize}px)`,
+              color:      slide.textColor + "aa",
               lineHeight: 1.5,
-              margin:    "0 0 clamp(12px,2.5vw,28px) 0",
-              maxWidth:  340,
+              margin:     "0 0 clamp(10px, 2.5vw, 24px)",
+              maxWidth:   posX === "center" ? "100%" : 360,
             }}>
               {slide.subtitle}
             </p>
           )}
 
-          {/* Botones */}
+          {/* Botones CTA */}
           {showCta && (
             <div className="flex gap-2 flex-wrap"
-              style={{ marginBottom: "clamp(8px,2vw,24px)" }}>
+              style={{ justifyContent: posX === "center" ? "center" : "flex-start" }}>
               <button onClick={handleCta}
                 className="flex items-center gap-2 font-black uppercase border border-white/10 transition-all"
                 style={{
-                  fontSize:      `clamp(8px, ${btnSize * 0.04}vw + 6px, ${btnSize}px)`,
+                  fontSize:      `clamp(8px, ${btnSize * 0.035}vw + 7px, ${btnSize}px)`,
                   letterSpacing: "1.2px",
-                  padding:       `${Math.round(btnPaddingY * 0.75)}px ${Math.round(btnPaddingX * 0.75)}px`,
+                  padding:       `${Math.round(btnPaddingY * 0.8)}px ${Math.round(btnPaddingX * 0.8)}px`,
                   borderRadius:  btnRadius,
                   background:    slide.btnColor,
                   color:         slide.btnTextColor,
@@ -141,9 +156,9 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
                 onClick={() => document.getElementById("tienda")?.scrollIntoView({ behavior:"smooth" })}
                 className="glass-card font-bold uppercase cursor-pointer"
                 style={{
-                  fontSize:      `clamp(8px, ${btnSize * 0.04}vw + 6px, ${btnSize}px)`,
+                  fontSize:      `clamp(8px, ${btnSize * 0.035}vw + 7px, ${btnSize}px)`,
                   letterSpacing: "1px",
-                  padding:       `${Math.round(btnPaddingY * 0.75)}px ${Math.round(btnPaddingX * 0.6)}px`,
+                  padding:       `${Math.round(btnPaddingY * 0.8)}px ${Math.round(btnPaddingX * 0.65)}px`,
                   borderRadius:  btnRadius,
                   color:         slide.textColor,
                   border:        "1px solid rgba(255,255,255,0.5)",
@@ -152,27 +167,6 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
               </button>
             </div>
           )}
-
-          {/* Trust badges — solo desktop */}
-          <div className="hidden md:flex gap-3 flex-wrap">
-            {[
-              { icon:<Shield size={10}/>,    text:"Certificado"  },
-              { icon:<Truck size={10}/>,     text:"Envío rápido" },
-              { icon:<RotateCcw size={10}/>, text:"Garantía"     },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-1.5 font-semibold rounded-full"
-                style={{
-                  fontSize:       10,
-                  padding:        "5px 12px",
-                  background:     "rgba(255,255,255,0.55)",
-                  backdropFilter: "blur(8px)",
-                  border:         "1px solid rgba(255,255,255,0.5)",
-                  color:          slide.textColor,
-                }}>
-                {icon}{text}
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -185,7 +179,7 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
         ))}
       </div>
 
-      {/* Flechas — solo desktop */}
+      {/* Flechas desktop */}
       {[
         { dir:"left",  fn:()=>setIdx(i=>(i-1+banners.length)%banners.length), icon:<ChevronLeft size={16}/> },
         { dir:"right", fn:()=>setIdx(i=>(i+1)%banners.length),                icon:<ChevronRight size={16}/> },

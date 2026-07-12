@@ -32,6 +32,9 @@ export interface Banner {
   showTitle?: boolean;
   showSubtitle?: boolean;
   showCta?: boolean;
+  // Posición del contenido en el banner
+  contentX?: "left" | "center" | "right";
+  contentY?: "top" | "center" | "bottom";
   // Tamaños
   titleSize?: number;
   subtitleSize?: number;
