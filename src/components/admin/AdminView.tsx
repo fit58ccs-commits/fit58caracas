@@ -6,6 +6,7 @@ import { BannerManager }    from "./BannerManager";
 import { InventoryManager } from "./InventoryManager";
 import { OrdersManager }    from "./OrdersManager";
 import { RatesSection, DesignSection } from "./RatesDesign";
+import { BIModule }         from "./BIModule";
 import { SAMPLE_PRODUCTS, DEFAULT_BANNERS } from "@/lib/data";
 import type { Banner }      from "@/lib/types";
 import type { useAppStore } from "@/lib/store";
@@ -63,6 +64,9 @@ export function AdminView({ store, userEmail, onSignOut }: {
       )}
       {section === "design" && (
         <DesignSection design={store.design} onSave={store.setDesign}/>
+      )}
+      {section === "bi" && (
+        <BIModule orders={store.orders} products={store.products} rate={store.rate.value}/>
       )}
     </AdminShell>
   );

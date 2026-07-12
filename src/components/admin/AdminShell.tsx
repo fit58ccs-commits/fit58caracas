@@ -1,9 +1,9 @@
 "use client";
-import { LayoutDashboard, Package, ClipboardList, TrendingUp, Palette, Image, Search, Menu, X, Star, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ClipboardList, TrendingUp, Palette, Image, Search, Menu, X, Star, LogOut, BarChart2 } from "lucide-react";
 import { useState } from "react";
 import type { DesignConfig } from "@/lib/types";
 
-export type AdminSection = "dashboard" | "banners" | "inventory" | "orders" | "rates" | "design";
+export type AdminSection = "dashboard" | "banners" | "inventory" | "orders" | "rates" | "design" | "bi";
 
 const NAV: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: "dashboard", label: "Dashboard",  icon: <LayoutDashboard size={16} /> },
@@ -12,6 +12,7 @@ const NAV: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: "orders",    label: "Pedidos",    icon: <ClipboardList size={16} /> },
   { id: "rates",     label: "Tasas",      icon: <TrendingUp size={16} /> },
   { id: "design",    label: "Diseño",     icon: <Palette size={16} /> },
+  { id: "bi",        label: "BI",         icon: <BarChart2 size={16} /> },
 ];
 
 interface ShellProps {
