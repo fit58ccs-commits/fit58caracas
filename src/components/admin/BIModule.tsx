@@ -1,7 +1,7 @@
 "use client";
 /**
  * BIModule.tsx — Inteligencia de Negocios
- * Integrado al admin panel de Délice Gourmet
+ * Integrado al admin panel de Fit +58 Caracas
  * Fuente de datos: store (orders + products)
  */
 import { useState, useMemo } from "react";
@@ -318,7 +318,7 @@ interface Goal { id: string; label: string; period: string; target: number; kpi:
 
 function MetasTab({ orders }: { orders: Order[] }) {
   const [goals, setGoals] = useState<Goal[]>(() => {
-    try { return JSON.parse(localStorage.getItem("delice_bi_goals") || "[]"); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem("fit58_bi_goals") || "[]"); } catch { return []; }
   });
   const [form, setForm] = useState({ label:"", period: currentMonth(), target:"", kpi:"income" as Goal["kpi"] });
 
@@ -326,14 +326,14 @@ function MetasTab({ orders }: { orders: Order[] }) {
     if (!form.label || !form.period || !form.target) return;
     const newGoals = [...goals, { id: Date.now().toString(36), ...form, target: parseFloat(form.target) }];
     setGoals(newGoals);
-    localStorage.setItem("delice_bi_goals", JSON.stringify(newGoals));
+    localStorage.setItem("fit58_bi_goals", JSON.stringify(newGoals));
     setForm(f => ({ ...f, label:"", target:"" }));
   };
 
   const del = (id: string) => {
     const ng = goals.filter(g => g.id !== id);
     setGoals(ng);
-    localStorage.setItem("delice_bi_goals", JSON.stringify(ng));
+    localStorage.setItem("fit58_bi_goals", JSON.stringify(ng));
   };
 
   const getActual = (g: Goal) => {
@@ -581,6 +581,9 @@ function AlertasTab({ orders, products }: { orders: Order[]; products: Product[]
 export function BIModule({ orders, products, rate }: Props) {
   const [tab, setTab] = useState<BITab>("kpis");
 
+  // Excluir pedidos anulados de todos los calculos de BI
+  const activeOrders = orders.filter(o => o.status !== "cancelled");
+
   const TABS: { key: BITab; label: string }[] = [
     { key:"kpis",        label:"📊 KPIs"        },
     { key:"metas",       label:"🎯 Metas"        },
@@ -595,7 +598,7 @@ export function BIModule({ orders, products, rate }: Props) {
       <div>
         <h1 className="text-2xl font-black text-black uppercase tracking-tight m-0">Inteligencia de Negocios</h1>
         <p className="text-xs text-neutral-400 mt-1">
-          {orders.length} pedidos · {products.length} productos en catálogo
+          {activeOrders.length} pedidos activos · {orders.filter(o=>o.status==="cancelled").length} anulados · {products.length} productos
         </p>
       </div>
 
@@ -605,11 +608,11 @@ export function BIModule({ orders, products, rate }: Props) {
       </div>
 
       {/* Content */}
-      {tab === "kpis"       && <KPIsTab       orders={orders}/>}
-      {tab === "metas"      && <MetasTab      orders={orders}/>}
-      {tab === "tendencias" && <TendenciasTab orders={orders} products={products}/>}
-      {tab === "alertas"    && <AlertasTab    orders={orders} products={products}/>}
-      {tab === "cierre"     && <CierreCaja    orders={orders}/>}
+      {tab === "kpis"       && <KPIsTab       orders={activeOrders}/>}
+      {tab === "metas"      && <MetasTab      orders={activeOrders}/>}
+      {tab === "tendencias" && <TendenciasTab orders={activeOrders} products={products}/>}
+      {tab === "alertas"    && <AlertasTab    orders={activeOrders} products={products}/>}
+      {tab === "cierre"     && <CierreCaja    orders={activeOrders}/>}
     </div>
   );
 }

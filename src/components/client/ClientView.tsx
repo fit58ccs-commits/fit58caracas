@@ -29,6 +29,7 @@ export function ClientView({ store }: { store: Store }) {
   const [activeNav,       setActiveNav]       = useState("Tienda");
 
   const filtered = store.products.filter(p => {
+    if (p.stock <= 0) return false; // ocultar sin stock
     const matchSearch = !search
       || p.name.toLowerCase().includes(search.toLowerCase())
       || p.category.toLowerCase().includes(search.toLowerCase());

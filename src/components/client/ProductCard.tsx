@@ -108,11 +108,7 @@ export function ProductCard({
           <span className="text-[10px] text-neutral-400">{fmtBs(product.price, rate)}</span>
         </div>
 
-        {lowStock && (
-          <p className="text-[9px] font-bold text-red-500 flex items-center gap-1">
-            <AlertCircle size={9}/> Solo {product.stock} disponibles
-          </p>
-        )}
+        {/* No mostrar stock al cliente */}
 
         <button key={addKey} onClick={()=>{setAddKey(k=>k+1);onAdd();}}
           className={`${addKey>0?"animate-cart-pop":""} mt-auto flex items-center justify-center gap-1.5 py-2.5 text-[9px] md:text-[10px] font-black tracking-[1.2px] uppercase rounded-lg transition-all duration-200 border cursor-pointer`}
@@ -227,9 +223,9 @@ export function ProductDetailModal({
                     <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
                     <span className="text-sm text-neutral-400">{fmtBs(product.price, rate)}</span>
                   </div>
-                  {product.stock<=8 && product.stock>0 && (
+                  {product.stock <= 0 && (
                     <p className="text-[10px] text-red-500 font-bold mt-1.5 flex items-center gap-1">
-                      <AlertCircle size={10}/> Solo {product.stock} unidades disponibles
+                      <AlertCircle size={10}/> Agotado
                     </p>
                   )}
                 </div>
