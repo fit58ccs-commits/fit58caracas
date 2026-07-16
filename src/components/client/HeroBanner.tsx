@@ -152,19 +152,7 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
                 }}>
                 {slide.cta} <ArrowRight size={11}/>
               </button>
-              <button
-                onClick={() => document.getElementById("tienda")?.scrollIntoView({ behavior:"smooth" })}
-                className="glass-card font-bold uppercase cursor-pointer"
-                style={{
-                  fontSize:      `clamp(8px, ${btnSize * 0.035}vw + 7px, ${btnSize}px)`,
-                  letterSpacing: "1px",
-                  padding:       `${Math.round(btnPaddingY * 0.8)}px ${Math.round(btnPaddingX * 0.65)}px`,
-                  borderRadius:  btnRadius,
-                  color:         slide.textColor,
-                  border:        "1px solid rgba(255,255,255,0.5)",
-                }}>
-                VER CATÁLOGO
-              </button>
+
             </div>
           )}
         </div>

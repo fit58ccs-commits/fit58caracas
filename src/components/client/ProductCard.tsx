@@ -57,10 +57,10 @@ export function ProductCard({
       </button>
 
       {/* Image */}
-      <div className="neumorph-inset bg-[#f0f2f5] flex items-center justify-center h-[180px] md:h-[200px] overflow-hidden relative cursor-pointer" onClick={onDetail}>
+      <div className="relative overflow-hidden cursor-pointer" style={{height:220}} onClick={onDetail}>
         <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
           onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-          className="w-32 h-32 md:w-36 md:h-36 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.12)]"/>
+          className="w-full h-full object-cover"/>
         {images.length > 1 && (
           <>
             <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+images.length)%images.length);}}

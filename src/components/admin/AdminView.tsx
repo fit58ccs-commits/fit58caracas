@@ -5,6 +5,7 @@ import { BannerManager }    from "./BannerManager";
 import { InventoryManager } from "./InventoryManager";
 import { OrdersManager }    from "./OrdersManager";
 import { ReviewsManager }   from "./ReviewsManager";
+import { PurchasesManager } from "./PurchasesManager";
 import { RatesSection, DesignSection } from "./RatesDesign";
 import { BIModule }         from "./BIModule";
 import { SAMPLE_PRODUCTS, DEFAULT_BANNERS } from "@/lib/data";
@@ -50,6 +51,16 @@ export function AdminView({ store, userEmail, onSignOut }: {
           onUpdate={(id, data) => store.updateProduct(id, data)}
           onDelete={store.deleteProduct}
           onReset={() => store.setProducts(() => SAMPLE_PRODUCTS)}/>
+      )}
+      {section === "purchases" && (
+        <PurchasesManager
+          purchases={store.purchases}
+          products={store.products}
+          onAdd={store.addPurchase}
+          onDelete={store.deletePurchase}
+          onAddStock={(productId, qty) => store.updateProduct(productId, {
+            stock: (store.products.find(p=>p.id===productId)?.stock||0) + qty
+          })}/>
       )}
       {section === "orders" && (
         <OrdersManager orders={store.orders} search={search} rate={store.rate.value}

@@ -11,6 +11,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import type { Product, Banner, Order, ExchangeRate, DesignConfig, CartItem, Review } from "./types";
+import type { Purchase } from "@/components/admin/PurchasesManager";
 import { SAMPLE_PRODUCTS, DEFAULT_BANNERS, DEFAULT_DESIGN } from "./data";
 import {
   sbGetProducts, sbAddProduct, sbUpdateProduct, sbDeleteProduct,
@@ -64,6 +65,7 @@ export function useAppStore() {
   const [design,    setDesignState]    = useState<DesignConfig>(() => LS.get("design", DEFAULT_DESIGN));
   const [banners,   setBannersState]   = useState<Banner[]>(() => LS.get("banners", DEFAULT_BANNERS));
   const [reviews,   setReviewsState]   = useState<Review[]>(() => LS.get("reviews", []));
+  const [purchases, setPurchasesState] = useState<Purchase[]>(() => LS.get("purchases", []));
   const [loading,   setLoading]        = useState(true);
 
   // ── Carga inicial desde Supabase ─────────────────────────────────────────
@@ -224,7 +226,16 @@ export function useAppStore() {
     await sbSetDesign(d);
   }, []);
 
-  useEffect(() => { LS.set("reviews", reviews); }, [reviews]);
+  useEffect(() => { LS.set("reviews",   reviews);   }, [reviews]);
+  useEffect(() => { LS.set("purchases", purchases); }, [purchases]);
+
+  const addPurchase = useCallback((p: Purchase) => {
+    setPurchasesState(prev => [p, ...prev]);
+  }, []);
+
+  const deletePurchase = useCallback((id: string) => {
+    setPurchasesState(prev => prev.filter(p => p.id !== id));
+  }, []);
 
   const addReview = useCallback((r: Omit<Review, "id" | "date" | "approved">) => {
     const newR: Review = { ...r, id: genId(), date: new Date().toISOString(), approved: false };
@@ -271,7 +282,7 @@ export function useAppStore() {
 
   return {
     // estado
-    products, orders, rate, rateBCV, cart, wishlist, design, banners, reviews,
+    products, orders, rate, rateBCV, cart, wishlist, design, banners, reviews, purchases,
     cartTotal, cartCount, loading,
     // productos
     setProducts, addProduct, updateProduct, deleteProduct,
@@ -285,6 +296,8 @@ export function useAppStore() {
     setRate, setRateBCV,
     // diseño
     setDesign,
+    // compras
+    addPurchase, deletePurchase,
     // reseñas
     addReview, approveReview, rejectReview, deleteReview,
     // banners
