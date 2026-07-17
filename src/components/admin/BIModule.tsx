@@ -21,7 +21,7 @@ interface Props {
 type BITab = "kpis" | "metas" | "tendencias" | "alertas" | "cierre";
 
 /* ── Helpers ─────────────────────────────────────────────── */
-const fmt$ = (n: number) => `$${Number(n || 0).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt$ = (n: number) => `€${Number(n || 0).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtN = (n: number) => Number(n || 0).toLocaleString("es-VE", { minimumFractionDigits: 0 });
 
 function getMonthKey(dateStr: string) {

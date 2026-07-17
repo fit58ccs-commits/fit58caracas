@@ -344,10 +344,10 @@ export function PurchasesManager({ purchases, products, onAdd, onDelete, onAddSt
             <Field label={`Cantidad ${form.type==="inventory"?"(unidades a entrar)":"(opcional)"}`}
               type="number" min="0" value={form.qty||""} onChange={e=>F("qty",parseInt(e.target.value)||0)}/>
 
-            <Field label="Costo unitario ($)" type="number" step="0.01" min="0"
+            <Field label="Costo unitario (€)" type="number" step="0.01" min="0"
               value={form.unitCost||""} onChange={e=>F("unitCost",parseFloat(e.target.value)||0)}/>
 
-            <Field label="Total pagado ($) *" type="number" step="0.01" min="0"
+            <Field label="Total pagado (€) *" type="number" step="0.01" min="0"
               value={form.total||""} onChange={e=>F("total",parseFloat(e.target.value)||0)}
               hint={form.qty&&form.unitCost?`Auto: ${fmt$(form.qty*form.unitCost)}`:""}/>
 
