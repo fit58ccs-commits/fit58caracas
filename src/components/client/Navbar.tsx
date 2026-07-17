@@ -13,10 +13,8 @@ interface NavbarProps {
 
 // Estos enlaces son fijos — no se editan desde el panel admin
 const FIXED_NAV = [
-  { id:"n1", label:"Inicio",           href:"#inicio"           },
-  { id:"n2", label:"Tienda",           href:"#tienda"           },
-  { id:"n3", label:"Especificaciones", href:"#especificaciones" },
-  { id:"n4", label:"Reseñas",          href:"#resenas"          },
+  { id:"n2", label:"Tienda",  href:"#tienda"  },
+  { id:"n4", label:"Reseñas", href:"#resenas" },
 ];
 
 export function Navbar({ design, cartCount, search, onSearch, onCartOpen }: NavbarProps) {
