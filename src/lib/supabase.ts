@@ -268,7 +268,7 @@ function productToDb(p: Partial<Product>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (p.name      !== undefined) out.name      = p.name;
   if (p.category  !== undefined) out.category  = p.category;
-  if (p.desc      !== undefined) out['"desc"']  = p.desc;
+  if (p.desc      !== undefined) out.desc      = p.desc;
   if (p.price     !== undefined) out.price     = p.price;
   if (p.stock     !== undefined) out.stock     = p.stock;
   if (p.badge     !== undefined) out.badge     = p.badge;
