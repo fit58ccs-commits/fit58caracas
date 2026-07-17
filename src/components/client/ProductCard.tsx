@@ -44,56 +44,43 @@ export function ProductCard({
   }[b] ?? "bg-neutral-700/85");
 
   return (
-    <div className="prod-card glass-card rounded-2xl flex flex-col relative overflow-hidden">
+    <div className="prod-card bg-white border border-neutral-200/80 rounded-xl flex flex-col relative overflow-hidden hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-shadow">
       {product.badge && (
-        <div className={`${badgeColor(product.badge)} animate-badge-pulse absolute top-3.5 left-3.5 z-[3] text-white text-[8px] font-black tracking-[1.5px] uppercase px-2.5 py-1 rounded-md backdrop-blur-sm`}>
+        <div className={`${badgeColor(product.badge)} absolute top-3 left-3 z-[3] text-white text-[8px] font-black tracking-[1.5px] uppercase px-2 py-1 rounded-md`}>
           {product.badge}
         </div>
       )}
       <button key={heartKey}
         onClick={e => { e.stopPropagation(); setHeartKey(k => k+1); onWishlist(); }}
-        className={`${heartKey>0?"animate-heart-pop":""} absolute top-3 right-3 z-[3] w-8 h-8 rounded-full bg-white/82 backdrop-blur-xl border border-white/70 flex items-center justify-center cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.10)]`}>
-        <Heart size={14} color={wishlisted?"#e53e3e":"#bbb"} fill={wishlisted?"#e53e3e":"none"}/>
+        className={`${heartKey>0?"animate-heart-pop":""} absolute top-3 right-3 z-[3] w-7 h-7 rounded-full bg-white border border-neutral-200/80 flex items-center justify-center cursor-pointer`}>
+        <Heart size={13} color={wishlisted?"#e53e3e":"#bbb"} fill={wishlisted?"#e53e3e":"none"}/>
       </button>
 
-      {/* Image */}
-      <div className="relative overflow-hidden cursor-pointer" style={{height:220}} onClick={onDetail}>
+      {/* Image — imagen completa sobre blanco, sin recorte */}
+      <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height:220}} onClick={onDetail}>
         <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
           onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-          className="w-full h-full object-cover"/>
+          className="max-w-full max-h-full object-contain"/>
         {images.length > 1 && (
           <>
             <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+images.length)%images.length);}}
-              className="absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/85 border border-neutral-200/70 flex items-center justify-center cursor-pointer z-[2]">
+              className="absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-neutral-200/70 flex items-center justify-center cursor-pointer z-[2]">
               <ChevronLeft size={12}/>
             </button>
             <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i+1)%images.length);}}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/85 border border-neutral-200/70 flex items-center justify-center cursor-pointer z-[2]">
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-neutral-200/70 flex items-center justify-center cursor-pointer z-[2]">
               <ChevronRight size={12}/>
             </button>
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/45 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full z-[2]">
-              {imgIdx+1}/{images.length}
-            </div>
           </>
         )}
       </div>
 
-      {/* Info */}
-      <div className="p-3 md:p-4 flex flex-col gap-1 flex-1 bg-white/55">
+      {/* Info — minimalista: sin descripción */}
+      <div className="p-3 md:p-4 flex flex-col gap-1.5 flex-1 bg-white border-t border-neutral-100">
         <p className="text-[9px] font-bold text-neutral-400 tracking-[1.5px] uppercase m-0">{product.category}</p>
         <h3 className="text-[12px] md:text-[13px] font-black text-black uppercase tracking-wide m-0 leading-snug cursor-pointer" onClick={onDetail}>
           {product.name}
         </h3>
-
-        {/* Descripción — máx 2 líneas + Leer más */}
-        <div className="text-[10px] md:text-[11px] text-neutral-400 leading-relaxed">
-          <span className="line-clamp-2">{product.desc}</span>
-          {product.desc && product.desc.length > 60 && (
-            <button onClick={onDetail} className="text-[10px] font-bold text-black border-none bg-none cursor-pointer p-0 ml-1">
-              Leer más
-            </button>
-          )}
-        </div>
 
         {/* Reseñas — solo si hay aprobadas */}
         {approved.length > 0 && (
@@ -113,11 +100,9 @@ export function ProductCard({
         <button key={addKey} onClick={()=>{setAddKey(k=>k+1);onAdd();}}
           className={`${addKey>0?"animate-cart-pop":""} mt-auto flex items-center justify-center gap-1.5 py-2.5 text-[9px] md:text-[10px] font-black tracking-[1.2px] uppercase rounded-lg transition-all duration-200 border cursor-pointer`}
           style={{
-            border:`1.5px solid ${inCart>0?"rgba(17,17,17,0.85)":"rgba(200,200,200,0.7)"}`,
-            background:inCart>0?"rgba(17,17,17,0.88)":"rgba(255,255,255,0.72)",
+            border:`1.5px solid ${inCart>0?"#111":"#ddd"}`,
+            background:inCart>0?"#111":"#fff",
             color:inCart>0?"#fff":"#111",
-            backdropFilter:"blur(8px)",
-            boxShadow:inCart>0?"0 4px 16px rgba(0,0,0,0.22)":"none",
           }}>
           {inCart>0 ? <><Check size={11}/>EN CARRITO ({inCart})</> : <><ShoppingCart size={11}/>AGREGAR</>}
         </button>

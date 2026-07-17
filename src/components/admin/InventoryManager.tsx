@@ -164,7 +164,7 @@ function ProductFields({
           className="field-input w-full border border-neutral-200/80 px-3.5 py-2.5 text-sm text-neutral-800 bg-white/72 rounded-lg font-[inherit] resize-none"
           placeholder="Descripción detallada del producto..."/>
       </div>
-      <Field label="Precio ($)" type="number" value={value.price??""} onChange={e=>F("price",parseFloat(e.target.value)||0)}/>
+      <Field label="Precio (€)" type="number" value={value.price??""} onChange={e=>F("price",parseFloat(e.target.value)||0)}/>
       <Field label="Stock (uds)" type="number" value={value.stock??""} onChange={e=>F("stock",parseInt(e.target.value)||0)}/>
       <Select label="Categoría" value={value.category||""} onChange={e=>F("category",e.target.value)}>
         <option value="">Sin categoría</option>

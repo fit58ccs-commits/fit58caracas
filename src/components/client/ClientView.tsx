@@ -178,7 +178,7 @@ export function ClientView({ store }: { store: Store }) {
           <ShoppingCart size={17}/>
           {store.cartCount} {store.cartCount===1?"PRODUCTO":"PRODUCTOS"}
           <span className="bg-white/15 rounded-full px-3.5 py-0.5 font-black border border-white/10">
-            ${store.cartTotal.toFixed(2)}
+            €{store.cartTotal.toFixed(2)}
           </span>
         </button>
       )}
