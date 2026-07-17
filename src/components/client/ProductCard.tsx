@@ -113,14 +113,16 @@ export function ProductCard({
 
 /* ── ProductDetailModal ─────────────────────────────────────────── */
 export function ProductDetailModal({
-  product, rate, onAdd, inCart, onClose, reviews = [],
+  product, rate, onAdd, inCart, onClose, reviews = [], wishlisted, onWishlist,
 }: {
   product: Product; rate: number;
   onAdd: () => void; inCart: number;
   onClose: () => void;
   reviews?: Review[];
+  wishlisted?: boolean; onWishlist?: () => void;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
+  const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"info"|"spec"|"reviews">("info");
   const [isHovering, setIsHovering] = useState(false);
   const [lensPos, setLensPos] = useState({ x: 50, y: 50 });
@@ -221,7 +223,7 @@ export function ProductDetailModal({
           </div>
 
           {/* Info */}
-          <div className="flex-none w-full md:w-[340px] p-6 md:p-8 flex flex-col gap-3 overflow-y-auto border-t md:border-t-0 md:border-l border-neutral-100">
+          <div className="flex-none w-full md:w-[340px] p-6 md:p-8 flex flex-col gap-4 overflow-y-auto border-t md:border-t-0 md:border-l border-neutral-100">
             <div>
               <p className="text-[10px] font-bold text-neutral-400 tracking-[2px] uppercase mb-1">{product.category}</p>
               <h2 className="text-xl md:text-2xl font-black text-black uppercase tracking-tight leading-tight mb-2">{product.name}</h2>
@@ -230,98 +232,122 @@ export function ProductDetailModal({
               )}
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-1 border-b border-neutral-100">
-              {(["info","spec","reviews"] as const).map(t => (
-                <button key={t} onClick={()=>setTab(t)}
-                  className="px-3 py-2 text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
-                  style={{
-                    color: tab===t?"#111":"#aaa",
-                    borderBottom: tab===t?"2px solid #111":"2px solid transparent",
-                    background:"transparent",
-                  }}>
-                  {t==="info"?"Info":t==="spec"?"Ficha Técnica":`Reseñas${approved.length>0?` (${approved.length})`:""}`}
-                </button>
-              ))}
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
+              <span className="text-sm text-neutral-400">{fmtBs(product.price, rate)}</span>
+            </div>
+            {product.stock <= 0 && (
+              <p className="text-[10px] text-red-500 font-bold -mt-2 flex items-center gap-1">
+                <AlertCircle size={10}/> Agotado
+              </p>
+            )}
+
+            {/* Cantidad */}
+            <div>
+              <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">Cantidad</p>
+              <div className="flex items-center gap-2.5">
+                <button onClick={()=>setQty(q=>Math.max(1,q-1))}
+                  className="w-8 h-8 rounded-lg border border-neutral-200/80 bg-white flex items-center justify-center cursor-pointer text-neutral-500 font-bold">−</button>
+                <span className="w-8 text-center text-sm font-black text-black">{qty}</span>
+                <button onClick={()=>setQty(q=>q+1)}
+                  className="w-8 h-8 rounded-lg border border-neutral-200/80 bg-white flex items-center justify-center cursor-pointer text-neutral-500 font-bold">+</button>
+              </div>
             </div>
 
-            {/* Tab: Info */}
-            {tab === "info" && (
-              <>
-                <p className="text-sm text-neutral-500 leading-7">{product.desc}</p>
-                {approved.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Stars rating={avgRating} size={13}/>
-                    <span className="text-xs text-neutral-400 font-semibold">{avgRating.toFixed(1)} · {approved.length} reseña{approved.length!==1?"s":""}</span>
-                  </div>
-                )}
-                <div className="neumorph p-4 rounded-2xl">
-                  <div className="flex items-baseline gap-2.5">
-                    <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
-                    <span className="text-sm text-neutral-400">{fmtBs(product.price, rate)}</span>
-                  </div>
-                  {product.stock <= 0 && (
-                    <p className="text-[10px] text-red-500 font-bold mt-1.5 flex items-center gap-1">
-                      <AlertCircle size={10}/> Agotado
-                    </p>
-                  )}
-                </div>
-                <button onClick={onAdd}
-                  className="flex items-center justify-center gap-1.5 py-3.5 text-[11px] font-black tracking-[1.2px] uppercase rounded-xl transition-all cursor-pointer shadow-[0_6px_20px_rgba(0,0,0,0.22)]"
-                  style={{background:"rgba(17,17,17,0.90)",color:"#fff",border:"none"}}>
-                  {inCart>0 ? <><Check size={14}/>EN CARRITO ({inCart})</> : <><ShoppingCart size={14}/>AGREGAR AL CARRITO</>}
+            {/* Agregar + Favoritos */}
+            <div className="flex gap-2">
+              <button onClick={()=>{ for(let i=0;i<qty;i++) onAdd(); setQty(1); }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-3.5 text-[11px] font-black tracking-[1.2px] uppercase rounded-xl transition-all cursor-pointer shadow-[0_6px_20px_rgba(0,0,0,0.22)]"
+                style={{background:"rgba(17,17,17,0.90)",color:"#fff",border:"none"}}>
+                {inCart>0 ? <><Check size={14}/>EN CARRITO ({inCart})</> : <><ShoppingCart size={14}/>AGREGAR</>}
+              </button>
+              {onWishlist && (
+                <button onClick={onWishlist}
+                  className="w-12 shrink-0 flex items-center justify-center rounded-xl border border-neutral-200/80 bg-white cursor-pointer">
+                  <Heart size={16} color={wishlisted?"#e53e3e":"#bbb"} fill={wishlisted?"#e53e3e":"none"}/>
                 </button>
-                <div className="flex gap-6">
-                  {[{icon:<Shield size={13}/>,text:"Garantía"},{icon:<Truck size={13}/>,text:"Envío a domicilio"}].map(({icon,text}) => (
-                    <div key={text} className="flex items-center gap-1.5 text-[11px] text-neutral-500 font-semibold">{icon}{text}</div>
-                  ))}
-                </div>
-              </>
-            )}
+              )}
+            </div>
 
-            {/* Tab: Ficha Técnica */}
-            {tab === "spec" && (
-              <div className="flex flex-col gap-3">
-                {product.specSheet ? (
-                  <img src={product.specSheet} alt="Ficha técnica" className="w-full rounded-xl border border-neutral-200/60 object-contain"/>
-                ) : (
-                  <div className="text-center py-10 text-neutral-300">
-                    <AlertCircle size={32} className="mx-auto mb-3"/>
-                    <p className="text-sm text-neutral-400">Ficha técnica no disponible aún</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tab: Reseñas */}
-            {tab === "reviews" && (
-              <div className="flex flex-col gap-3">
-                {approved.length === 0 ? (
-                  <div className="text-center py-10 text-neutral-300">
-                    <MessageSquare size={32} className="mx-auto mb-3"/>
-                    <p className="text-sm text-neutral-400">Aún no hay reseñas para este producto</p>
-                    <p className="text-xs text-neutral-300 mt-1">¡Sé el primero en opinar!</p>
-                  </div>
-                ) : (
-                  approved.map(r => (
-                    <div key={r.id} className="glass-card rounded-xl p-4 flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-black">{r.author}</span>
-                        <span className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleDateString("es-VE")}</span>
-                      </div>
-                      <Stars rating={r.rating} size={11}/>
-                      <p className="text-xs text-neutral-500 leading-relaxed">{r.comment}</p>
-                      {r.serviceRating && (
-                        <p className="text-[9px] text-neutral-400 flex items-center gap-1">
-                          Servicio: <Stars rating={r.serviceRating} size={9}/>
-                        </p>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
+            <div className="flex gap-6">
+              {[{icon:<Shield size={13}/>,text:"Garantía"},{icon:<Truck size={13}/>,text:"Envío a domicilio"}].map(({icon,text}) => (
+                <div key={text} className="flex items-center gap-1.5 text-[11px] text-neutral-500 font-semibold">{icon}{text}</div>
+              ))}
+            </div>
           </div>
+        </div>
+
+        {/* Tabs — ancho completo debajo */}
+        <div className="border-t border-neutral-100 px-6 md:px-10 py-5 overflow-y-auto">
+          <div className="flex gap-1 border-b border-neutral-100 mb-4">
+            {(["info","spec","reviews"] as const).map(t => (
+              <button key={t} onClick={()=>setTab(t)}
+                className="px-3 py-2 text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
+                style={{
+                  color: tab===t?"#111":"#aaa",
+                  borderBottom: tab===t?"2px solid #111":"2px solid transparent",
+                  background:"transparent",
+                }}>
+                {t==="info"?"Descripción":t==="spec"?"Ficha Técnica":`Reseñas${approved.length>0?` (${approved.length})`:""}`}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab: Info */}
+          {tab === "info" && (
+            <>
+              <p className="text-sm text-neutral-500 leading-7">{product.desc}</p>
+              {approved.length > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Stars rating={avgRating} size={13}/>
+                  <span className="text-xs text-neutral-400 font-semibold">{avgRating.toFixed(1)} · {approved.length} reseña{approved.length!==1?"s":""}</span>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Tab: Ficha Técnica */}
+          {tab === "spec" && (
+            <div className="flex flex-col gap-3">
+              {product.specSheet ? (
+                <img src={product.specSheet} alt="Ficha técnica" className="w-full max-w-md rounded-xl border border-neutral-200/60 object-contain"/>
+              ) : (
+                <div className="text-center py-10 text-neutral-300">
+                  <AlertCircle size={32} className="mx-auto mb-3"/>
+                  <p className="text-sm text-neutral-400">Ficha técnica no disponible aún</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab: Reseñas */}
+          {tab === "reviews" && (
+            <div className="flex flex-col gap-3">
+              {approved.length === 0 ? (
+                <div className="text-center py-10 text-neutral-300">
+                  <MessageSquare size={32} className="mx-auto mb-3"/>
+                  <p className="text-sm text-neutral-400">Aún no hay reseñas para este producto</p>
+                  <p className="text-xs text-neutral-300 mt-1">¡Sé el primero en opinar!</p>
+                </div>
+              ) : (
+                approved.map(r => (
+                  <div key={r.id} className="glass-card rounded-xl p-4 flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-black">{r.author}</span>
+                      <span className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleDateString("es-VE")}</span>
+                    </div>
+                    <Stars rating={r.rating} size={11}/>
+                    <p className="text-xs text-neutral-500 leading-relaxed">{r.comment}</p>
+                    {r.serviceRating && (
+                      <p className="text-[9px] text-neutral-400 flex items-center gap-1">
+                        Servicio: <Stars rating={r.serviceRating} size={9}/>
+                      </p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
 

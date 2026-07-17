@@ -250,6 +250,8 @@ export function ClientView({ store }: { store: Store }) {
           onAdd={() => store.addToCart(selectedProduct)}
           inCart={store.cart.find(i=>i.id===selectedProduct.id)?.qty??0}
           onClose={() => setSelectedProduct(null)}
+          wishlisted={store.wishlist.includes(selectedProduct.id)}
+          onWishlist={() => store.toggleWishlist(selectedProduct.id)}
           reviews={store.reviews}/>
       )}
 
