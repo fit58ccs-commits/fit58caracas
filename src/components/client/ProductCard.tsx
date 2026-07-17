@@ -274,71 +274,63 @@ export function ProductDetailModal({
               )}
             </div>
 
-            <div className="flex gap-6">
-              {[{icon:<Shield size={13}/>,text:"Garantía"},{icon:<Truck size={13}/>,text:"Envío a domicilio"}].map(({icon,text}) => (
-                <div key={text} className="flex items-center gap-1.5 text-[11px] text-neutral-500 font-semibold">{icon}{text}</div>
+            {/* Tabs */}
+            <div className="flex gap-1 border-b border-neutral-100">
+              {(["info","reviews"] as const).map(t => (
+                <button key={t} onClick={()=>setTab(t)}
+                  className="px-3 py-2 text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
+                  style={{
+                    color: tab===t?"#111":"#aaa",
+                    borderBottom: tab===t?"2px solid #111":"2px solid transparent",
+                    background:"transparent",
+                  }}>
+                  {t==="info"?"Descripción":`Reseñas${approved.length>0?` (${approved.length})`:""}`}
+                </button>
               ))}
             </div>
-          </div>
-        </div>
 
-        {/* Tabs — ancho completo debajo */}
-        <div className="border-t border-neutral-100 px-6 md:px-10 py-5 overflow-y-auto">
-          <div className="flex gap-1 border-b border-neutral-100 mb-4">
-            {(["info","reviews"] as const).map(t => (
-              <button key={t} onClick={()=>setTab(t)}
-                className="px-3 py-2 text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
-                style={{
-                  color: tab===t?"#111":"#aaa",
-                  borderBottom: tab===t?"2px solid #111":"2px solid transparent",
-                  background:"transparent",
-                }}>
-                {t==="info"?"Descripción":`Reseñas${approved.length>0?` (${approved.length})`:""}`}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab: Info */}
-          {tab === "info" && (
-            <>
-              <p className="text-sm text-neutral-500 leading-7">{product.desc}</p>
-              {approved.length > 0 && (
-                <div className="flex items-center gap-2 mt-2">
-                  <Stars rating={avgRating} size={13}/>
-                  <span className="text-xs text-neutral-400 font-semibold">{avgRating.toFixed(1)} · {approved.length} reseña{approved.length!==1?"s":""}</span>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Tab: Reseñas */}
-          {tab === "reviews" && (
-            <div className="flex flex-col gap-3">
-              {approved.length === 0 ? (
-                <div className="text-center py-10 text-neutral-300">
-                  <MessageSquare size={32} className="mx-auto mb-3"/>
-                  <p className="text-sm text-neutral-400">Aún no hay reseñas para este producto</p>
-                  <p className="text-xs text-neutral-300 mt-1">¡Sé el primero en opinar!</p>
-                </div>
-              ) : (
-                approved.map(r => (
-                  <div key={r.id} className="glass-card rounded-xl p-4 flex flex-col gap-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-black">{r.author}</span>
-                      <span className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleDateString("es-VE")}</span>
-                    </div>
-                    <Stars rating={r.rating} size={11}/>
-                    <p className="text-xs text-neutral-500 leading-relaxed">{r.comment}</p>
-                    {r.serviceRating && (
-                      <p className="text-[9px] text-neutral-400 flex items-center gap-1">
-                        Servicio: <Stars rating={r.serviceRating} size={9}/>
-                      </p>
-                    )}
+            {/* Tab: Info */}
+            {tab === "info" && (
+              <>
+                <p className="text-sm text-neutral-500 leading-7">{product.desc}</p>
+                {approved.length > 0 && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Stars rating={avgRating} size={13}/>
+                    <span className="text-xs text-neutral-400 font-semibold">{avgRating.toFixed(1)} · {approved.length} reseña{approved.length!==1?"s":""}</span>
                   </div>
-                ))
-              )}
-            </div>
-          )}
+                )}
+              </>
+            )}
+
+            {/* Tab: Reseñas */}
+            {tab === "reviews" && (
+              <div className="flex flex-col gap-3">
+                {approved.length === 0 ? (
+                  <div className="text-center py-10 text-neutral-300">
+                    <MessageSquare size={32} className="mx-auto mb-3"/>
+                    <p className="text-sm text-neutral-400">Aún no hay reseñas para este producto</p>
+                    <p className="text-xs text-neutral-300 mt-1">¡Sé el primero en opinar!</p>
+                  </div>
+                ) : (
+                  approved.map(r => (
+                    <div key={r.id} className="glass-card rounded-xl p-4 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-black">{r.author}</span>
+                        <span className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleDateString("es-VE")}</span>
+                      </div>
+                      <Stars rating={r.rating} size={11}/>
+                      <p className="text-xs text-neutral-500 leading-relaxed">{r.comment}</p>
+                      {r.serviceRating && (
+                        <p className="text-[9px] text-neutral-400 flex items-center gap-1">
+                          Servicio: <Stars rating={r.serviceRating} size={9}/>
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
