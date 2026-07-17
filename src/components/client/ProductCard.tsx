@@ -123,12 +123,14 @@ export function ProductDetailModal({
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [qty, setQty] = useState(1);
-  const [tab, setTab] = useState<"info"|"spec"|"reviews">("info");
+  const [tab, setTab] = useState<"info"|"reviews">("info");
   const [isHovering, setIsHovering] = useState(false);
   const [lensPos, setLensPos] = useState({ x: 50, y: 50 });
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const imgWrapRef = useRef<HTMLDivElement | null>(null);
   const images   = product.images?.length ? product.images : [product.img].filter(Boolean);
+  const galleryImages = [...images, ...(product.specSheet ? [product.specSheet] : [])];
+  const specIdx  = product.specSheet ? galleryImages.length - 1 : -1;
   const approved = reviews.filter(r => r.productId === product.id && r.approved);
   const avgRating = approved.length > 0 ? approved.reduce((s,r) => s+r.rating, 0) / approved.length : 0;
 
@@ -145,13 +147,16 @@ export function ProductDetailModal({
           {/* Gallery — protagonista */}
           <div className="relative flex-1 md:flex-[1.4] bg-white flex p-5 md:p-10 gap-4 md:gap-6 min-h-[320px] md:min-h-[560px]">
             {/* Miniaturas verticales (desktop) */}
-            {images.length > 1 && (
+            {galleryImages.length > 1 && (
               <div className="hidden md:flex flex-col gap-3 overflow-y-auto">
-                {images.map((src,i) => (
+                {galleryImages.map((src,i) => (
                   <button key={i} onClick={()=>setImgIdx(i)}
-                    className="w-16 h-16 shrink-0 rounded-xl overflow-hidden cursor-pointer p-0 transition-all"
+                    className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden cursor-pointer p-0 transition-all"
                     style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
                     <img src={src||PLACEHOLDER} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}} className="w-full h-full object-contain"/>
+                    {i===specIdx && (
+                      <span className="absolute bottom-0 inset-x-0 bg-black/75 text-white text-[6px] font-black text-center py-0.5 leading-none">FICHA</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -173,16 +178,16 @@ export function ProductDetailModal({
               }}
               onClick={() => setLightboxOpen(true)}
             >
-              <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
+              <img src={galleryImages[imgIdx]||PLACEHOLDER} alt={product.name}
                 onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-                className="max-w-full max-h-full w-full h-full object-contain drop-shadow-[0_12px_32px_rgba(0,0,0,0.12)] select-none"
+                className="max-w-full max-h-full w-full h-full object-contain select-none"
                 draggable={false}/>
 
               {/* Lupa de zoom en hover */}
               {isHovering && (
                 <div className="absolute inset-0 pointer-events-none"
                   style={{
-                    backgroundImage: `url(${images[imgIdx]||PLACEHOLDER})`,
+                    backgroundImage: `url(${galleryImages[imgIdx]||PLACEHOLDER})`,
                     backgroundRepeat: "no-repeat",
                     backgroundSize: "200%",
                     backgroundPosition: `${lensPos.x}% ${lensPos.y}%`,
@@ -194,13 +199,13 @@ export function ProductDetailModal({
                 <ZoomIn size={10}/> Clic para ampliar
               </div>
 
-              {images.length > 1 && (
+              {galleryImages.length > 1 && (
                 <>
-                  <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+images.length)%images.length);}}
+                  <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+galleryImages.length)%galleryImages.length);}}
                     className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
                     <ChevronLeft size={16}/>
                   </button>
-                  <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i+1)%images.length);}}
+                  <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i+1)%galleryImages.length);}}
                     className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
                     <ChevronRight size={16}/>
                   </button>
@@ -209,9 +214,9 @@ export function ProductDetailModal({
             </div>
 
             {/* Miniaturas horizontales (mobile) */}
-            {images.length > 1 && (
+            {galleryImages.length > 1 && (
               <div className="md:hidden absolute left-0 right-0 bottom-4 flex gap-2 justify-center flex-wrap px-5">
-                {images.map((src,i) => (
+                {galleryImages.map((src,i) => (
                   <button key={i} onClick={()=>setImgIdx(i)}
                     className="w-11 h-11 rounded-lg overflow-hidden cursor-pointer p-0 transition-all"
                     style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
@@ -280,7 +285,7 @@ export function ProductDetailModal({
         {/* Tabs — ancho completo debajo */}
         <div className="border-t border-neutral-100 px-6 md:px-10 py-5 overflow-y-auto">
           <div className="flex gap-1 border-b border-neutral-100 mb-4">
-            {(["info","spec","reviews"] as const).map(t => (
+            {(["info","reviews"] as const).map(t => (
               <button key={t} onClick={()=>setTab(t)}
                 className="px-3 py-2 text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
                 style={{
@@ -288,7 +293,7 @@ export function ProductDetailModal({
                   borderBottom: tab===t?"2px solid #111":"2px solid transparent",
                   background:"transparent",
                 }}>
-                {t==="info"?"Descripción":t==="spec"?"Ficha Técnica":`Reseñas${approved.length>0?` (${approved.length})`:""}`}
+                {t==="info"?"Descripción":`Reseñas${approved.length>0?` (${approved.length})`:""}`}
               </button>
             ))}
           </div>
@@ -304,20 +309,6 @@ export function ProductDetailModal({
                 </div>
               )}
             </>
-          )}
-
-          {/* Tab: Ficha Técnica */}
-          {tab === "spec" && (
-            <div className="flex flex-col gap-3">
-              {product.specSheet ? (
-                <img src={product.specSheet} alt="Ficha técnica" className="w-full max-w-md rounded-xl border border-neutral-200/60 object-contain"/>
-              ) : (
-                <div className="text-center py-10 text-neutral-300">
-                  <AlertCircle size={32} className="mx-auto mb-3"/>
-                  <p className="text-sm text-neutral-400">Ficha técnica no disponible aún</p>
-                </div>
-              )}
-            </div>
           )}
 
           {/* Tab: Reseñas */}
@@ -359,7 +350,7 @@ export function ProductDetailModal({
             className="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/85 backdrop-blur border border-neutral-200/80 flex items-center justify-center cursor-pointer">
             <X size={20}/>
           </button>
-          <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
+          <img src={galleryImages[imgIdx]||PLACEHOLDER} alt={product.name}
             className="max-w-full max-h-full object-contain select-none" draggable={false}
             onClick={e => e.stopPropagation()}/>
         </div>
