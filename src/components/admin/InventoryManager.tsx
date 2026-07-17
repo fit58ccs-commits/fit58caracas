@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Plus, Upload, Trash2, Edit3, Save, Download, FileSpreadsheet, AlertCircle, Package, Image } from "lucide-react";
+import { Plus, Upload, Trash2, Edit3, Save, Download, FileSpreadsheet, AlertCircle, Package, Image, Images } from "lucide-react";
 import { genId, fmt$, fmtBs } from "@/lib/store";
 import { sbUploadImage } from "@/lib/supabase";
 import { Btn, Field, Select, Modal } from "../ui/Primitives";
 import { useToast } from "../ui/Toast";
+import { BulkImageManager } from "./BulkImageManager";
 import type { Product, ExchangeRate } from "@/lib/types";
 
 const MAX_IMAGES = 3;
@@ -193,6 +194,7 @@ export function InventoryManager({
   const [newP,    setNewP]    = useState<Partial<Product>>({ name:"", desc:"", price:0, stock:0, images:[], category:"", badge:null });
   const [editing, setEditing] = useState<Product|null>(null);
   const [search,  setSearch]  = useState("");
+  const [showBulkImages, setShowBulkImages] = useState(false);
 
   const filteredProducts = products.filter(p =>
     !search ||
@@ -236,8 +238,18 @@ export function InventoryManager({
           <h1 className="text-2xl font-black text-black uppercase tracking-tight m-0">Control de Inventario</h1>
           <p className="text-xs text-neutral-400 mt-1">{products.length} productos · Stock total: {products.reduce((s,p)=>s+p.stock,0)} uds</p>
         </div>
-        <Btn variant="ghost" onClick={downloadTemplate}><Download size={13}/> PLANTILLA EXCEL/CSV</Btn>
+        <div className="flex gap-2">
+          <Btn variant={showBulkImages ? "primary" : "ghost"} onClick={()=>setShowBulkImages(v=>!v)}>
+            <Images size={13}/> {showBulkImages ? "OCULTAR IMÁGENES MASIVAS" : "IMÁGENES MASIVAS"}
+          </Btn>
+          <Btn variant="ghost" onClick={downloadTemplate}><Download size={13}/> PLANTILLA EXCEL/CSV</Btn>
+        </div>
       </div>
+
+      {/* Gestión masiva de imágenes */}
+      {showBulkImages && (
+        <BulkImageManager products={products} onUpdate={onUpdate}/>
+      )}
 
       {/* CSV Bulk import */}
       <div className="glass-card p-5 rounded-2xl">

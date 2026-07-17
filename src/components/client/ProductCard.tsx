@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { Heart, AlertCircle, ShoppingCart, Check, ChevronLeft, ChevronRight, X, Shield, Truck, Star, MessageSquare } from "lucide-react";
+import { useState, useRef } from "react";
+import { Heart, AlertCircle, ShoppingCart, Check, ChevronLeft, ChevronRight, X, Shield, Truck, Star, MessageSquare, ZoomIn } from "lucide-react";
 import { fmt$, fmtBs } from "@/lib/store";
 import type { Product, Review } from "@/lib/types";
 
@@ -137,6 +137,10 @@ export function ProductDetailModal({
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [tab, setTab] = useState<"info"|"spec"|"reviews">("info");
+  const [isHovering, setIsHovering] = useState(false);
+  const [lensPos, setLensPos] = useState({ x: 50, y: 50 });
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const imgWrapRef = useRef<HTMLDivElement | null>(null);
   const images   = product.images?.length ? product.images : [product.img].filter(Boolean);
   const approved = reviews.filter(r => r.productId === product.id && r.approved);
   const avgRating = approved.length > 0 ? approved.reduce((s,r) => s+r.rating, 0) / approved.length : 0;
@@ -152,18 +156,50 @@ export function ProductDetailModal({
 
         <div className="flex flex-wrap overflow-auto">
           {/* Gallery */}
-          <div className="flex-none w-full md:w-[380px] bg-[#f0f2f5] flex flex-col items-center justify-center p-6 gap-4 min-h-[280px]">
-            <div className="relative w-full flex items-center justify-center min-h-[240px]">
+          <div className="flex-none w-full md:w-[380px] bg-white flex flex-col items-center justify-center p-6 gap-4 min-h-[280px]">
+            <div
+              ref={imgWrapRef}
+              className="relative w-full flex items-center justify-center min-h-[240px] cursor-zoom-in overflow-hidden rounded-xl group"
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+              onMouseMove={e => {
+                const rect = imgWrapRef.current?.getBoundingClientRect();
+                if (!rect) return;
+                setLensPos({
+                  x: Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100)),
+                  y: Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100)),
+                });
+              }}
+              onClick={() => setLightboxOpen(true)}
+            >
               <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
                 onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-                className="max-w-full max-h-[240px] object-contain drop-shadow-[0_12px_32px_rgba(0,0,0,0.15)]"/>
+                className="max-w-full max-h-[240px] object-contain drop-shadow-[0_12px_32px_rgba(0,0,0,0.15)] select-none"
+                draggable={false}/>
+
+              {/* Lupa de zoom en hover */}
+              {isHovering && (
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{
+                    backgroundImage: `url(${images[imgIdx]||PLACEHOLDER})`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "220%",
+                    backgroundPosition: `${lensPos.x}% ${lensPos.y}%`,
+                  }}/>
+              )}
+
+              {/* Indicador de zoom */}
+              <div className="absolute bottom-2 right-2 z-[2] flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/85 backdrop-blur border border-neutral-200/70 text-[9px] font-bold text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <ZoomIn size={10}/> Clic para ampliar
+              </div>
+
               {images.length > 1 && (
                 <>
-                  <button onClick={()=>setImgIdx(i=>(i-1+images.length)%images.length)}
+                  <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+images.length)%images.length);}}
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
                     <ChevronLeft size={15}/>
                   </button>
-                  <button onClick={()=>setImgIdx(i=>(i+1)%images.length)}
+                  <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i+1)%images.length);}}
                     className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
                     <ChevronRight size={15}/>
                   </button>
@@ -287,6 +323,20 @@ export function ProductDetailModal({
           </div>
         </div>
       </div>
+
+      {/* Lightbox de pantalla completa */}
+      {lightboxOpen && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-white/95 backdrop-blur-sm p-6 cursor-zoom-out"
+          onClick={() => setLightboxOpen(false)}>
+          <button onClick={() => setLightboxOpen(false)}
+            className="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/85 backdrop-blur border border-neutral-200/80 flex items-center justify-center cursor-pointer">
+            <X size={20}/>
+          </button>
+          <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
+            className="max-w-full max-h-full object-contain select-none" draggable={false}
+            onClick={e => e.stopPropagation()}/>
+        </div>
+      )}
     </div>
   );
 }
