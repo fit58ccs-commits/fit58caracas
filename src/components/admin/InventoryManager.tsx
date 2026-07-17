@@ -1,11 +1,10 @@
 "use client";
 import { useState } from "react";
-import { Plus, Upload, Trash2, Edit3, Save, Download, FileSpreadsheet, AlertCircle, Package, Image, Images } from "lucide-react";
+import { Plus, Upload, Trash2, Edit3, Save, Download, FileSpreadsheet, AlertCircle, Package, Image } from "lucide-react";
 import { genId, fmt$, fmtBs } from "@/lib/store";
 import { sbUploadImage } from "@/lib/supabase";
 import { Btn, Field, Select, Modal } from "../ui/Primitives";
 import { useToast } from "../ui/Toast";
-import { BulkImageManager } from "./BulkImageManager";
 import type { Product, ExchangeRate } from "@/lib/types";
 
 const MAX_IMAGES = 3;
@@ -38,49 +37,91 @@ const parseCSV = (text: string): Omit<Product, "id">[] => {
 function ImagePicker({ images, onChange }: { images: string[]; onChange: (imgs: string[]) => void }) {
   const toast  = useToast();
   const remaining = MAX_IMAGES - images.length;
+  const [dragOver, setDragOver] = useState(false);
+  const [dragIdx, setDragIdx]   = useState<number|null>(null);
 
   const addUrl = (url: string) => {
     if (!url.trim() || images.length >= MAX_IMAGES) return;
     onChange([...images, url]);
   };
 
-  const addFiles = async (files: FileList) => {
-    const toAdd = Array.from(files).slice(0, remaining);
+  const addFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files).filter(f => f.type.startsWith("image/"));
+    const toAdd = list.slice(0, MAX_IMAGES - images.length);
+    if (toAdd.length === 0) { toast(`Límite de ${MAX_IMAGES} imágenes alcanzado`, "⚠️"); return; }
+    if (list.length > toAdd.length) toast(`Solo se subieron ${toAdd.length} (límite ${MAX_IMAGES})`, "⚠️");
+
+    toast(`Subiendo ${toAdd.length} imagen(es)...`, "⬆️");
+    const uploaded: string[] = [];
     for (const file of toAdd) {
-      toast("Subiendo imagen...", "⬆️");
       const url = await sbUploadImage(file, "products");
-      if (url) { onChange([...images, url]); toast("Imagen subida", "✅"); }
-      else       toast("Error al subir imagen", "❌");
+      if (url) uploaded.push(url);
     }
+    if (uploaded.length > 0) {
+      onChange([...images, ...uploaded]); // una sola actualización, sin cierre obsoleto
+      toast(`${uploaded.length} imagen(es) subida(s)`, "✅");
+    }
+    if (uploaded.length < toAdd.length) toast("Alguna imagen falló al subir", "❌");
+  };
+
+  const moveImage = (from: number, to: number) => {
+    if (to < 0 || to >= images.length || from === to) return;
+    const next = [...images];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    onChange(next);
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
         <label className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase">
-          Imágenes del Producto (máx {MAX_IMAGES})
+          Imágenes del Producto (máx {MAX_IMAGES}) — arrastra para reordenar
         </label>
         <span className={`text-[10px] font-bold ${images.length >= MAX_IMAGES ? "text-red-500" : "text-neutral-400"}`}>
           {images.length}/{MAX_IMAGES}
         </span>
       </div>
-      <div className="flex gap-2 flex-wrap mb-3">
+
+      {/* Zona de arrastre masiva por producto */}
+      <div
+        onDragOver={e=>{e.preventDefault();setDragOver(true);}}
+        onDragLeave={()=>setDragOver(false)}
+        onDrop={e=>{
+          e.preventDefault(); setDragOver(false);
+          if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+        }}
+        className="flex gap-2 flex-wrap mb-3 p-2 rounded-xl transition-colors"
+        style={{
+          border: dragOver ? "2px dashed #111" : "2px dashed transparent",
+          background: dragOver ? "rgba(0,0,0,0.03)" : "transparent",
+        }}
+      >
         {images.map((src, i) => (
-          <div key={i} className="relative w-16 h-16">
+          <div key={i}
+            draggable
+            onDragStart={()=>setDragIdx(i)}
+            onDragOver={e=>e.preventDefault()}
+            onDrop={e=>{e.preventDefault(); if(dragIdx!==null) moveImage(dragIdx, i); setDragIdx(null);}}
+            onDragEnd={()=>setDragIdx(null)}
+            className="relative w-16 h-16 cursor-grab active:cursor-grabbing"
+            style={{opacity: dragIdx===i ? 0.4 : 1}}>
             <img src={src} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-              className="w-16 h-16 object-contain rounded-xl border bg-neutral-50"
+              className="w-16 h-16 object-contain rounded-xl border bg-neutral-50 pointer-events-none"
               style={{border:i===0?"2px solid #111":"1px solid rgba(220,220,220,0.8)"}}/>
-            {i===0 && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[6px] font-black bg-black text-white px-1 rounded whitespace-nowrap">PRINCIPAL</span>}
+            {i===0 && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[6px] font-black bg-black text-white px-1 rounded whitespace-nowrap pointer-events-none">PRINCIPAL</span>}
             <button onClick={()=>onChange(images.filter((_,j)=>j!==i))}
               className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white border-2 border-white flex items-center justify-center font-black text-[10px] cursor-pointer">×</button>
           </div>
         ))}
         {images.length === 0 && (
-          <div className="w-16 h-16 rounded-xl border-2 border-dashed border-neutral-200/80 flex items-center justify-center text-neutral-300">
+          <div className="w-full min-h-[64px] rounded-xl border-2 border-dashed border-neutral-200/80 flex flex-col items-center justify-center text-neutral-300 py-3 gap-1">
             <Package size={20}/>
+            <span className="text-[9px] font-semibold">Arrastra imágenes aquí</span>
           </div>
         )}
       </div>
+
       {remaining > 0 && (
         <div className="flex gap-2 flex-wrap">
           <div className="flex gap-1.5 flex-1 min-w-[180px]">
@@ -164,7 +205,7 @@ function ProductFields({
           className="field-input w-full border border-neutral-200/80 px-3.5 py-2.5 text-sm text-neutral-800 bg-white/72 rounded-lg font-[inherit] resize-none"
           placeholder="Descripción detallada del producto..."/>
       </div>
-      <Field label="Precio (€)" type="number" value={value.price??""} onChange={e=>F("price",parseFloat(e.target.value)||0)}/>
+      <Field label="Precio ($)" type="number" value={value.price??""} onChange={e=>F("price",parseFloat(e.target.value)||0)}/>
       <Field label="Stock (uds)" type="number" value={value.stock??""} onChange={e=>F("stock",parseInt(e.target.value)||0)}/>
       <Select label="Categoría" value={value.category||""} onChange={e=>F("category",e.target.value)}>
         <option value="">Sin categoría</option>
@@ -194,7 +235,6 @@ export function InventoryManager({
   const [newP,    setNewP]    = useState<Partial<Product>>({ name:"", desc:"", price:0, stock:0, images:[], category:"", badge:null });
   const [editing, setEditing] = useState<Product|null>(null);
   const [search,  setSearch]  = useState("");
-  const [showBulkImages, setShowBulkImages] = useState(false);
 
   const filteredProducts = products.filter(p =>
     !search ||
@@ -238,18 +278,8 @@ export function InventoryManager({
           <h1 className="text-2xl font-black text-black uppercase tracking-tight m-0">Control de Inventario</h1>
           <p className="text-xs text-neutral-400 mt-1">{products.length} productos · Stock total: {products.reduce((s,p)=>s+p.stock,0)} uds</p>
         </div>
-        <div className="flex gap-2">
-          <Btn variant={showBulkImages ? "primary" : "ghost"} onClick={()=>setShowBulkImages(v=>!v)}>
-            <Images size={13}/> {showBulkImages ? "OCULTAR IMÁGENES MASIVAS" : "IMÁGENES MASIVAS"}
-          </Btn>
-          <Btn variant="ghost" onClick={downloadTemplate}><Download size={13}/> PLANTILLA EXCEL/CSV</Btn>
-        </div>
+        <Btn variant="ghost" onClick={downloadTemplate}><Download size={13}/> PLANTILLA EXCEL/CSV</Btn>
       </div>
-
-      {/* Gestión masiva de imágenes */}
-      {showBulkImages && (
-        <BulkImageManager products={products} onUpdate={onUpdate}/>
-      )}
 
       {/* CSV Bulk import */}
       <div className="glass-card p-5 rounded-2xl">
