@@ -148,18 +148,32 @@ export function ProductDetailModal({
   return (
     <div className="fixed inset-0 z-[300] flex">
       <div className="animate-overlay-in absolute inset-0 bg-black/55 backdrop-blur-xl" onClick={onClose}/>
-      <div className="glass animate-drawer-in relative m-auto rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.30)] flex flex-col max-h-[92vh]" style={{width:"min(900px,96vw)"}}>
+      <div className="glass animate-drawer-in relative m-auto rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.30)] flex flex-col max-h-[94vh]" style={{width:"min(1200px,97vw)"}}>
         <button onClick={onClose}
           className="fluent-hover absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/82 backdrop-blur-xl border border-white/70 flex items-center justify-center cursor-pointer">
           <X size={16}/>
         </button>
 
-        <div className="flex flex-wrap overflow-auto">
-          {/* Gallery */}
-          <div className="flex-none w-full md:w-[380px] bg-white flex flex-col items-center justify-center p-6 gap-4 min-h-[280px]">
+        <div className="flex flex-col md:flex-row overflow-auto">
+          {/* Gallery — protagonista */}
+          <div className="relative flex-1 md:flex-[1.4] bg-white flex p-5 md:p-10 gap-4 md:gap-6 min-h-[320px] md:min-h-[560px]">
+            {/* Miniaturas verticales (desktop) */}
+            {images.length > 1 && (
+              <div className="hidden md:flex flex-col gap-3 overflow-y-auto">
+                {images.map((src,i) => (
+                  <button key={i} onClick={()=>setImgIdx(i)}
+                    className="w-16 h-16 shrink-0 rounded-xl overflow-hidden cursor-pointer p-0 transition-all"
+                    style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
+                    <img src={src||PLACEHOLDER} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}} className="w-full h-full object-contain"/>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Imagen principal — llena el espacio disponible */}
             <div
               ref={imgWrapRef}
-              className="relative w-full flex items-center justify-center min-h-[240px] cursor-zoom-in overflow-hidden rounded-xl group"
+              className="relative flex-1 flex items-center justify-center cursor-zoom-in overflow-hidden rounded-2xl group min-h-[260px]"
               onMouseEnter={() => setIsHovering(true)}
               onMouseLeave={() => setIsHovering(false)}
               onMouseMove={e => {
@@ -174,7 +188,7 @@ export function ProductDetailModal({
             >
               <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
                 onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-                className="max-w-full max-h-[240px] object-contain drop-shadow-[0_12px_32px_rgba(0,0,0,0.15)] select-none"
+                className="max-w-full max-h-full w-full h-full object-contain drop-shadow-[0_12px_32px_rgba(0,0,0,0.12)] select-none"
                 draggable={false}/>
 
               {/* Lupa de zoom en hover */}
@@ -183,34 +197,36 @@ export function ProductDetailModal({
                   style={{
                     backgroundImage: `url(${images[imgIdx]||PLACEHOLDER})`,
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: "220%",
+                    backgroundSize: "200%",
                     backgroundPosition: `${lensPos.x}% ${lensPos.y}%`,
                   }}/>
               )}
 
               {/* Indicador de zoom */}
-              <div className="absolute bottom-2 right-2 z-[2] flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/85 backdrop-blur border border-neutral-200/70 text-[9px] font-bold text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-3 right-3 z-[2] flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/85 backdrop-blur border border-neutral-200/70 text-[9px] font-bold text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity">
                 <ZoomIn size={10}/> Clic para ampliar
               </div>
 
               {images.length > 1 && (
                 <>
                   <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+images.length)%images.length);}}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
-                    <ChevronLeft size={15}/>
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
+                    <ChevronLeft size={16}/>
                   </button>
                   <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i+1)%images.length);}}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
-                    <ChevronRight size={15}/>
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 border border-neutral-200/80 flex items-center justify-center cursor-pointer z-[2]">
+                    <ChevronRight size={16}/>
                   </button>
                 </>
               )}
             </div>
+
+            {/* Miniaturas horizontales (mobile) */}
             {images.length > 1 && (
-              <div className="flex gap-2 justify-center flex-wrap">
+              <div className="md:hidden absolute left-0 right-0 bottom-4 flex gap-2 justify-center flex-wrap px-5">
                 {images.map((src,i) => (
                   <button key={i} onClick={()=>setImgIdx(i)}
-                    className="w-12 h-12 rounded-lg overflow-hidden cursor-pointer p-0 transition-all"
+                    className="w-11 h-11 rounded-lg overflow-hidden cursor-pointer p-0 transition-all"
                     style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
                     <img src={src||PLACEHOLDER} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}} className="w-full h-full object-contain"/>
                   </button>
@@ -220,7 +236,7 @@ export function ProductDetailModal({
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-[260px] p-6 md:p-8 flex flex-col gap-3 overflow-y-auto">
+          <div className="flex-none w-full md:w-[340px] p-6 md:p-8 flex flex-col gap-3 overflow-y-auto border-t md:border-t-0 md:border-l border-neutral-100">
             <div>
               <p className="text-[10px] font-bold text-neutral-400 tracking-[2px] uppercase mb-1">{product.category}</p>
               <h2 className="text-xl md:text-2xl font-black text-black uppercase tracking-tight leading-tight mb-2">{product.name}</h2>
