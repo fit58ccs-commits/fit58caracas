@@ -295,6 +295,7 @@ function dbToProduct(row: Record<string, unknown>): Product {
     badge:    row.badge != null ? String(row.badge) : null,
     images:   Array.isArray(row.images) ? row.images as string[] : [],
     img:      String(row.img      ?? ""),
+    specSheet: row.spec_sheet != null ? String(row.spec_sheet) : undefined,
   };
 }
 
@@ -308,6 +309,7 @@ function productToDb(p: Partial<Product>): Record<string, unknown> {
   if (p.badge     !== undefined) out.badge     = p.badge;
   if (p.images    !== undefined) out.images    = p.images;
   if (p.img       !== undefined) out.img       = p.img;
+  if (p.specSheet !== undefined) out.spec_sheet = p.specSheet;
   return out;
 }
 
