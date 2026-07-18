@@ -52,11 +52,8 @@ function ImagePicker({ images, onChange }: { images: string[]; onChange: (imgs: 
     if (list.length > toAdd.length) toast(`Solo se subieron ${toAdd.length} (límite ${MAX_IMAGES})`, "⚠️");
 
     toast(`Subiendo ${toAdd.length} imagen(es)...`, "⬆️");
-    const uploaded: string[] = [];
-    for (const file of toAdd) {
-      const url = await sbUploadImage(file, "products");
-      if (url) uploaded.push(url);
-    }
+    const results = await Promise.all(toAdd.map(file => sbUploadImage(file, "products")));
+    const uploaded = results.filter((u): u is string => !!u);
     if (uploaded.length > 0) {
       onChange([...images, ...uploaded]); // una sola actualización, sin cierre obsoleto
       toast(`${uploaded.length} imagen(es) subida(s)`, "✅");

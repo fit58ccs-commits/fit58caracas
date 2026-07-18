@@ -47,11 +47,8 @@ export function BulkImageManager({
     setStatus(product.id, "uploading");
 
     try {
-      const uploaded: string[] = [];
-      for (const file of toUpload) {
-        const url = await sbUploadImage(file, "products");
-        if (url) uploaded.push(url);
-      }
+      const results = await Promise.all(toUpload.map(file => sbUploadImage(file, "products")));
+      const uploaded = results.filter((u): u is string => !!u);
       if (uploaded.length === 0) throw new Error("upload failed");
 
       const newImages = mode === "replace" ? uploaded : [...currentImages, ...uploaded];
