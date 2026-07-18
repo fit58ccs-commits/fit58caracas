@@ -86,9 +86,6 @@ export function AdminView({ store, userEmail, onSignOut }: {
           onReject={store.rejectReview}
           onDelete={store.deleteReview}/>
       )}
-      {section === "bi" && (
-        <BIModule orders={store.orders} products={store.products} rate={store.rate.value}/>
-      )}
     </AdminShell>
   );
 }
