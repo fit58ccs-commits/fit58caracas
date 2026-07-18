@@ -92,7 +92,8 @@ export function ProductCard({
 
         <div className="flex items-baseline gap-1.5 mt-0.5">
           <span className="text-lg md:text-xl font-black text-black">{fmt$(product.price)}</span>
-          <span className="text-[10px] text-neutral-400">{fmtBs(product.price, rate)}</span>
+          <span className="text-[10px] text-neutral-300 font-bold">/</span>
+          <span className="text-xs md:text-sm font-black text-black">{fmtBs(product.price, rate)}</span>
         </div>
 
         {/* No mostrar stock al cliente */}
@@ -239,7 +240,8 @@ export function ProductDetailModal({
 
             <div className="flex items-baseline gap-2.5">
               <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
-              <span className="text-sm text-neutral-400">{fmtBs(product.price, rate)}</span>
+              <span className="text-sm text-neutral-300 font-bold">/</span>
+              <span className="text-xl font-black text-black">{fmtBs(product.price, rate)}</span>
             </div>
             {product.stock <= 0 && (
               <p className="text-[10px] text-red-500 font-bold -mt-2 flex items-center gap-1">
