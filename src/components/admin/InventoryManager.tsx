@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { Plus, Upload, Trash2, Edit3, Save, Download, FileSpreadsheet, AlertCircle, Package, Image } from "lucide-react";
 import { genId, fmt$, fmtBs } from "@/lib/store";
@@ -38,7 +38,73 @@ const parseSpreadsheet = (buffer: ArrayBuffer): Omit<Product, "id">[] => {
   }).filter(p => p.name && p.price > 0);
 };
 
-/* ── Image picker ─────────────────────────────────────────── */
+/* ── Rich Text Editor ──────────────────────────────────────── */
+function RichEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Sincronizar valor externo solo al montar o si cambia desde afuera
+  useEffect(() => {
+    if (ref.current && ref.current.innerHTML !== value) {
+      ref.current.innerHTML = value || "";
+    }
+  }, []);
+
+  const exec = (cmd: string, val?: string) => {
+    document.execCommand(cmd, false, val);
+    ref.current?.focus();
+    if (ref.current) onChange(ref.current.innerHTML);
+  };
+
+  const TOOLS = [
+    { label: "B",  title: "Negrita",    action: () => exec("bold"),          style: { fontWeight: 900 } },
+    { label: "I",  title: "Cursiva",    action: () => exec("italic"),        style: { fontStyle: "italic" } },
+    { label: "U",  title: "Subrayado",  action: () => exec("underline"),     style: { textDecoration: "underline" } },
+    { label: "H2", title: "Título",     action: () => exec("formatBlock","h2"), style: { fontWeight: 700, fontSize: 11 } },
+    { label: "•",  title: "Lista",      action: () => exec("insertUnorderedList"), style: {} },
+    { label: "1.", title: "Lista num.", action: () => exec("insertOrderedList"),   style: {} },
+    { label: "─",  title: "Separador",  action: () => exec("insertHorizontalRule"), style: {} },
+    { label: "✕",  title: "Limpiar formato", action: () => exec("removeFormat"), style: { color: "#e53e3e" } },
+  ];
+
+  return (
+    <div className="border border-neutral-200/80 rounded-xl overflow-hidden bg-white/72">
+      {/* Toolbar */}
+      <div className="flex flex-wrap gap-1 px-2 py-1.5 border-b border-neutral-100 bg-neutral-50/60">
+        {TOOLS.map(t => (
+          <button key={t.label} type="button" title={t.title}
+            onMouseDown={e => { e.preventDefault(); t.action(); }}
+            className="px-2 py-1 rounded-md text-[11px] cursor-pointer border border-neutral-200/60 bg-white/70 hover:bg-white transition-colors text-neutral-600"
+            style={t.style}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {/* Editor */}
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={() => { if (ref.current) onChange(ref.current.innerHTML); }}
+        className="min-h-[100px] px-3.5 py-2.5 text-sm text-neutral-800 outline-none"
+        style={{ lineHeight: 1.7 }}
+        data-placeholder="Descripción detallada del producto..."
+      />
+      <style>{`
+        [contenteditable]:empty:before {
+          content: attr(data-placeholder);
+          color: #aab8c0;
+          pointer-events: none;
+        }
+        [contenteditable] h2 { font-size: 1rem; font-weight: 700; margin: 6px 0 4px; }
+        [contenteditable] ul { list-style: disc; padding-left: 18px; }
+        [contenteditable] ol { list-style: decimal; padding-left: 18px; }
+        [contenteditable] hr { border: none; border-top: 1px solid #e5e7eb; margin: 8px 0; }
+      `}</style>
+    </div>
+  );
+}
+
+
 function ImagePicker({ images, onChange }: { images: string[]; onChange: (imgs: string[]) => void }) {
   const toast  = useToast();
   const remaining = MAX_IMAGES - images.length;
@@ -203,9 +269,7 @@ function ProductFields({
       <Field label="Nombre del Producto" value={value.name||""} onChange={e=>F("name",e.target.value)} className="col-span-2"/>
       <div className="col-span-2">
         <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">Descripción</label>
-        <textarea value={value.desc||""} onChange={e=>F("desc",e.target.value)} rows={3}
-          className="field-input w-full border border-neutral-200/80 px-3.5 py-2.5 text-sm text-neutral-800 bg-white/72 rounded-lg font-[inherit] resize-none"
-          placeholder="Descripción detallada del producto..."/>
+        <RichEditor value={value.desc||""} onChange={v=>F("desc",v)}/>
       </div>
       <Field label="Precio (€)" type="number" value={value.price??""} onChange={e=>F("price",parseFloat(e.target.value)||0)}/>
       <Field label="Stock (uds)" type="number" value={value.stock??""} onChange={e=>F("stock",parseInt(e.target.value)||0)}/>

@@ -107,3 +107,14 @@
 ::-webkit-scrollbar-track { background: rgba(245,245,245,0.5); }
 ::-webkit-scrollbar-thumb { background: rgba(180,180,180,0.6); border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(140,140,140,0.8); }
+
+/* ── Rich text product description ── */
+.product-desc h2          { font-size: 0.95rem; font-weight: 700; color: #1a2332; margin: 10px 0 4px; }
+.product-desc strong      { font-weight: 700; color: #1a2332; }
+.product-desc em          { font-style: italic; }
+.product-desc u           { text-decoration: underline; }
+.product-desc ul          { list-style: disc; padding-left: 18px; margin: 6px 0; }
+.product-desc ol          { list-style: decimal; padding-left: 18px; margin: 6px 0; }
+.product-desc li          { margin-bottom: 3px; }
+.product-desc hr          { border: none; border-top: 1px solid #e5e7eb; margin: 10px 0; }
+.product-desc p           { margin: 0 0 6px; }

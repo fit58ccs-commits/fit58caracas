@@ -299,7 +299,8 @@ export function ProductDetailModal({
             {/* Tab: Info */}
             {tab === "info" && (
               <>
-                <p className="text-sm text-neutral-500 leading-7">{product.desc}</p>
+                <div className="product-desc text-sm text-neutral-500 leading-7"
+                  dangerouslySetInnerHTML={{ __html: product.desc || "" }}/>
                 {approved.length > 0 && (
                   <div className="flex items-center gap-2 mt-2">
                     <Stars rating={avgRating} size={13}/>
