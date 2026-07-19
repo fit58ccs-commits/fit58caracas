@@ -11,6 +11,7 @@ import type { Product, ExchangeRate } from "@/lib/types";
 const MAX_IMAGES = 3;
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='none' stroke='%23ddd' stroke-width='1'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3C/svg%3E";
 const BADGES = ["", "NUEVO", "BESTSELLER", "BAJO STOCK", "PREMIUM", "EDICIÓN LTD"];
+const LOW_STOCK_THRESHOLD = 5;
 
 /** Parsea un archivo .xlsx/.xls/.csv (SheetJS soporta los tres) a productos */
 const parseSpreadsheet = (buffer: ArrayBuffer): Omit<Product, "id">[] => {
@@ -269,6 +270,9 @@ export function InventoryManager({
     XLSX.writeFile(wb, "Plantilla_Fit58_Productos.xlsx");
   };
 
+  const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD);
+  const outOfStockProducts = products.filter(p => p.stock <= 0);
+
   return (
     <div className="flex flex-col gap-6 animate-fade-up">
       <div className="flex items-end justify-between flex-wrap gap-3">
@@ -278,6 +282,30 @@ export function InventoryManager({
         </div>
         <Btn variant="ghost" onClick={downloadTemplate}><Download size={13}/> PLANTILLA EXCEL</Btn>
       </div>
+
+      {/* Alertas de stock */}
+      {(outOfStockProducts.length > 0 || lowStockProducts.length > 0) && (
+        <div className="flex flex-col gap-2">
+          {outOfStockProducts.length > 0 && (
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200/60">
+              <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5"/>
+              <div>
+                <p className="text-[10px] font-black text-red-600 uppercase tracking-wide mb-0.5">Sin stock ({outOfStockProducts.length})</p>
+                <p className="text-[10px] text-red-400">{outOfStockProducts.map(p=>p.name).join(" · ")}</p>
+              </div>
+            </div>
+          )}
+          {lowStockProducts.length > 0 && (
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200/60">
+              <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5"/>
+              <div>
+                <p className="text-[10px] font-black text-amber-600 uppercase tracking-wide mb-0.5">Bajo stock — ≤{LOW_STOCK_THRESHOLD} uds ({lowStockProducts.length})</p>
+                <p className="text-[10px] text-amber-500">{lowStockProducts.map(p=>`${p.name} (${p.stock})`).join(" · ")}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Importación masiva */}
       <div className="glass-card p-5 rounded-2xl">

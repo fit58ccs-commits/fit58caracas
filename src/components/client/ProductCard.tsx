@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
-import { Heart, AlertCircle, ShoppingCart, Check, ChevronLeft, ChevronRight, X, Shield, Truck, Star, MessageSquare, ZoomIn } from "lucide-react";
+import { Heart, AlertCircle, ShoppingCart, Check, ChevronLeft, ChevronRight, X, Shield, Truck, Star, MessageSquare, ZoomIn, Send } from "lucide-react";
 import { fmt$, fmtBs } from "@/lib/store";
 import type { Product, Review } from "@/lib/types";
 
@@ -114,13 +114,14 @@ export function ProductCard({
 
 /* ── ProductDetailModal ─────────────────────────────────────────── */
 export function ProductDetailModal({
-  product, rate, onAdd, inCart, onClose, reviews = [], wishlisted, onWishlist,
+  product, rate, onAdd, inCart, onClose, reviews = [], wishlisted, onWishlist, onSubmitReview,
 }: {
   product: Product; rate: number;
   onAdd: () => void; inCart: number;
   onClose: () => void;
   reviews?: Review[];
   wishlisted?: boolean; onWishlist?: () => void;
+  onSubmitReview?: (r: Omit<Review, "id" | "date" | "approved">) => void;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [qty, setQty] = useState(1);
@@ -128,6 +129,9 @@ export function ProductDetailModal({
   const [isHovering, setIsHovering] = useState(false);
   const [lensPos, setLensPos] = useState({ x: 50, y: 50 });
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ author:"", comment:"", rating:0, serviceRating:0 });
+  const [reviewSent, setReviewSent] = useState(false);
+  const [reviewHover, setReviewHover] = useState(0);
   const imgWrapRef = useRef<HTMLDivElement | null>(null);
   const images   = product.images?.length ? product.images : [product.img].filter(Boolean);
   const galleryImages = [...images, ...(product.specSheet ? [product.specSheet] : [])];
@@ -307,11 +311,60 @@ export function ProductDetailModal({
             {/* Tab: Reseñas */}
             {tab === "reviews" && (
               <div className="flex flex-col gap-3">
+                {/* Formulario de reseña */}
+                {onSubmitReview && (
+                  <div className="glass-card rounded-xl p-4 border border-neutral-100">
+                    {reviewSent ? (
+                      <div className="text-center py-3">
+                        <p className="text-sm font-black text-green-600 mb-1">✅ ¡Gracias por tu reseña!</p>
+                        <p className="text-[10px] text-neutral-400">Será publicada tras revisión.</p>
+                        <button onClick={()=>{setReviewSent(false);setReviewForm({author:"",comment:"",rating:0,serviceRating:0});}}
+                          className="mt-2 text-[10px] font-bold text-neutral-400 underline cursor-pointer border-none bg-transparent">
+                          Dejar otra reseña
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-3">Deja tu reseña</p>
+                        <div className="flex flex-col gap-2.5">
+                          <input value={reviewForm.author} onChange={e=>setReviewForm(f=>({...f,author:e.target.value}))}
+                            placeholder="Tu nombre" maxLength={40}
+                            className="field-input w-full border border-neutral-200/80 px-3 py-2 text-xs bg-white/72 rounded-lg font-[inherit]"/>
+                          <div>
+                            <p className="text-[9px] text-neutral-400 mb-1 font-semibold">Calificación del producto</p>
+                            <div className="flex gap-1">
+                              {[1,2,3,4,5].map(i=>(
+                                <button key={i} onMouseEnter={()=>setReviewHover(i)} onMouseLeave={()=>setReviewHover(0)}
+                                  onClick={()=>setReviewForm(f=>({...f,rating:i}))}
+                                  className="border-none bg-transparent cursor-pointer p-0.5">
+                                  <Star size={20} color="#f59e0b" fill={(reviewHover||reviewForm.rating)>=i?"#f59e0b":"none"}/>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <textarea value={reviewForm.comment} onChange={e=>setReviewForm(f=>({...f,comment:e.target.value}))}
+                            placeholder="Cuéntanos tu experiencia..." rows={3} maxLength={400}
+                            className="field-input w-full border border-neutral-200/80 px-3 py-2 text-xs bg-white/72 rounded-lg font-[inherit] resize-none"/>
+                          <button
+                            onClick={()=>{
+                              if(!reviewForm.author||!reviewForm.comment||!reviewForm.rating) return;
+                              onSubmitReview({productId:product.id,author:reviewForm.author,comment:reviewForm.comment,rating:reviewForm.rating,serviceRating:reviewForm.serviceRating||0});
+                              setReviewSent(true);
+                            }}
+                            disabled={!reviewForm.author||!reviewForm.comment||!reviewForm.rating}
+                            className="flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-black uppercase tracking-wide rounded-lg cursor-pointer border-none disabled:opacity-40"
+                            style={{background:"rgba(17,17,17,0.90)",color:"#fff"}}>
+                            <Send size={12}/> ENVIAR RESEÑA
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
                 {approved.length === 0 ? (
-                  <div className="text-center py-10 text-neutral-300">
-                    <MessageSquare size={32} className="mx-auto mb-3"/>
-                    <p className="text-sm text-neutral-400">Aún no hay reseñas para este producto</p>
-                    <p className="text-xs text-neutral-300 mt-1">¡Sé el primero en opinar!</p>
+                  <div className="text-center py-6 text-neutral-300">
+                    <MessageSquare size={28} className="mx-auto mb-2"/>
+                    <p className="text-sm text-neutral-400">Sé el primero en opinar</p>
                   </div>
                 ) : (
                   approved.map(r => (

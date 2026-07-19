@@ -252,6 +252,7 @@ export function ClientView({ store }: { store: Store }) {
           onClose={() => setSelectedProduct(null)}
           wishlisted={store.wishlist.includes(selectedProduct.id)}
           onWishlist={() => store.toggleWishlist(selectedProduct.id)}
+          onSubmitReview={store.addReview}
           reviews={store.reviews}/>
       )}
 

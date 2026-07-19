@@ -108,7 +108,7 @@ export async function notifyNewOrder(order: {
 }) {
   const cfg = getNotifConfig();
   const items = order.cart.map(i => `• ${i.name} ×${i.qty}`).join("\n");
-  const total = `$${order.total.toFixed(2)}`;
+  const total = `€${order.total.toFixed(2)}`;
 
   // 1. Push PWA (llega al teléfono si instaló la PWA)
   if (cfg.pushEnabled) {

@@ -204,6 +204,31 @@ export function useAppStore() {
     // Note: we don't delete from Supabase to keep history — just hide locally
   }, []);
 
+  // ── EXPORT PEDIDOS A EXCEL ────────────────────────────────────────────────
+  const exportOrdersToExcel = useCallback(async () => {
+    const XLSX = await import("xlsx");
+    const rows = [
+      ["#","Fecha","Cliente","Teléfono","Dirección","Productos","Total (€)","Total Bs.","Método","Estado"],
+      ...orders.map(o => [
+        o.id,
+        new Date(o.date).toLocaleString("es-VE"),
+        o.form?.name || "",
+        o.form?.phone || "",
+        o.form?.address || "",
+        (o.cart||[]).map(i=>`${i.name} ×${i.qty}`).join(" | "),
+        o.total.toFixed(2),
+        (o.total * (orders.length ? 36.5 : 36.5)).toFixed(2), // usa tasa actual
+        o.form?.method || "",
+        o.status === "pending" ? "PENDIENTE" : o.status === "processed" ? "PROCESADO" : "ANULADO",
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [{wch:12},{wch:18},{wch:20},{wch:14},{wch:28},{wch:40},{wch:10},{wch:14},{wch:16},{wch:12}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+    XLSX.writeFile(wb, `Pedidos_Fit58_${new Date().toLocaleDateString("es-VE").replace(/\//g,"-")}.xlsx`);
+  }, [orders]);
+
   // ── WISHLIST ──────────────────────────────────────────────────────────────
   const toggleWishlist = useCallback((id: string) => {
     setWishlistState(w => w.includes(id) ? w.filter(x => x !== id) : [...w, id]);
@@ -289,7 +314,7 @@ export function useAppStore() {
     // carrito
     addToCart, removeFromCart, updateCartQty, clearCart,
     // pedidos
-    saveOrder, updateOrderStatus, deleteOrder,
+    saveOrder, updateOrderStatus, deleteOrder, exportOrdersToExcel,
     // wishlist
     toggleWishlist,
     // tasas

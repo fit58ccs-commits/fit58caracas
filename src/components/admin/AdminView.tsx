@@ -70,6 +70,7 @@ export function AdminView({ store, userEmail, onSignOut }: {
           }}
           onCancel={(id, reason) => store.updateOrderStatus(id, "cancelled", reason)}
           onDelete={id => store.deleteOrder(id)}
+          onExport={store.exportOrdersToExcel}
         />
       )}
       {section === "rates" && (

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { MapPin, Phone, Trash2, XCircle, RotateCcw, Check } from "lucide-react";
+import { MapPin, Phone, Trash2, XCircle, RotateCcw, Check, Download } from "lucide-react";
 import { fmt$, fmtBs } from "@/lib/store";
 import { useToast } from "../ui/Toast";
 import type { Order } from "@/lib/types";
@@ -12,6 +12,7 @@ interface Props {
   onToggleStatus: (id: string) => void;
   onCancel?:      (id: string, reason: string) => void;
   onDelete?:      (id: string) => void;
+  onExport?:      () => void;
 }
 
 const STATUS_COLORS: Record<string, { bg: string; color: string; label: string }> = {
@@ -20,7 +21,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string; label: string }
   cancelled: { bg:"rgba(254,226,226,0.9)", color:"#991b1b", label:"ANULADO"    },
 };
 
-export function OrdersManager({ orders, search, rate = 36.5, onToggleStatus, onCancel, onDelete }: Props) {
+export function OrdersManager({ orders, search, rate = 36.5, onToggleStatus, onCancel, onDelete, onExport }: Props) {
   const toast = useToast();
   const [cancelId,     setCancelId]     = useState<string|null>(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -57,8 +58,15 @@ export function OrdersManager({ orders, search, rate = 36.5, onToggleStatus, onC
           <h1 className="text-2xl font-black text-black uppercase tracking-tight m-0">Pedidos</h1>
           <p className="text-xs text-neutral-400 mt-1">{filtered.length} pedido{filtered.length!==1?"s":""} · Total: {fmt$(orders.filter(o=>o.status!=="cancelled").reduce((s,o)=>s+o.total,0))}</p>
         </div>
-        {/* Filtros */}
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          {onExport && (
+            <button onClick={onExport}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide border border-neutral-200/80 bg-white/70 text-neutral-500 cursor-pointer hover:text-black transition-colors">
+              <Download size={12}/> Exportar Excel
+            </button>
+          )}
+          {/* Filtros */}
+          <div className="flex gap-1.5 flex-wrap">
           {(["all","pending","processed","cancelled"] as const).map(f => (
             <button key={f} onClick={()=>setFilter(f)}
               className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
@@ -67,6 +75,7 @@ export function OrdersManager({ orders, search, rate = 36.5, onToggleStatus, onC
               <span className="ml-1 opacity-60">({counts[f]})</span>
             </button>
           ))}
+          </div>
         </div>
       </div>
 
