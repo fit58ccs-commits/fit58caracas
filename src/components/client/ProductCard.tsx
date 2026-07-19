@@ -60,6 +60,7 @@ export function ProductCard({
       <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height:220}} onClick={onDetail}>
         <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
           onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
+          loading="lazy" decoding="async"
           className="max-w-full max-h-full object-contain"/>
         {images.length > 1 && (
           <>

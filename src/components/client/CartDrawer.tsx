@@ -240,7 +240,7 @@ export function CartDrawer({
               )}
               {cart.map(item => (
                 <div key={item.id} className="glass-card p-3.5 rounded-2xl flex gap-3">
-                  <img src={item.img} alt={item.name} className="w-14 h-14 object-contain rounded-xl bg-neutral-50"
+                  <img src={item.img} alt={item.name} className="w-14 h-14 object-contain rounded-xl bg-neutral-50" loading="lazy" decoding="async"
                     onError={e=>(e.currentTarget.style.opacity="0")}/>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-black text-black uppercase leading-snug mb-1">{item.name}</p>
