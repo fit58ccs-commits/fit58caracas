@@ -18,7 +18,7 @@ export function OrderTracker({ rate, onClose }: { rate: number; onClose: () => v
   const [error,   setError]   = useState("");
 
   const search = async () => {
-    const id = query.trim().toUpperCase();
+    const id = query.trim();
     if (!id) return;
     setLoading(true);
     setError("");
@@ -53,9 +53,9 @@ export function OrderTracker({ rate, onClose }: { rate: number; onClose: () => v
           <div className="flex gap-2">
             <input
               value={query}
-              onChange={e => setQuery(e.target.value.toUpperCase())}
+              onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === "Enter" && search()}
-              placeholder="Número de pedido (ej: LB2K4X)"
+              placeholder="Número de pedido (ej: 61ex3j3)"
               maxLength={20}
               className="flex-1 border border-neutral-200/80 px-4 py-3 text-sm rounded-xl font-[inherit] outline-none bg-neutral-50/50 tracking-wider font-bold"
             />
