@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import * as XLSX from "xlsx";
 import { Plus, Upload, Trash2, Edit3, Save, Download, FileSpreadsheet, AlertCircle, Package, Image } from "lucide-react";
 import { genId, fmt$, fmtBs } from "@/lib/store";
 import { sbUploadImage } from "@/lib/supabase";
@@ -11,13 +12,16 @@ const MAX_IMAGES = 3;
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='none' stroke='%23ddd' stroke-width='1'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3C/svg%3E";
 const BADGES = ["", "NUEVO", "BESTSELLER", "BAJO STOCK", "PREMIUM", "EDICIÓN LTD"];
 
-const parseCSV = (text: string): Omit<Product, "id">[] => {
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
-  return lines.slice(1).filter(l => l.trim()).map(line => {
-    const vals = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
-    const get  = (k: string) => vals[headers.indexOf(k)] ?? "";
+/** Parsea un archivo .xlsx/.xls/.csv (SheetJS soporta los tres) a productos */
+const parseSpreadsheet = (buffer: ArrayBuffer): Omit<Product, "id">[] => {
+  const wb = XLSX.read(buffer, { type: "array" });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+  return rows.map(row => {
+    const norm: Record<string, string> = {};
+    for (const k in row) norm[k.trim().toLowerCase()] = String(row[k]).trim();
+    const get  = (k: string) => norm[k] ?? "";
     const img  = get("img") || get("imagen") || get("image") || "";
     const desc = get("desc") || get("descripcion") || get("description") || "";
     return {
@@ -202,7 +206,7 @@ function ProductFields({
           className="field-input w-full border border-neutral-200/80 px-3.5 py-2.5 text-sm text-neutral-800 bg-white/72 rounded-lg font-[inherit] resize-none"
           placeholder="Descripción detallada del producto..."/>
       </div>
-      <Field label="Precio ($)" type="number" value={value.price??""} onChange={e=>F("price",parseFloat(e.target.value)||0)}/>
+      <Field label="Precio (€)" type="number" value={value.price??""} onChange={e=>F("price",parseFloat(e.target.value)||0)}/>
       <Field label="Stock (uds)" type="number" value={value.stock??""} onChange={e=>F("stock",parseInt(e.target.value)||0)}/>
       <Select label="Categoría" value={value.category||""} onChange={e=>F("category",e.target.value)}>
         <option value="">Sin categoría</option>
@@ -247,25 +251,22 @@ export function InventoryManager({
     toast("Producto añadido","📦");
   };
 
-  // Descargar plantilla Excel con formato profesional
+  // Descargar plantilla en formato Excel (.xlsx) real
   const downloadTemplate = () => {
-    // Genera un CSV con BOM para que Excel lo abra correctamente
-    const bom  = "\uFEFF";
     const rows = [
       ["name","category","desc","price","stock","badge","img"],
-      ["Aceite de Oliva Extra Virgen","Aceites","500ml · Prensado en frío · Cosecha selecta","8.50","48","BESTSELLER","https://url-imagen.com/img.jpg"],
-      ["Café Gourmet Molido","Bebidas","250g · Tueste artesanal · Origen único","6.00","30","NUEVO",""],
-      ["Miel Pura de Abeja","Dulces","350g · Sin conservantes · Cruda","7.25","5","BAJO STOCK",""],
+      ["Aceite de Oliva Extra Virgen","Aceites","500ml · Prensado en frío · Cosecha selecta",8.50,48,"BESTSELLER","https://url-imagen.com/img.jpg"],
+      ["Café Gourmet Molido","Bebidas","250g · Tueste artesanal · Origen único",6.00,30,"NUEVO",""],
+      ["Miel Pura de Abeja","Dulces","350g · Sin conservantes · Cruda",7.25,5,"BAJO STOCK",""],
       ["","","","","","",""],
       ["","","","","","",""],
       ["","","","","","",""],
     ];
-    const csv  = bom + rows.map(r => r.map(v => `"${v}"`).join(",")).join("\r\n");
-    const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
-    const a    = document.createElement("a");
-    a.href     = URL.createObjectURL(blob);
-    a.download = "Plantilla_Fit58_Productos.csv";
-    a.click();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [{wch:32},{wch:14},{wch:44},{wch:9},{wch:8},{wch:14},{wch:34}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Productos");
+    XLSX.writeFile(wb, "Plantilla_Fit58_Productos.xlsx");
   };
 
   return (
@@ -275,32 +276,32 @@ export function InventoryManager({
           <h1 className="text-2xl font-black text-black uppercase tracking-tight m-0">Control de Inventario</h1>
           <p className="text-xs text-neutral-400 mt-1">{products.length} productos · Stock total: {products.reduce((s,p)=>s+p.stock,0)} uds</p>
         </div>
-        <Btn variant="ghost" onClick={downloadTemplate}><Download size={13}/> PLANTILLA EXCEL/CSV</Btn>
+        <Btn variant="ghost" onClick={downloadTemplate}><Download size={13}/> PLANTILLA EXCEL</Btn>
       </div>
 
-      {/* CSV Bulk import */}
+      {/* Importación masiva */}
       <div className="glass-card p-5 rounded-2xl">
         <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-3 flex items-center gap-1.5">
-          <FileSpreadsheet size={13}/>Importación Masiva · Arrastra tu archivo CSV/Excel
+          <FileSpreadsheet size={13}/>Importación Masiva · Arrastra tu archivo Excel
         </p>
         <label className="flex flex-col items-center justify-center gap-2 py-6 px-6 border-2 border-dashed border-neutral-200/60 rounded-xl cursor-pointer bg-neutral-50/50 transition-colors hover:border-green-400/60 hover:bg-green-50/30"
           onDragOver={e=>{e.preventDefault();}}
           onDrop={async e=>{
             e.preventDefault();
             const file=e.dataTransfer.files[0]; if(!file) return;
-            const text=await file.text();
-            const parsed=parseCSV(text);
+            const buffer=await file.arrayBuffer();
+            const parsed=parseSpreadsheet(buffer);
             if(!parsed.length){toast("Sin productos válidos — revisa el formato","⚠️");return;}
             parsed.forEach(p=>onAdd(p));
             toast(`${parsed.length} productos importados`,"📦");
           }}>
           <FileSpreadsheet size={28} className="text-neutral-300"/>
-          <p className="text-sm font-bold text-neutral-500">Arrastra el CSV aquí o haz clic para seleccionar</p>
+          <p className="text-sm font-bold text-neutral-500">Arrastra el Excel aquí o haz clic para seleccionar</p>
           <p className="text-[10px] text-neutral-400">Usa la plantilla de arriba como referencia</p>
-          <input type="file" accept=".csv,.tsv,.txt" className="hidden" onChange={async e=>{
+          <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={async e=>{
             const file=e.target.files?.[0]; if(!file) return;
-            const text=await file.text();
-            const parsed=parseCSV(text);
+            const buffer=await file.arrayBuffer();
+            const parsed=parseSpreadsheet(buffer);
             if(!parsed.length){toast("Sin productos válidos","⚠️");return;}
             parsed.forEach(p=>onAdd(p));
             toast(`${parsed.length} productos importados`,"📦");
