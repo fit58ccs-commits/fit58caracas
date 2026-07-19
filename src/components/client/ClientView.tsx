@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
-import { Package, Heart, ShoppingCart, X, ChevronRight, Award, Globe, Truck, Shield } from "lucide-react";
+import { Package, Heart, ShoppingCart, X, ChevronRight, Award, Globe, Truck, Shield, ClipboardList } from "lucide-react";
 import { Navbar }                          from "./Navbar";
 import { HeroBanner }                      from "./HeroBanner";
 import { ProductCard, ProductDetailModal } from "./ProductCard";
 import { CartDrawer }                      from "./CartDrawer";
 import { ReviewSection }                   from "./ReviewSection";
+import { OrderTracker }                    from "./OrderTracker";
 import { DEFAULT_TICKER_ITEMS, DEFAULT_TRUST_ITEMS } from "@/lib/data";
 import { fmt$, fmtBs }                    from "@/lib/store";
 import type { Product }                    from "@/lib/types";
@@ -23,6 +24,7 @@ const TRUST_ICONS: Record<string, React.ReactNode> = {
 export function ClientView({ store }: { store: Store }) {
   const [cartOpen,        setCartOpen]        = useState(false);
   const [wishlistOpen,    setWishlistOpen]    = useState(false);
+  const [trackOpen,       setTrackOpen]       = useState(false);
   const [search,          setSearch]          = useState("");
   const [category,        setCategory]        = useState("Todos");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -50,7 +52,8 @@ export function ClientView({ store }: { store: Store }) {
   return (
     <div className="min-h-screen bg-white" id="inicio">
       <Navbar design={store.design} cartCount={store.cartCount}
-        search={search} onSearch={setSearch} onCartOpen={() => setCartOpen(true)}/>
+        search={search} onSearch={setSearch} onCartOpen={() => setCartOpen(true)}
+        onTrack={() => setTrackOpen(true)}/>
 
       {/* ── Ticker barra negra (editable) ── */}
       <div className="bg-[rgba(17,17,17,0.93)] backdrop-blur-sm h-9 overflow-hidden flex items-center">
@@ -168,6 +171,14 @@ export function ClientView({ store }: { store: Store }) {
           </div>
           <span className="text-[9px] font-bold tracking-wide uppercase">Favoritos</span>
         </button>
+
+        {/* Seguimiento */}
+        <button onClick={() => { setTrackOpen(true); setActiveNav("Pedido"); }}
+          className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
+          style={{ color: activeNav==="Pedido" ? "#111" : "#aaa" }}>
+          <ClipboardList size={20}/>
+          <span className="text-[9px] font-bold tracking-wide uppercase">Pedido</span>
+        </button>
       </nav>
 
       {/* Cart FAB desktop */}
@@ -243,6 +254,10 @@ export function ClientView({ store }: { store: Store }) {
             )}
           </div>
         </div>
+      )}
+
+      {trackOpen && (
+        <OrderTracker rate={store.rate.value} onClose={() => setTrackOpen(false)}/>
       )}
 
       {selectedProduct && (

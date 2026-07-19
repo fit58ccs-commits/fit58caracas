@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ShoppingCart, Search, Star } from "lucide-react";
+import { ShoppingCart, Search, Star, ClipboardList } from "lucide-react";
 import type { DesignConfig } from "@/lib/types";
 
 interface NavbarProps {
@@ -9,6 +9,7 @@ interface NavbarProps {
   search:     string;
   onSearch:   (v: string) => void;
   onCartOpen: () => void;
+  onTrack:    () => void;
 }
 
 // Estos enlaces son fijos — no se editan desde el panel admin
@@ -17,7 +18,7 @@ const FIXED_NAV = [
   { id:"n4", label:"Reseñas", href:"#resenas" },
 ];
 
-export function Navbar({ design, cartCount, search, onSearch, onCartOpen }: NavbarProps) {
+export function Navbar({ design, cartCount, search, onSearch, onCartOpen, onTrack }: NavbarProps) {
   const [badgeKey, setBadgeKey] = useState(0);
   const [active,   setActive]   = useState("Tienda");
 
@@ -69,8 +70,12 @@ export function Navbar({ design, cartCount, search, onSearch, onCartOpen }: Navb
             className="border-none outline-none text-sm bg-transparent text-neutral-700 w-full font-[inherit]"/>
         </div>
 
-        {/* Cart */}
-        <div className="ml-auto">
+        {/* Cart + Track */}
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={onTrack}
+            className="hidden md:flex fluent-hover items-center gap-1.5 bg-white/60 border border-neutral-200/80 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide text-neutral-600 cursor-pointer">
+            <ClipboardList size={15}/> Mi Pedido
+          </button>
           <button onClick={()=>{setBadgeKey(k=>k+1);onCartOpen();}}
             className="fluent-hover relative bg-white/60 border border-neutral-200/80 p-2 rounded-xl flex items-center justify-center">
             <ShoppingCart size={21} className="text-black"/>

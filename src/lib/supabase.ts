@@ -61,6 +61,17 @@ export async function sbDeleteProduct(id: string): Promise<boolean> {
 // ORDERS
 // ─────────────────────────────────────────────────────────────────────────────
 
+export async function sbGetOrderById(id: string): Promise<Order | null> {
+  const sb = createClient();
+  const { data, error } = await sb
+    .from("orders")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error || !data) return null;
+  return dbToOrder(data as Record<string, unknown>);
+}
+
 export async function sbGetOrders(): Promise<Order[]> {
   const sb = createClient();
   const { data, error } = await sb
