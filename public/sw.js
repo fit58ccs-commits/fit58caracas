@@ -1,32 +1,85 @@
 /**
  * Service Worker — Fit +58 Caracas PWA
- * Maneja: cache offline + notificaciones push
+ * Estrategia: network-first para páginas, cache-first para assets estáticos
  */
-const CACHE_NAME = "fit58-v1";
-const STATIC_ASSETS = ["/", "/manifest.json"];
+const CACHE_NAME   = "fit58-v3";
+const STATIC_CACHE = "fit58-static-v3";
 
-/* ── Instalación: pre-cachear assets básicos ── */
+const STATIC_ASSETS = [
+  "/",
+  "/manifest.json",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+];
+
+const OFFLINE_PAGE = "/";
+
+/* ── Instalación ── */
 self.addEventListener("install", (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((c) => c.addAll(STATIC_ASSETS))
+    caches.open(STATIC_CACHE).then((c) => c.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
-/* ── Activación: limpiar caches viejos ── */
+/* ── Activación ── */
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== STATIC_CACHE)
+          .map((k) => caches.delete(k))
+      )
     )
   );
   self.clients.claim();
 });
 
-/* ── Fetch: network-first con fallback a cache ── */
+/* ── Fetch ── */
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  if (e.request.url.includes("supabase.co")) return; // no cachear Supabase
+  const url = new URL(e.request.url);
+
+  // No interceptar Supabase ni APIs externas
+  if (url.hostname.includes("supabase.co")) return;
+  if (url.hostname.includes("api.telegram.org")) return;
+  if (url.hostname.includes("maps.google.com")) return;
+  if (url.protocol === "chrome-extension:") return;
+
+  // Assets estáticos (_next/static) → cache-first
+  if (url.pathname.startsWith("/_next/static")) {
+    e.respondWith(
+      caches.match(e.request).then(
+        (cached) => cached || fetch(e.request).then((res) => {
+          const clone = res.clone();
+          caches.open(STATIC_CACHE).then((c) => c.put(e.request, clone));
+          return res;
+        })
+      )
+    );
+    return;
+  }
+
+  // Imágenes → cache-first con límite de tiempo
+  if (
+    e.request.destination === "image" ||
+    url.pathname.match(/\.(png|jpg|jpeg|webp|svg|ico)$/)
+  ) {
+    e.respondWith(
+      caches.match(e.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(e.request).then((res) => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
+          return res;
+        }).catch(() => cached);
+      })
+    );
+    return;
+  }
+
+  // Páginas y todo lo demás → network-first con fallback a cache
   e.respondWith(
     fetch(e.request)
       .then((res) => {
@@ -34,7 +87,9 @@ self.addEventListener("fetch", (e) => {
         caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() =>
+        caches.match(e.request).then((cached) => cached || caches.match(OFFLINE_PAGE))
+      )
   );
 });
 
