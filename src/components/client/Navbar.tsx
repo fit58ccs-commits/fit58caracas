@@ -64,10 +64,16 @@ export function Navbar({ design, cartCount, search, onSearch, onCartOpen, onTrac
 
         {/* Search */}
         <div className="hidden md:flex flex-1 max-w-xs items-center gap-2 neumorph-inset rounded-full px-4 py-2 bg-[#f0f2f5]">
-          <Search size={14} className="text-neutral-400"/>
+          <Search size={14} className="text-neutral-400 shrink-0"/>
           <input value={search} onChange={e=>onSearch(e.target.value)}
-            placeholder="Buscar productos..."
+            placeholder="Buscar por nombre, categoría..."
             className="border-none outline-none text-sm bg-transparent text-neutral-700 w-full font-[inherit]"/>
+          {search && (
+            <button onClick={()=>onSearch("")}
+              className="shrink-0 w-4 h-4 rounded-full bg-neutral-300 flex items-center justify-center cursor-pointer border-none text-white font-black text-[10px] hover:bg-neutral-500 transition-colors">
+              ×
+            </button>
+          )}
         </div>
 
         {/* Cart + Track */}

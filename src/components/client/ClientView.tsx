@@ -31,10 +31,14 @@ export function ClientView({ store }: { store: Store }) {
   const [activeNav,       setActiveNav]       = useState("Tienda");
 
   const filtered = store.products.filter(p => {
-    if (p.stock <= 0) return false; // ocultar sin stock
-    const matchSearch = !search
-      || p.name.toLowerCase().includes(search.toLowerCase())
-      || p.category.toLowerCase().includes(search.toLowerCase());
+    if (p.stock <= 0) return false;
+    if (!search) return category === "Todos" || p.category === category;
+    const q = search.toLowerCase();
+    const matchSearch =
+      p.name.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q) ||
+      p.desc?.toLowerCase().includes(q) ||
+      p.badge?.toLowerCase().includes(q);
     return matchSearch && (category === "Todos" || p.category === category);
   });
 
@@ -80,7 +84,8 @@ export function ClientView({ store }: { store: Store }) {
           <div>
             <h2 className="text-xl md:text-2xl font-black text-black uppercase tracking-tight m-0">Catálogo</h2>
             <p className="text-xs text-neutral-400 mt-1 font-medium">
-              {filtered.length} productos · Tasa de Cambio BCV Euro (€) 1$ = Bs. {store.rateBCV.value.toFixed(2)}
+              {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
+              {search ? ` para "${search}"` : ""} · Tasa BCV 1€ = Bs. {store.rateBCV.value.toFixed(2)}
             </p>
           </div>
         </div>
@@ -116,7 +121,27 @@ export function ClientView({ store }: { store: Store }) {
           {filtered.length === 0 && (
             <div className="col-span-full text-center py-16 text-neutral-300">
               <Package size={40} className="mx-auto mb-3"/>
-              <p className="text-sm font-semibold text-neutral-400">No hay productos que coincidan</p>
+              {search ? (
+                <>
+                  <p className="text-sm font-semibold text-neutral-400 mb-2">
+                    Sin resultados para <span className="text-black font-black">"{search}"</span>
+                  </p>
+                  <div className="flex flex-col items-center gap-2">
+                    {category !== "Todos" && (
+                      <button onClick={() => setCategory("Todos")}
+                        className="text-[11px] font-bold text-neutral-500 underline cursor-pointer border-none bg-transparent">
+                        Buscar en todas las categorías
+                      </button>
+                    )}
+                    <button onClick={() => setSearch("")}
+                      className="text-[11px] font-bold text-black underline cursor-pointer border-none bg-transparent">
+                      Limpiar búsqueda
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm font-semibold text-neutral-400">No hay productos en esta categoría</p>
+              )}
             </div>
           )}
         </div>
