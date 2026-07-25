@@ -70,7 +70,7 @@ export function ClientView({ store }: { store: Store }) {
       {/* Hero */}
       <div id="tienda">
         {activeBanners.length > 0
-          ? <HeroBanner banners={activeBanners} />
+          ? <HeroBanner banners={activeBanners} products={store.products} />
           : <div style={{ height: 120, background: "#FFF0E8", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <p style={{ color: "#9a8880", fontSize: 13 }}>Sin banners activos</p>
             </div>
