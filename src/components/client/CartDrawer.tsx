@@ -38,6 +38,7 @@ export function CartDrawer({
   const [referralCode, setReferralCode] = useState("");
   const [referralId,   setReferralId]   = useState("");
   const [referralDisc, setReferralDisc] = useState(0);
+  const [myRefCode,    setMyRefCode]    = useState(""); // código propio generado al completar pedido
 
   const discountAmount = referralDisc > 0 ? (cartTotal * referralDisc) / 100 : 0;
   const finalTotal     = Math.max(0, cartTotal - discountAmount);
@@ -135,13 +136,32 @@ export function CartDrawer({
 
     onSaveOrder({ cart, total: finalTotal, form: orderForm, mapsLink });
 
-    // Registrar uso del código de referido
+    // Registrar uso del código de referido y acumular descuento para el referidor
     if (referralId) {
       import("@/app/utils/supabase/client").then(({ createClient }) => {
         const sb = createClient();
-        sb.rpc("increment_referral_uses", { referral_id: referralId });
+        sb.rpc("use_referral_code", { referral_id: referralId, order_id: oid });
       });
     }
+
+    // Generar código propio del cliente para que él también pueda referir
+    import("@/app/utils/supabase/client").then(({ createClient }) => {
+      const sb = createClient();
+      const clean = form.name.trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5);
+      const rand  = Math.random().toString(36).slice(2,5).toUpperCase();
+      const code  = `FIT-${clean}-${rand}`;
+      sb.from("referrals").upsert({
+        code,
+        owner_name:  form.name,
+        owner_phone: form.phone,
+        discount:    3,    // 3% para el cliente nuevo que lo use
+        referrer_discount_per_use: 2.5, // 2.5% acumulable para el referidor
+        uses:        0,
+        active:      true,
+      }, { onConflict: "owner_phone", ignoreDuplicates: true })
+      .select("code").single()
+      .then(({ data }) => { if (data?.code) setMyRefCode(data.code); });
+    });
 
     // Armar mensaje WhatsApp
     const paymentLines = payments.filter(p => p.method).map(p =>
@@ -195,7 +215,8 @@ export function CartDrawer({
       `📍 Dirección: ${form.address}`,
       "─────────────────────────",
       `Guarda este ticket para consultar el estado de tu pedido.`,
-    ].join("\n");
+      myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra.` : "",
+    ].filter(Boolean).join("\n");
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2000); });
   };
 
@@ -586,6 +607,18 @@ export function CartDrawer({
                   <div className="flex items-center gap-1.5"><Phone size={10}/> {form.phone}</div>
                   <div className="flex items-center gap-1.5"><MapPin size={10}/> {form.address}</div>
                 </div>
+                {/* Código de referido propio */}
+                {myRefCode && (
+                  <div className="border-t border-dashed border-neutral-200 pt-3 mt-1">
+                    <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-2">🎁 Tu código de referido</p>
+                    <div className="bg-neutral-50 border border-neutral-200/80 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-black tracking-widest mb-1">{myRefCode}</p>
+                      <p className="text-[10px] text-neutral-500 leading-relaxed">
+                        Comparte este código con tus amigos — ellos obtienen <strong>3% OFF</strong> y tú acumulas <strong>2.5% de descuento</strong> por cada compra que generes.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button onClick={copyTicket}

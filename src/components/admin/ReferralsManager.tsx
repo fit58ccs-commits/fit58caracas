@@ -126,10 +126,17 @@ export function ReferralsManager() {
                     style={{background:r.active?"rgba(34,168,90,0.12)":"rgba(200,200,200,0.2)",color:r.active?"#22a85a":"#999"}}>
                     {r.active ? "ACTIVO" : "INACTIVO"}
                   </span>
-                  <span className="text-[10px] font-bold text-[#2d3a4a] bg-blue-50 px-2 py-0.5 rounded-full">{r.discount}% OFF</span>
+                  <span className="text-[10px] font-bold text-[#2d3a4a] bg-blue-50 px-2 py-0.5 rounded-full">3% OFF nuevo cliente</span>
                 </div>
                 <p className="text-xs text-neutral-500">{r.owner_name} · {r.owner_phone}</p>
-                <p className="text-[10px] text-neutral-400">{r.uses} uso{r.uses!==1?"s":""} · creado {new Date(r.created_at).toLocaleDateString("es-VE")}</p>
+                <div className="flex items-center gap-3 mt-0.5">
+                  <p className="text-[10px] text-neutral-400">{r.uses} uso{r.uses!==1?"s":""} · creado {new Date(r.created_at).toLocaleDateString("es-VE")}</p>
+                  {r.uses > 0 && (
+                    <span className="text-[10px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      {(r.uses * 2.5).toFixed(1)}% acumulado para {r.owner_name.split(" ")[0]}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => copy(r.code)}

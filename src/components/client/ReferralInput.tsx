@@ -41,7 +41,7 @@ export function ReferralInput({
     } else if (!data.active) {
       setError("Este código ya no está activo.");
     } else {
-      onApply(clean, data.discount, data.id);
+      onApply(clean, 3, data.id); // siempre 3% para el cliente nuevo
       setCode("");
     }
     setLoading(false);
