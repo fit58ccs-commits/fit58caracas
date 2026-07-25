@@ -158,20 +158,26 @@ export function CartDrawer({
     const payLines = payments.filter(p => p.method && p.amount > 0).map(p =>
       `  ${p.method}: ${fmt$(p.amount)}`
     ).join("\n");
+    const itemLines = cart.map(i => `• ${i.name} ×${i.qty}  →  ${fmt$(i.price*i.qty)}`).join("\n");
     const text = [
       `🧾 TICKET DE COMPRA — Fit +58 Caracas`,
-      `Pedido #${orderId}`,
-      `Fecha: ${new Date().toLocaleString("es-VE")}`,
+      `🆔 Pedido #${orderId}`,
+      `📅 Fecha: ${new Date().toLocaleString("es-VE")}`,
       "─────────────────────────",
-      ...cart.map(i => `${i.name} ×${i.qty}  →  ${fmt$(i.price*i.qty)}`),
+      itemLines,
       "─────────────────────────",
-      `TOTAL: ${fmt$(cartTotal)} | ${fmtBs(cartTotal, rate)}`,
+      `💰 TOTAL: ${fmt$(cartTotal)} | ${fmtBs(cartTotal, rate)}`,
       "",
       `PAGO:`,
       payLines,
       balance > 0 ? `⚠️ SALDO PENDIENTE: ${fmt$(balance)}` : `✅ PAGO COMPLETADO`,
       "─────────────────────────",
-      `Cliente: ${form.name} · ${form.phone}`,
+      `👤 Cliente: ${form.name}`,
+      `📱 Teléfono: ${form.phone}`,
+      `⏰ Horario: ${form.time}`,
+      `📍 Dirección: ${form.address}`,
+      "─────────────────────────",
+      `Guarda este ticket para consultar el estado de tu pedido.`,
     ].join("\n");
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2000); });
   };
