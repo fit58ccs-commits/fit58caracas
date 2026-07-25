@@ -9,6 +9,7 @@ import {
 import { fmt$, fmtBs } from "@/lib/store";
 import type { CartItem, Order, PaymentMethod, PaymentEntry } from "@/lib/types";
 import { DEFAULT_PAYMENT_METHODS } from "@/lib/data";
+import { ReferralInput } from "../client/ReferralInput";
 
 const STEPS = ["cart", "delivery", "payment", "success"] as const;
 type Step = typeof STEPS[number];
@@ -34,6 +35,12 @@ export function CartDrawer({
   const [locating,   setLocating]   = useState(false);
   const [orderId,    setOrderId]    = useState("");
   const [copied,     setCopied]     = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralId,   setReferralId]   = useState("");
+  const [referralDisc, setReferralDisc] = useState(0);
+
+  const discountAmount = referralDisc > 0 ? (cartTotal * referralDisc) / 100 : 0;
+  const finalTotal     = Math.max(0, cartTotal - discountAmount);
   const mapRef  = useRef<HTMLDivElement>(null);
   const lMap    = useRef<unknown>(null);
   const lMarker = useRef<unknown>(null);
@@ -126,7 +133,15 @@ export function CartDrawer({
       balance,
     };
 
-    onSaveOrder({ cart, total: cartTotal, form: orderForm, mapsLink });
+    onSaveOrder({ cart, total: finalTotal, form: orderForm, mapsLink });
+
+    // Registrar uso del código de referido
+    if (referralId) {
+      import("@/app/utils/supabase/client").then(({ createClient }) => {
+        const sb = createClient();
+        sb.rpc("increment_referral_uses", { referral_id: referralId });
+      });
+    }
 
     // Armar mensaje WhatsApp
     const paymentLines = payments.filter(p => p.method).map(p =>
@@ -139,7 +154,8 @@ export function CartDrawer({
       "─────────────────────────",
       ...cart.map(i => `• ${i.name} ×${i.qty} → ${fmt$(i.price * i.qty)}`),
       "─────────────────────────",
-      `💰 *Total: ${fmt$(cartTotal)} | ${fmtBs(cartTotal, rate)}*`,
+      `💰 *Total: ${fmt$(finalTotal)} | ${fmtBs(finalTotal, rate)}*`,
+      referralCode ? `🏷️ Código referido: ${referralCode} (-${referralDisc}%)` : "",
       ...paymentLines,
       balance > 0 ? `⚠️ Saldo pendiente: ${fmt$(balance)}` : `✅ Pagado completo`,
       "─────────────────────────",
@@ -166,7 +182,8 @@ export function CartDrawer({
       "─────────────────────────",
       itemLines,
       "─────────────────────────",
-      `💰 TOTAL: ${fmt$(cartTotal)} | ${fmtBs(cartTotal, rate)}`,
+      `💰 TOTAL: ${fmt$(finalTotal)} | ${fmtBs(finalTotal, rate)}`,
+      referralCode ? `🏷️ Código referido: ${referralCode} (-${fmt$(discountAmount)})` : "",
       "",
       `PAGO:`,
       payLines,
@@ -265,10 +282,27 @@ export function CartDrawer({
               ))}
               {cart.length > 0 && (
                 <>
-                  <div className="glass-card p-4 rounded-xl">
-                    <div className="flex justify-between mb-1.5"><span className="text-xs text-neutral-500">Subtotal</span><span className="text-base font-black text-black">{fmt$(cartTotal)}</span></div>
-                    <div className="flex justify-between"><span className="text-[11px] text-neutral-400">En Bolívares</span><span className="text-[11px] text-neutral-400">{fmtBs(cartTotal,rate)}</span></div>
+                  <div className="glass-card p-4 rounded-xl flex flex-col gap-1.5">
+                    <div className="flex justify-between"><span className="text-xs text-neutral-500">Subtotal</span><span className="text-base font-black text-black">{fmt$(cartTotal)}</span></div>
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span className="text-xs font-bold">Descuento ({referralCode})</span>
+                        <span className="text-sm font-black">-{fmt$(discountAmount)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-neutral-100 pt-1.5 mt-0.5">
+                      <span className="text-xs font-black text-black">TOTAL</span>
+                      <span className="text-base font-black text-black">{fmt$(finalTotal)}</span>
+                    </div>
+                    <div className="flex justify-between"><span className="text-[11px] text-neutral-400">En Bolívares</span><span className="text-[11px] text-neutral-400">{fmtBs(finalTotal,rate)}</span></div>
                   </div>
+                  <ReferralInput
+                    cartTotal={cartTotal}
+                    appliedCode={referralCode}
+                    discount={referralDisc}
+                    onApply={(code, disc, id) => { setReferralCode(code); setReferralDisc(disc); setReferralId(id); }}
+                    onRemove={() => { setReferralCode(""); setReferralDisc(0); setReferralId(""); }}
+                  />
                   <button onClick={()=>setStep("delivery")} className={primaryBtn}>CONTINUAR <ChevronRight size={13}/></button>
                 </>
               )}

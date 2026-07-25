@@ -49,22 +49,86 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const schemaOrg = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": ["LocalBusiness", "Store"],
+        "@id": "https://fit58caracas.vercel.app/#business",
+        "name": "Fit +58 Caracas",
+        "description": "Tienda online de suplementos deportivos y productos gourmet importados en Caracas, Venezuela.",
+        "url": "https://fit58caracas.vercel.app",
+        "logo": "https://fit58caracas.vercel.app/icons/icon-512.png",
+        "image": "https://fit58caracas.vercel.app/icons/icon-512.png",
+        "telephone": "+58-414-1013137",
+        "priceRange": "€€",
+        "currenciesAccepted": "USD, VES",
+        "paymentAccepted": "Zelle, Pago Móvil, Binance Pay, Efectivo",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Caracas",
+          "addressRegion": "Distrito Capital",
+          "addressCountry": "VE"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "10.4806",
+          "longitude": "-66.9036"
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+          "opens": "08:00",
+          "closes": "20:00"
+        },
+        "sameAs": [
+          "https://wa.me/584141013137"
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Suplementos y Gourmet",
+          "itemListElement": [
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Suplementos deportivos importados" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Proteínas y vitaminas" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Productos gourmet importados" } }
+          ]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://fit58caracas.vercel.app/#website",
+        "url": "https://fit58caracas.vercel.app",
+        "name": "Fit +58 Caracas",
+        "description": "Tienda online de suplementos deportivos y productos gourmet importados",
+        "publisher": { "@id": "https://fit58caracas.vercel.app/#business" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://fit58caracas.vercel.app/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  };
+
   return (
     <html lang="es">
       <head>
+        <link rel="icon"             href="/favicon.ico" type="image/x-icon"/>
         <link rel="icon"             href="/icons/icon-192.png" type="image/png"/>
-        <link rel="shortcut icon"   href="/icons/icon-192.png" type="image/png"/>
+        <link rel="shortcut icon"    href="/favicon.ico"/>
         <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
-        <link rel="manifest"        href="/manifest.json"/>
+        <link rel="manifest"         href="/manifest.json"/>
         <meta name="mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
         <meta name="apple-mobile-web-app-title" content="Fit +58"/>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+        />
       </head>
       <body className="font-[Inter,sans-serif] bg-[#f0f2f5] antialiased">
         {children}
-        {/* Registrar Service Worker */}
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {

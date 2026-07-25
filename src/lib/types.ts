@@ -137,6 +137,17 @@ export interface NavLink {
   active: boolean;
 }
 
+export interface Referral {
+  id: string;
+  code: string;          // código único del referidor (ej: "FIT-JUAN58")
+  ownerName: string;     // nombre del cliente que refirió
+  ownerPhone: string;    // teléfono para identificarlo
+  uses: number;          // cuántas veces fue usado
+  discount: number;      // % de descuento que genera (ej: 5)
+  createdAt: string;
+  active: boolean;
+}
+
 export interface TrustItem {
   id: string;
   icon: string;
