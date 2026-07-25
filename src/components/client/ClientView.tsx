@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
-import { Package, Heart, ShoppingCart, X, ChevronRight, Award, Globe, Truck, Shield, ClipboardList } from "lucide-react";
+import { Package, Heart, ShoppingCart, X, ChevronRight, Award, Globe, Truck, Shield, ClipboardList, Tag } from "lucide-react";
 import { Navbar }                          from "./Navbar";
 import { HeroBanner }                      from "./HeroBanner";
 import { ProductCard, ProductDetailModal } from "./ProductCard";
 import { CartDrawer }                      from "./CartDrawer";
 import { ReviewSection }                   from "./ReviewSection";
 import { OrderTracker }                    from "./OrderTracker";
+import { MyReferralPanel }                 from "./MyReferralPanel";
 import { DEFAULT_TICKER_ITEMS, DEFAULT_TRUST_ITEMS } from "@/lib/data";
 import { fmt$, fmtBs }                    from "@/lib/store";
 import type { Product }                    from "@/lib/types";
@@ -25,6 +26,7 @@ export function ClientView({ store }: { store: Store }) {
   const [cartOpen,        setCartOpen]        = useState(false);
   const [wishlistOpen,    setWishlistOpen]    = useState(false);
   const [trackOpen,       setTrackOpen]       = useState(false);
+  const [referralOpen,    setReferralOpen]    = useState(false);
   const [search,          setSearch]          = useState("");
   const [category,        setCategory]        = useState("Todos");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -53,6 +55,7 @@ export function ClientView({ store }: { store: Store }) {
     setCartOpen(false);
     setWishlistOpen(false);
     setTrackOpen(false);
+    setReferralOpen(false);
     if (dest === "inicio") {
       window.scrollTo({ top: 0, behavior: "smooth" });
       setActiveNav("Inicio");
@@ -261,6 +264,13 @@ export function ClientView({ store }: { store: Store }) {
           <span className="text-[9px] font-bold tracking-wide uppercase">Favoritos</span>
         </button>
 
+        <button onClick={() => { setReferralOpen(true); setActiveNav("Codigo"); }}
+          className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
+          style={{ color: activeNav==="Codigo" ? "#111" : "#aaa" }}>
+          <Tag size={20}/>
+          <span className="text-[9px] font-bold tracking-wide uppercase">Código</span>
+        </button>
+
         <button onClick={() => goTo("pedido")}
           className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
           style={{ color: activeNav==="Pedido" ? "#111" : "#aaa" }}>
@@ -364,6 +374,10 @@ export function ClientView({ store }: { store: Store }) {
         products={store.products}
         reviews={store.reviews}
         onSubmitReview={store.addReview}/>
+
+      {referralOpen && (
+        <MyReferralPanel onClose={() => setReferralOpen(false)}/>
+      )}
 
       {cartOpen && (
         <CartDrawer cart={store.cart} rate={store.rate.value} cartTotal={store.cartTotal}
