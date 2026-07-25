@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ShoppingCart, Search, ClipboardList, X } from "lucide-react";
+import { ShoppingCart, Search, Star, ClipboardList } from "lucide-react";
 import type { DesignConfig } from "@/lib/types";
 
 interface NavbarProps {
@@ -12,6 +12,7 @@ interface NavbarProps {
   onTrack:    () => void;
 }
 
+// Estos enlaces son fijos — no se editan desde el panel admin
 const FIXED_NAV = [
   { id:"n2", label:"Tienda",  href:"#tienda"  },
   { id:"n4", label:"Reseñas", href:"#resenas" },
@@ -20,81 +21,73 @@ const FIXED_NAV = [
 export function Navbar({ design, cartCount, search, onSearch, onCartOpen, onTrack }: NavbarProps) {
   const [badgeKey, setBadgeKey] = useState(0);
   const [active,   setActive]   = useState("Tienda");
+
   const logoSrc = design.logoBase64 || design.logoUrl;
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string, label: string) => {
     e.preventDefault();
     setActive(label);
-    const el = document.getElementById(href.replace("#",""));
-    if (el) el.scrollIntoView({ behavior:"smooth" });
-    else window.scrollTo({ top:0, behavior:"smooth" });
+    const id = href.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    else window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <header className="sticky top-0 z-[100] bg-white border-b border-neutral-100">
-      <div className="max-w-[1280px] mx-auto px-5 md:px-7 h-14 flex items-center gap-6 md:gap-10">
+    <header className="glass border-b border-white/70 sticky top-0 z-[100] rounded-none">
+      <div className="max-w-[1280px] mx-auto px-7 h-16 flex items-center gap-8">
 
         {/* Brand */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           {logoSrc
-            ? <img src={logoSrc} alt="logo" className="w-8 h-8 rounded-lg object-cover"
-                onError={e=>(e.currentTarget.style.display="none")}/>
-            : <div className="w-8 h-8 rounded-lg bg-[#0d0d0d] flex items-center justify-center shrink-0">
-                <span className="text-white text-[8px] font-black tracking-tight">F58</span>
+            ? <img src={logoSrc} alt="logo" className="w-9 h-9 rounded-xl object-cover" onError={e=>(e.currentTarget.style.display="none")}/>
+            : <div className="neumorph w-9 h-9 rounded-xl flex items-center justify-center">
+                <Star size={16} className="text-black fill-black"/>
               </div>
           }
           <div className="leading-none">
-            <div className="text-[12px] font-black text-[#0d0d0d] tracking-tight"
-              style={{fontFamily:"'DM Sans',sans-serif"}}>{design.brandName||"FIT +58"}</div>
-            <div className="text-[7px] font-bold text-neutral-400 tracking-[3px] uppercase">{design.brandSub||"CARACAS"}</div>
+            <div className="text-sm font-black text-black tracking-wide">{design.brandName||"FIT +58"}</div>
+            <div className="text-[8px] font-bold text-neutral-400 tracking-[3px]">{design.brandSub||"CARACAS"}</div>
           </div>
         </div>
 
-        {/* Nav links */}
+        {/* Nav links — fijos, no editables desde admin */}
         <nav className="hidden md:flex gap-7">
           {FIXED_NAV.map(n => (
-            <a key={n.id} href={n.href} onClick={e=>handleNav(e,n.href,n.label)}
-              className="text-[10px] font-bold tracking-[1.5px] uppercase no-underline transition-colors"
-              style={{color: active===n.label ? "#0d0d0d" : "#aaa"}}>
+            <a key={n.id} href={n.href}
+              onClick={e=>handleNav(e,n.href,n.label)}
+              className={`nav-link text-[11px] font-semibold tracking-wide uppercase pb-0.5 no-underline ${active===n.label?"text-black active":"text-neutral-500"}`}>
               {n.label}
             </a>
           ))}
         </nav>
 
         {/* Search */}
-        <div className="hidden md:flex flex-1 max-w-xs items-center gap-2 bg-neutral-50 border border-neutral-200 rounded-full px-4 py-2">
-          <Search size={12} className="text-neutral-400 shrink-0"/>
+        <div className="hidden md:flex flex-1 max-w-xs items-center gap-2 neumorph-inset rounded-full px-4 py-2 bg-[#f0f2f5]">
+          <Search size={14} className="text-neutral-400 shrink-0"/>
           <input value={search} onChange={e=>onSearch(e.target.value)}
-            placeholder="Buscar productos..."
-            className="border-none outline-none text-xs bg-transparent text-neutral-700 w-full font-[inherit]"/>
+            placeholder="Buscar por nombre, categoría..."
+            className="border-none outline-none text-sm bg-transparent text-neutral-700 w-full font-[inherit]"/>
           {search && (
             <button onClick={()=>onSearch("")}
-              className="shrink-0 cursor-pointer border-none bg-transparent p-0 text-neutral-400 hover:text-neutral-700">
-              <X size={12}/>
+              className="shrink-0 w-4 h-4 rounded-full bg-neutral-300 flex items-center justify-center cursor-pointer border-none text-white font-black text-[10px] hover:bg-neutral-500 transition-colors">
+              ×
             </button>
           )}
         </div>
 
-        {/* Actions */}
+        {/* Cart + Track */}
         <div className="ml-auto flex items-center gap-2">
           <button onClick={onTrack}
-            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-full text-[9px] font-bold uppercase tracking-[1.5px] cursor-pointer border border-neutral-200 bg-transparent text-neutral-500 hover:border-neutral-400 hover:text-neutral-800 transition-colors">
-            <ClipboardList size={13}/> Mi Pedido
+            className="hidden md:flex fluent-hover items-center gap-1.5 bg-white/60 border border-neutral-200/80 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide text-neutral-600 cursor-pointer">
+            <ClipboardList size={15}/> Mi Pedido
           </button>
           <button onClick={()=>{setBadgeKey(k=>k+1);onCartOpen();}}
-            className="relative flex items-center justify-center cursor-pointer border-none transition-all"
-            style={{
-              background: cartCount > 0 ? "#0d0d0d" : "transparent",
-              border: `1px solid ${cartCount > 0 ? "#0d0d0d" : "#e5e5e5"}`,
-              borderRadius: 999,
-              padding: "8px 14px",
-              gap: 6,
-            }}>
-            <ShoppingCart size={15} color={cartCount > 0 ? "#fff" : "#0d0d0d"}/>
-            {cartCount > 0 && (
+            className="fluent-hover relative bg-white/60 border border-neutral-200/80 p-2 rounded-xl flex items-center justify-center">
+            <ShoppingCart size={21} className="text-black"/>
+            {cartCount>0 && (
               <span key={badgeKey}
-                className="animate-badge-bounce text-[10px] font-black"
-                style={{color:"#fff"}}>
+                className="animate-badge-bounce absolute -top-2 -right-2 w-[18px] h-[18px] rounded-full bg-black text-white text-[9px] font-black flex items-center justify-center">
                 {cartCount}
               </span>
             )}
