@@ -111,22 +111,15 @@ export function OrderTracker({ rate, onClose }: { rate: number; onClose: () => v
                 </div>
               </div>
 
-              {/* Datos de entrega */}
-              <div className="glass-card rounded-2xl p-4 flex flex-col gap-1.5 text-xs text-neutral-500">
-                <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Datos de entrega</p>
-                {order.form?.name    && <p>👤 {order.form.name}</p>}
-                {order.form?.phone   && <p>📱 {order.form.phone}</p>}
-                {order.form?.address && <p>📍 {order.form.address}</p>}
-                {order.form?.time    && <p>⏰ {order.form.time}</p>}
-                {order.form?.method  && <p>💳 {order.form.method}</p>}
-              </div>
-
               {/* Cancelado */}
               {order.status === "cancelled" && order.cancelReason && (
                 <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-xs text-red-500">
                   <span className="font-black">Motivo: </span>{order.cancelReason}
                 </div>
               )}
+              <p className="text-[10px] text-neutral-400 text-center">
+                Para consultas sobre tu entrega contáctanos por WhatsApp.
+              </p>
             </div>
           )}
 

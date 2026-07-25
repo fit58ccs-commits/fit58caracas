@@ -63,13 +63,17 @@ export async function sbDeleteProduct(id: string): Promise<boolean> {
 
 export async function sbGetOrderById(id: string): Promise<Order | null> {
   const sb = createClient();
-  const { data, error } = await sb
-    .from("orders")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await sb.rpc("get_order_status", { order_id: id });
   if (error || !data) return null;
-  return dbToOrder(data as Record<string, unknown>);
+  // RPC devuelve solo campos seguros (sin datos personales)
+  return {
+    id:     data.id,
+    status: data.status,
+    date:   data.date,
+    total:  data.total,
+    cart:   data.cart || [],
+    form:   null, // no exponer datos personales al público
+  } as unknown as Order;
 }
 
 export async function sbGetOrders(): Promise<Order[]> {
