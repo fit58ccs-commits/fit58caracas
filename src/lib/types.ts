@@ -106,6 +106,26 @@ export interface PaymentMethod {
   needsReceipt: boolean; // Si requiere comprobante
 }
 
+export interface EditorialConfig {
+  taglineMain?: string;       // "Nutre tu cuerpo"
+  taglineEmphasis?: string;   // "mejor"
+  taglineEnd?: string;        // "del mundo."
+  taglineDesc?: string;       // texto descripcion derecha
+  taglineVisible?: boolean;
+  taglineFontSize?: number;   // px, clamp base mobile
+  taglineColor?: string;
+  taglineDescColor?: string;
+  taglineFontFamily?: string;
+  taglineBg?: string;
+
+  watermarkText?: string;
+  watermarkVisible?: boolean;
+  watermarkColor?: string;    // rgba completo
+  watermarkOpacity?: number;  // 0-100
+  watermarkFontSize?: number; // px base mobile
+  watermarkBg?: string;
+}
+
 export interface DesignConfig {
   primaryColor: string;
   secondaryColor: string;
@@ -128,6 +148,7 @@ export interface DesignConfig {
   categories: string[];          // Categorías editables
   paymentMethods: PaymentMethod[]; // Métodos de pago con datos
   whatsappNumber: string;        // Número WhatsApp del negocio
+  editorial?: EditorialConfig;   // Divisor + watermark editable
 }
 
 export interface NavLink {
@@ -154,3 +175,4 @@ export interface TrustItem {
   text: string;
   active: boolean;
 }
+
