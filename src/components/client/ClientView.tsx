@@ -44,22 +44,40 @@ export function ClientView({ store }: { store: Store }) {
 
   const wishlistProducts = store.products.filter(p => store.wishlist.includes(p.id));
 
-  // Textos editables desde admin
-  const tickerItems = store.design.tickerItems?.length ? store.design.tickerItems : DEFAULT_TICKER_ITEMS;
-  const trustItems  = (store.design.trustItems?.length ? store.design.trustItems : DEFAULT_TRUST_ITEMS).filter(t => t.active);
-
-  // Banners activos únicamente
+  const tickerItems   = store.design.tickerItems?.length ? store.design.tickerItems : DEFAULT_TICKER_ITEMS;
+  const trustItems    = (store.design.trustItems?.length ? store.design.trustItems : DEFAULT_TRUST_ITEMS).filter(t => t.active);
   const activeBanners = store.banners.filter(b => b.active !== false);
 
-  const scrollToTop = () => window.scrollTo({ top:0, behavior:"smooth" });
+  // FIX navegacion: cierra cualquier drawer abierto antes de navegar
+  const goTo = (dest: "inicio" | "tienda" | "carrito" | "favoritos" | "pedido") => {
+    setCartOpen(false);
+    setWishlistOpen(false);
+    setTrackOpen(false);
+    if (dest === "inicio") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setActiveNav("Inicio");
+    } else if (dest === "tienda") {
+      setTimeout(() => document.getElementById("tienda")?.scrollIntoView({ behavior: "smooth" }), 50);
+      setActiveNav("Tienda");
+    } else if (dest === "carrito") {
+      setTimeout(() => setCartOpen(true), 50);
+      setActiveNav("Carrito");
+    } else if (dest === "favoritos") {
+      setTimeout(() => setWishlistOpen(true), 50);
+      setActiveNav("Favoritos");
+    } else if (dest === "pedido") {
+      setTimeout(() => setTrackOpen(true), 50);
+      setActiveNav("Pedido");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white" id="inicio">
       <Navbar design={store.design} cartCount={store.cartCount}
-        search={search} onSearch={setSearch} onCartOpen={() => setCartOpen(true)}
-        onTrack={() => setTrackOpen(true)}/>
+        search={search} onSearch={setSearch} onCartOpen={() => goTo("carrito")}
+        onTrack={() => goTo("pedido")}/>
 
-      {/* ── Ticker barra negra (editable) ── */}
+      {/* Ticker */}
       <div className="bg-[rgba(17,17,17,0.93)] backdrop-blur-sm h-9 overflow-hidden flex items-center">
         <div className="animate-ticker animate-ticker-pause flex whitespace-nowrap">
           {[...tickerItems, ...tickerItems].map((t, i) => (
@@ -78,24 +96,25 @@ export function ClientView({ store }: { store: Store }) {
         }
       </div>
 
-      {/* ── Divisor editorial ── */}
-      <div className="bg-white px-7 pt-12 pb-0 flex items-start gap-5">
-        <div className="shrink-0 mt-4" style={{ width: 40, height: 1, background: "#0d0d0d" }} />
-        <div className="flex gap-8 items-baseline flex-wrap">
-          <p className="text-[clamp(18px,2.2vw,24px)] font-black text-[#0d0d0d] m-0 leading-snug">
+      {/* Divisor editorial — responsive */}
+      <div className="bg-white px-4 md:px-7 pt-10 md:pt-12 pb-0 flex items-start gap-4">
+        <div className="shrink-0 mt-[14px]" style={{ width: 32, height: 1, background: "#0d0d0d" }} />
+        <div className="flex flex-col md:flex-row gap-2 md:gap-8 md:items-baseline flex-wrap">
+          <p className="font-black text-[#0d0d0d] m-0 leading-snug"
+            style={{ fontSize: "clamp(15px,4vw,24px)" }}>
             Nutre tu cuerpo<br/>con lo <em className="font-normal italic">mejor</em> del mundo.
           </p>
           <p className="text-[11px] text-[#585757] max-w-[300px] leading-relaxed m-0">
             En Fit +58 Caracas importamos los suplementos y productos gourmet que antes no
-            consegu&iacute;as. Calidad garantizada, entrega directa a tu puerta.
+            conseguias. Calidad garantizada, entrega directa a tu puerta.
           </p>
         </div>
       </div>
 
-      {/* ── Watermark ── */}
-      <div className="bg-white overflow-hidden py-5">
-        <p className="font-black leading-none m-0 pl-7 select-none whitespace-nowrap uppercase"
-          style={{ fontSize: "clamp(56px,10vw,100px)", color: "rgba(41,41,41,0.04)", letterSpacing: -4 }}>
+      {/* Watermark — centrado y responsive */}
+      <div className="bg-white overflow-hidden py-3 md:py-5 flex items-center justify-center w-full">
+        <p className="font-black leading-none m-0 select-none text-center uppercase px-4"
+          style={{ fontSize: "clamp(22px,7vw,100px)", color: "rgba(41,41,41,0.05)", letterSpacing: "clamp(-1px,-0.4vw,-4px)" }}>
           SUPLEMENTOS GOURMET
         </p>
       </div>
@@ -103,22 +122,23 @@ export function ClientView({ store }: { store: Store }) {
       {/* Catalog */}
       <main className="max-w-[1280px] mx-auto px-4 md:px-7 pb-36 animate-fade-up">
 
-        {/* Header catálogo + pills */}
-        <div className="bg-white pb-6">
-          <div className="flex items-end justify-between mb-4 flex-wrap gap-4">
+        {/* Header + pills */}
+        <div className="bg-white pb-5">
+          <div className="flex items-start md:items-end justify-between mb-3 flex-wrap gap-3">
             <div>
               <p className="text-[10px] font-bold text-neutral-400 tracking-[2.5px] uppercase m-0 mb-1">
-                Cat&aacute;logo
+                Catalogo
               </p>
               <h2 className="font-black text-[#292929] m-0 uppercase leading-none tracking-tight"
-                style={{ fontSize: "clamp(22px,3vw,32px)" }}>
+                style={{ fontSize: "clamp(20px,3vw,32px)" }}>
                 NUESTROS<br/>PRODUCTOS
               </h2>
             </div>
-            <div className="flex gap-2 flex-wrap overflow-x-auto pb-1">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 max-w-full flex-wrap md:flex-nowrap"
+              style={{ WebkitOverflowScrolling: "touch" }}>
               {["Todos", ...(store.design.categories || ["Aceites","Bebidas","Dulces","Frutos","Pastas"])].map(cat => (
                 <button key={cat} onClick={() => setCategory(cat)}
-                  className="cat-pill px-4 py-1.5 rounded-full text-[10px] md:text-[11px] font-bold tracking-wide uppercase whitespace-nowrap shrink-0 cursor-pointer"
+                  className="cat-pill px-3 py-1.5 rounded-full text-[9px] md:text-[10px] font-bold tracking-wide uppercase whitespace-nowrap shrink-0 cursor-pointer"
                   style={{
                     border:`1px solid ${category===cat?"rgba(17,17,17,0.85)":"rgba(220,220,220,0.8)"}`,
                     background:category===cat?"rgba(17,17,17,0.90)":"rgba(255,255,255,0.72)",
@@ -130,13 +150,13 @@ export function ClientView({ store }: { store: Store }) {
               ))}
             </div>
           </div>
-          <p className="text-xs text-neutral-400 mt-1 font-medium m-0">
+          <p className="text-xs text-neutral-400 font-medium m-0">
             {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
             {search ? ` para "${search}"` : ""} &middot; Tasa BCV 1&euro; = Bs. {store.rateBCV.value.toFixed(2)}
           </p>
         </div>
 
-        {/* Grid — 2 cols mobile, 3 tablet, 4 desktop */}
+        {/* Grid */}
         <div className="grid gap-3 md:gap-5"
           style={{ gridTemplateColumns:"repeat(auto-fill, minmax(min(100%/2 - 8px, 280px), 1fr))" }}>
           {filtered.map(p => (
@@ -160,27 +180,26 @@ export function ClientView({ store }: { store: Store }) {
                     {category !== "Todos" && (
                       <button onClick={() => setCategory("Todos")}
                         className="text-[11px] font-bold text-neutral-500 underline cursor-pointer border-none bg-transparent">
-                        Buscar en todas las categor&iacute;as
+                        Buscar en todas las categorias
                       </button>
                     )}
                     <button onClick={() => setSearch("")}
                       className="text-[11px] font-bold text-black underline cursor-pointer border-none bg-transparent">
-                      Limpiar b&uacute;squeda
+                      Limpiar busqueda
                     </button>
                   </div>
                 </>
               ) : (
-                <p className="text-sm font-semibold text-neutral-400">No hay productos en esta categor&iacute;a</p>
+                <p className="text-sm font-semibold text-neutral-400">No hay productos en esta categoria</p>
               )}
             </div>
           )}
         </div>
       </main>
 
-      {/* ── MOBILE BOTTOM NAV — siempre visible ── */}
-      <nav className="md:hidden glass fixed bottom-0 left-0 right-0 border-t border-neutral-200/60 flex justify-around py-2.5 pb-5 z-[200] rounded-none shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
-        {/* Inicio */}
-        <button onClick={() => { scrollToTop(); setActiveNav("Inicio"); }}
+      {/* MOBILE BOTTOM NAV — z-[400] para estar siempre encima de drawers */}
+      <nav className="md:hidden glass fixed bottom-0 left-0 right-0 border-t border-neutral-200/60 flex justify-around py-2.5 pb-5 z-[400] rounded-none shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
+        <button onClick={() => goTo("inicio")}
           className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
           style={{ color: activeNav==="Inicio" ? "#111" : "#aaa" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -189,16 +208,14 @@ export function ClientView({ store }: { store: Store }) {
           <span className="text-[9px] font-bold tracking-wide uppercase">Inicio</span>
         </button>
 
-        {/* Tienda */}
-        <button onClick={() => { document.getElementById("tienda")?.scrollIntoView({behavior:"smooth"}); setActiveNav("Tienda"); }}
+        <button onClick={() => goTo("tienda")}
           className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
           style={{ color: activeNav==="Tienda" ? "#111" : "#aaa" }}>
           <Package size={20}/>
           <span className="text-[9px] font-bold tracking-wide uppercase">Tienda</span>
         </button>
 
-        {/* Carrito */}
-        <button onClick={() => { setCartOpen(true); setActiveNav("Carrito"); }}
+        <button onClick={() => goTo("carrito")}
           className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
           style={{ color: activeNav==="Carrito" ? "#111" : "#aaa" }}>
           <div className="relative">
@@ -212,8 +229,7 @@ export function ClientView({ store }: { store: Store }) {
           <span className="text-[9px] font-bold tracking-wide uppercase">Carrito</span>
         </button>
 
-        {/* Favoritos */}
-        <button onClick={() => { setWishlistOpen(true); setActiveNav("Favoritos"); }}
+        <button onClick={() => goTo("favoritos")}
           className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
           style={{ color: activeNav==="Favoritos" ? "#111" : "#aaa" }}>
           <div className="relative">
@@ -227,8 +243,7 @@ export function ClientView({ store }: { store: Store }) {
           <span className="text-[9px] font-bold tracking-wide uppercase">Favoritos</span>
         </button>
 
-        {/* Seguimiento */}
-        <button onClick={() => { setTrackOpen(true); setActiveNav("Pedido"); }}
+        <button onClick={() => goTo("pedido")}
           className="flex flex-col items-center gap-0.5 bg-none border-none cursor-pointer min-w-[44px]"
           style={{ color: activeNav==="Pedido" ? "#111" : "#aaa" }}>
           <ClipboardList size={20}/>
@@ -249,18 +264,19 @@ export function ClientView({ store }: { store: Store }) {
         </button>
       )}
 
-      {/* ── Wishlist drawer ── */}
+      {/* Wishlist drawer — z-[350], paddingBottom para que nav no tape contenido */}
       {wishlistOpen && (
-        <div className="fixed inset-0 z-[300] flex">
+        <div className="fixed inset-0 z-[350] flex">
           <div className="animate-overlay-in absolute inset-0 bg-black/45 backdrop-blur-md" onClick={() => setWishlistOpen(false)}/>
-          <div className="animate-drawer-in glass absolute right-0 top-0 bottom-0 w-full max-w-[420px] flex flex-col shadow-2xl">
+          <div className="animate-drawer-in glass absolute right-0 top-0 bottom-0 w-full max-w-[420px] flex flex-col shadow-2xl"
+            style={{ paddingBottom: 80 }}>
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/40 bg-white/88 backdrop-blur-2xl sticky top-0">
               <div>
                 <p className="text-[9px] font-black text-neutral-400 tracking-[2px] uppercase mb-0.5">Lista de deseos</p>
                 <h2 className="text-lg font-black text-black uppercase tracking-tight">FAVORITOS ({wishlistProducts.length})</h2>
               </div>
               <button onClick={() => setWishlistOpen(false)}
-                className="fluent-hover w-9 h-9 border border-neutral-200/80 bg-white/65 flex items-center justify-center rounded-xl cursor-pointer">
+                className="fluent-hover w-9 h-9 border border-neutral-200/80 bg-white/65 flex items-center justify-center rounded-full cursor-pointer">
                 <X size={16}/>
               </button>
             </div>
@@ -268,8 +284,8 @@ export function ClientView({ store }: { store: Store }) {
               {wishlistProducts.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center py-20 text-neutral-300">
                   <Heart size={48} className="mb-4"/>
-                  <p className="text-sm font-semibold text-neutral-400">No tienes favoritos a&uacute;n</p>
-                  <p className="text-xs text-neutral-300 mt-1">Toca el &#10084; en cualquier producto</p>
+                  <p className="text-sm font-semibold text-neutral-400">No tienes favoritos aun</p>
+                  <p className="text-xs text-neutral-300 mt-1">Toca el corazon en cualquier producto</p>
                 </div>
               ) : wishlistProducts.map(p => (
                 <div key={p.id} className="glass-card rounded-2xl flex items-center gap-3 p-3">
@@ -287,11 +303,11 @@ export function ClientView({ store }: { store: Store }) {
                   </div>
                   <div className="flex flex-col gap-1.5 shrink-0">
                     <button onClick={() => { store.addToCart(p); setWishlistOpen(false); setCartOpen(true); }}
-                      className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center cursor-pointer border-none">
+                      className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center cursor-pointer border-none">
                       <ShoppingCart size={13}/>
                     </button>
                     <button onClick={() => store.toggleWishlist(p.id)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer border-none bg-red-50">
+                      className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer border-none bg-red-50">
                       <Heart size={13} fill="#e53e3e" color="#e53e3e"/>
                     </button>
                   </div>
@@ -301,7 +317,7 @@ export function ClientView({ store }: { store: Store }) {
             {wishlistProducts.length > 0 && (
               <div className="px-6 py-4 border-t border-white/40 bg-white/70">
                 <button onClick={() => { wishlistProducts.forEach(p=>store.addToCart(p)); setWishlistOpen(false); setCartOpen(true); }}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 text-[11px] font-black tracking-[1.5px] uppercase rounded-xl cursor-pointer border-none"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 text-[11px] font-black tracking-[1.5px] uppercase rounded-full cursor-pointer border-none"
                   style={{ background:"rgba(17,17,17,0.90)", color:"#fff" }}>
                   <ShoppingCart size={14}/> AGREGAR TODO AL CARRITO <ChevronRight size={13}/>
                 </button>
@@ -326,7 +342,6 @@ export function ClientView({ store }: { store: Store }) {
           reviews={store.reviews}/>
       )}
 
-      {/* Sección de Reseñas */}
       <ReviewSection
         products={store.products}
         reviews={store.reviews}

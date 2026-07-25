@@ -1,9 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Glass / Neumorph / Fluent — CSS puro (sin @apply para valores arbitrarios) ── */
+/* ── Fuentes de marca ── */
+:root {
+  --font-display: 'Bebas Neue', sans-serif;        /* titulares, slogans, precios */
+  --font-condensed: 'Barlow Condensed', sans-serif; /* subtitulos, etiquetas, nav */
+  --font-body: 'DM Sans', system-ui, sans-serif;   /* cuerpo, mensajes, descripciones */
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+/* ── Glass / Neumorph / Fluent ── */
 .glass {
   background: rgba(255,255,255,0.72);
   backdrop-filter: blur(20px) saturate(180%);
@@ -40,12 +57,19 @@
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   transform: translateY(-1px);
 }
-.btn-primary { transition: all 0.2s; }
+
+/* ── Botones redondeados globales ── */
+button:not(.no-round) {
+  border-radius: 9999px;
+}
+
+.btn-primary { transition: all 0.2s; border-radius: 9999px; }
 .btn-primary:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.28); transform: translateY(-1px); }
 .btn-primary:active { transform: scale(0.97); }
-.btn-green { transition: all 0.2s; }
+.btn-green { transition: all 0.2s; border-radius: 9999px; }
 .btn-green:hover { box-shadow: 0 8px 24px rgba(34,168,90,0.4); transform: translateY(-1px); }
 .btn-green:active { transform: scale(0.97); }
+
 .prod-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .prod-card:hover { transform: translateY(-8px); box-shadow: 0 24px 60px rgba(0,0,0,0.13) !important; }
 .kpi-card { transition: all 0.25s ease; }
@@ -63,7 +87,7 @@
   border-radius: 1px;
 }
 .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
-.cat-pill { transition: all 0.2s ease; cursor: pointer; }
+.cat-pill { transition: all 0.2s ease; cursor: pointer; border-radius: 9999px; }
 .cat-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .field-input { transition: border-color 0.2s, box-shadow 0.2s; }
 .field-input:focus {
