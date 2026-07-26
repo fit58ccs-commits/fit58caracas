@@ -5,21 +5,15 @@ import { ClientView } from "./client/ClientView";
 
 export default function ClientApp() {
   const store = useAppStore();
-
   return (
     <ToastProvider>
-      <div className="min-h-screen font-[Inter,sans-serif]">
-        {/* Sin botón admin visible — acceder vía /admin directamente */}
-
+      <div className="min-h-screen">
         {store.loading && (
-          <div className="fixed inset-0 z-[8000] bg-white/80 backdrop-blur-sm flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin"/>
-              <p className="text-xs font-semibold text-neutral-400 tracking-wide uppercase">Cargando...</p>
-            </div>
+          <div className="fixed top-0 left-0 right-0 z-[8000] h-0.5 bg-neutral-100 overflow-hidden">
+            <div className="h-full bg-black"
+              style={{ width:"40%", animation:"slideRight 1.2s ease-in-out infinite" }}/>
           </div>
         )}
-
         <ClientView store={store}/>
       </div>
     </ToastProvider>
