@@ -76,6 +76,10 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
           }}/>
       )}
 
+      {/* Fade inferior — difumina el banner hacia blanco */}
+      <div className="absolute bottom-0 left-0 right-0 z-[3] pointer-events-none"
+        style={{ height: "clamp(60px, 12vw, 120px)", background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.55) 60%, rgba(255,255,255,1) 100%)" }}/>
+
       {/* Barra acento izquierda */}
       <div className="absolute left-0 top-0 bottom-0 w-1 md:w-1.5 z-[3]"
         style={{ background: slide.accentColor }}/>
@@ -186,3 +190,4 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
     </section>
   );
 }
+
