@@ -1,4 +1,16 @@
 "use client";
+
+const fmtD = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
+};
+const fmtDT = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+};
+const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DAYS   = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
 import { useState } from "react";
 import { MapPin, Phone, Trash2, XCircle, RotateCcw, Check, Download } from "lucide-react";
 import { fmt$, fmtBs } from "@/lib/store";
@@ -100,7 +112,7 @@ export function OrdersManager({ orders, search, rate = 36.5, onToggleStatus, onC
                   <span className="text-[8px] font-black px-2 py-0.5 rounded-full" style={{background:st.bg,color:st.color}}>{st.label}</span>
                 </div>
                 <p className="text-[11px] text-neutral-400 m-0 flex items-center gap-1"><Phone size={10}/>{o.form?.phone}</p>
-                <p className="text-[9px] text-neutral-300 m-0 mt-0.5">#{o.id} · {new Date(o.date).toLocaleString("es-VE")}</p>
+                <p className="text-[9px] text-neutral-300 m-0 mt-0.5">#{o.id} · {fmtDT(o.date)}</p>
                 {isCancelled && o.cancelReason && (
                   <p className="text-[10px] text-red-400 mt-1">Motivo: {o.cancelReason}</p>
                 )}

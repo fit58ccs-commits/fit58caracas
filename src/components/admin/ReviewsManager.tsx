@@ -1,4 +1,16 @@
 "use client";
+
+const fmtD = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
+};
+const fmtDT = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+};
+const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DAYS   = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
 import { CheckCircle, XCircle, Star, Package, Trash2 } from "lucide-react";
 import { useToast } from "../ui/Toast";
 import type { Review, Product } from "@/lib/types";
@@ -41,7 +53,7 @@ export function ReviewsManager({ reviews, products, onApprove, onReject, onDelet
             <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
               <div>
                 <p className="text-sm font-black text-black mb-0.5">{r.author}</p>
-                <p className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleString("es-VE")}</p>
+                <p className="text-[9px] text-neutral-400">{fmtDT(r.date)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Stars rating={r.rating}/>

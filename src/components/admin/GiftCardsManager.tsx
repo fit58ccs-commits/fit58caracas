@@ -1,4 +1,16 @@
 "use client";
+
+const fmtD = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
+};
+const fmtDT = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+};
+const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DAYS   = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
 import { useState } from "react";
 import { Gift, Plus, Trash2, Copy, CheckCircle2, ToggleLeft, ToggleRight, Download } from "lucide-react";
 import { createClient } from "@/app/utils/supabase/client";
@@ -250,11 +262,11 @@ export function GiftCardsManager() {
                 <p className="text-xs text-neutral-500">{c.label}</p>
                 {c.used && (
                   <p className="text-[10px] text-orange-500 font-bold">
-                    Canjeada por {c.used_by} · {c.used_at ? new Date(c.used_at).toLocaleDateString("es-VE") : ""}
+                    Canjeada por {c.used_by} · {c.used_at ? fmtD(c.used_at) : ""}
                   </p>
                 )}
                 <p className="text-[10px] text-neutral-400">
-                  Creada {new Date(c.created_at).toLocaleDateString("es-VE")}
+                  Creada {fmtD(c.created_at)}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0 flex-wrap">

@@ -1,4 +1,16 @@
 "use client";
+
+const fmtD = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
+};
+const fmtDT = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+};
+const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DAYS   = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
 /**
  * PurchasesManager.tsx — Módulo de Compras y Gastos
  * Registra entradas de inventario y gastos operativos.
@@ -126,7 +138,7 @@ export function PurchasesManager({ purchases, products, onAdd, onDelete, onAddSt
     const rows = [
       ["Fecha","Tipo","Categoría","Descripción","Proveedor","Producto","Cant.","Costo Unit.","Total","Método","Notas"],
       ...filtered.map(p => [
-        new Date(p.date).toLocaleDateString("es-VE"),
+        fmtD(p.date),
         p.type === "inventory" ? "Inventario" : "Gasto",
         p.category,
         p.description,
@@ -235,7 +247,7 @@ export function PurchasesManager({ purchases, products, onAdd, onDelete, onAddSt
                   return (
                     <tr key={p.id} className="border-t border-neutral-50 hover:bg-white/55 transition-colors">
                       <td className="px-4 py-3 text-xs text-neutral-500 whitespace-nowrap">
-                        {new Date(p.date).toLocaleDateString("es-VE")}
+                        {fmtD(p.date)}
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-[9px] font-black px-2 py-0.5 rounded-full whitespace-nowrap"

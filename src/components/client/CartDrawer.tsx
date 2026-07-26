@@ -1,5 +1,8 @@
 "use client";
 
+const fmtD = (d: string | Date) => { const dt = typeof d==="string"?new Date(d):d; return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`; };
+const fmtDT = (d: string | Date) => { const dt = typeof d==="string"?new Date(d):d; return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`; };
+
 // Formatea fecha sin locale — evita hydration mismatch server/cliente
 const fmtDate = (d: string | Date) => {
   const dt = typeof d === "string" ? new Date(d) : d;
@@ -166,25 +169,30 @@ export function CartDrawer({
     let generatedCode = "";
     try {
       const { createClient } = await import("@/app/utils/supabase/client");
-      const sb    = createClient();
-      const clean = form.name.trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5);
-      const rand  = Math.random().toString(36).slice(2,5).toUpperCase();
-      const code  = `FIT-${clean}-${rand}`;
-      const { data } = await sb.from("referrals").upsert({
-        code,
-        owner_name:  form.name,
-        owner_phone: form.phone,
-        discount:    3,
-        uses:        0,
-        active:      true,
-      }, { onConflict: "owner_phone", ignoreDuplicates: true })
-      .select("code")
-      .single();
-      if (data?.code) {
-        generatedCode = data.code;
-        setMyRefCode(data.code);
+      const sb = createClient();
+      const { data: existing } = await sb
+        .from("referrals").select("code")
+        .eq("owner_phone", form.phone).eq("active", true)
+        .limit(1).maybeSingle();
+      if (existing?.code) {
+        generatedCode = existing.code;
+        setMyRefCode(existing.code);
+      } else {
+        const clean = (form.name.trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)) || "CLI";
+        const rand  = Math.random().toString(36).slice(2,5).toUpperCase();
+        const code  = `FIT-${clean}-${rand}`;
+        const { data: inserted, error: ie } = await sb
+          .from("referrals").insert({
+            code, owner_name: form.name, owner_phone: form.phone,
+            discount: 3, reward_pct: 2.5, uses: 0, active: true, type: "client",
+          }).select("code").single();
+        if (ie) console.warn("[ref]", ie.message);
+        else if (inserted?.code) {
+          generatedCode = inserted.code;
+          setMyRefCode(inserted.code);
+        }
       }
-    } catch (_) { /* si falla Supabase el pedido igual se completa */ }
+    } catch (e) { console.warn("[ref]", e); }
 
     // Armar mensaje WhatsApp con generatedCode ya disponible
     const paymentLines = payments.filter(p => p.method).map(p =>

@@ -1,4 +1,16 @@
 "use client";
+
+const fmtD = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
+};
+const fmtDT = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+};
+const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DAYS   = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
 import { useState } from "react";
 import {
   Tag, Plus, Trash2, Copy, CheckCircle2,
@@ -262,7 +274,7 @@ export function ReferralsManager() {
                   <p className="text-xs text-neutral-500">{r.owner_name} · {r.owner_phone}</p>
                   <div className="flex items-center gap-3 flex-wrap mt-0.5">
                     <p className="text-[10px] text-neutral-400">
-                      {r.max_uses === null ? `${r.uses} usos` : `${r.uses}/${r.max_uses} usos`} · {new Date(r.created_at).toLocaleDateString("es-VE")}
+                      {r.max_uses === null ? `${r.uses} usos` : `${r.uses}/${r.max_uses} usos`} · {fmtD(r.created_at)}
                     </p>
                     {r.uses > 0 && r.reward_pct > 0 && (
                       <span className="text-[10px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
