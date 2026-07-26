@@ -107,10 +107,12 @@ export interface PaymentMethod {
 }
 
 export interface EditorialConfig {
-  taglineMain?: string;       // "Nutre tu cuerpo"
-  taglineEmphasis?: string;   // "mejor"
-  taglineEnd?: string;        // "del mundo."
-  taglineDesc?: string;       // texto descripcion derecha
+  taglineMain?: string;       // legacy plain text (backward compat)
+  taglineEmphasis?: string;   // legacy
+  taglineEnd?: string;        // legacy
+  taglineDesc?: string;       // legacy plain text
+  taglineHtml?: string;       // HTML enriquecido del titular
+  taglineDescHtml?: string;   // HTML enriquecido de la descripcion
   taglineVisible?: boolean;
   taglineFontSize?: number;   // px, clamp base mobile
   taglineColor?: string;

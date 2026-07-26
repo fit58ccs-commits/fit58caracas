@@ -106,20 +106,38 @@ export function ClientView({ store }: { store: Store }) {
           <div className="shrink-0 mt-[14px]"
             style={{ width: 32, height: 1, background: store.design.editorial?.taglineColor ?? "#0d0d0d" }} />
           <div className="flex flex-col md:flex-row gap-2 md:gap-8 md:items-baseline flex-wrap">
-            <p className="font-black m-0 leading-snug"
-              style={{
-                fontSize: `clamp(${store.design.editorial?.taglineFontSize ?? 15}px, 4vw, ${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 1.6)}px)`,
-                color: store.design.editorial?.taglineColor ?? "#0d0d0d",
-                fontFamily: store.design.editorial?.taglineFontFamily ?? "inherit",
-              }}>
-              {store.design.editorial?.taglineMain ?? "Nutre tu cuerpo"}<br/>
-              con lo <em className="font-normal italic">{store.design.editorial?.taglineEmphasis ?? "mejor"}</em>{" "}
-              {store.design.editorial?.taglineEnd ?? "del mundo."}
-            </p>
-            <p className="text-[11px] max-w-[300px] leading-relaxed m-0"
-              style={{ color: store.design.editorial?.taglineDescColor ?? "#585757" }}>
-              {store.design.editorial?.taglineDesc ?? "En Fit +58 Caracas importamos los suplementos y productos gourmet que antes no conseguias. Calidad garantizada, entrega directa a tu puerta."}
-            </p>
+            {/* Titular — HTML enriquecido si existe, fallback a legacy */}
+            {store.design.editorial?.taglineHtml ? (
+              <div className="m-0 leading-snug"
+                style={{
+                  fontSize: `clamp(${store.design.editorial?.taglineFontSize ?? 15}px, 4vw, ${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 1.6)}px)`,
+                  color: store.design.editorial?.taglineColor ?? "#0d0d0d",
+                  fontFamily: store.design.editorial?.taglineFontFamily ?? "inherit",
+                }}
+                dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineHtml }}/>
+            ) : (
+              <p className="font-black m-0 leading-snug"
+                style={{
+                  fontSize: `clamp(${store.design.editorial?.taglineFontSize ?? 15}px, 4vw, ${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 1.6)}px)`,
+                  color: store.design.editorial?.taglineColor ?? "#0d0d0d",
+                  fontFamily: store.design.editorial?.taglineFontFamily ?? "inherit",
+                }}>
+                {store.design.editorial?.taglineMain ?? "Nutre tu cuerpo"}<br/>
+                con lo <em className="font-normal italic">{store.design.editorial?.taglineEmphasis ?? "mejor"}</em>{" "}
+                {store.design.editorial?.taglineEnd ?? "del mundo."}
+              </p>
+            )}
+            {/* Descripcion — HTML enriquecido si existe, fallback a legacy */}
+            {store.design.editorial?.taglineDescHtml ? (
+              <div className="max-w-[300px] leading-relaxed m-0"
+                style={{ color: store.design.editorial?.taglineDescColor ?? "#585757", fontSize: 11 }}
+                dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineDescHtml }}/>
+            ) : (
+              <p className="text-[11px] max-w-[300px] leading-relaxed m-0"
+                style={{ color: store.design.editorial?.taglineDescColor ?? "#585757" }}>
+                {store.design.editorial?.taglineDesc ?? "En Fit +58 Caracas importamos los suplementos y productos gourmet que antes no conseguias. Calidad garantizada, entrega directa a tu puerta."}
+              </p>
+            )}
           </div>
         </div>
       )}
