@@ -1,8 +1,14 @@
 "use client";
 import { useState, useRef } from "react";
+import NextImage from "next/image";
 import { Heart, AlertCircle, ShoppingCart, Check, ChevronLeft, ChevronRight, X, Shield, Truck, Star, MessageSquare, ZoomIn, Send } from "lucide-react";
 import { fmt$, fmtBs } from "@/lib/store";
 import type { Product, Review, CardTypography } from "@/lib/types";
+
+
+/* Detecta si la URL puede optimizarse con Next/Image */
+const isOptimizable = (src: string) =>
+  src && !src.startsWith("data:") && !src.includes("svg+xml") && src.startsWith("http");
 
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='none' stroke='%23ddd' stroke-width='1'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='m21 15-5-5L5 21'/%3E%3C/svg%3E";
 
@@ -63,11 +69,23 @@ export function ProductCard({
       </button>
 
       {/* Image — imagen completa sobre blanco, sin recorte */}
-      <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height: ct.imgHeight ?? 220}} onClick={onDetail}>
-        <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
-          onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-          loading="lazy" decoding="async"
-          className="max-w-full max-h-full object-contain"/>
+      <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height: ct.imgHeight ?? 220, position:"relative"}} onClick={onDetail}>
+        {isOptimizable(images[imgIdx]) ? (
+          <NextImage
+            src={images[imgIdx]}
+            alt={product.name}
+            fill
+            sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 280px"
+            className="object-contain"
+            style={{ position:"absolute" }}
+            onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }}
+          />
+        ) : (
+          <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
+            onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
+            loading="lazy" decoding="async"
+            className="max-w-full max-h-full object-contain"/>
+        )}
         {images.length > 1 && (
           <>
             <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+images.length)%images.length);}}
@@ -180,7 +198,12 @@ export function ProductDetailModal({
                   <button key={i} onClick={()=>setImgIdx(i)}
                     className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden cursor-pointer p-0 transition-all"
                     style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
-                    <img src={src||PLACEHOLDER} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}} className="w-full h-full object-contain"/>
+                    {isOptimizable(src) ? (
+                      <NextImage src={src} alt="" fill sizes="64px" className="object-contain" style={{position:"absolute"}}
+                        onError={e=>{(e.target as HTMLImageElement).src=PLACEHOLDER;}}/>
+                    ) : (
+                      <img src={src||PLACEHOLDER} alt="" className="w-full h-full object-contain"/>
+                    )}
                     {i===specIdx && (
                       <span className="absolute bottom-0 inset-x-0 bg-black/75 text-white text-[6px] font-black text-center py-0.5 leading-none">FICHA</span>
                     )}
@@ -247,7 +270,12 @@ export function ProductDetailModal({
                   <button key={i} onClick={()=>setImgIdx(i)}
                     className="w-11 h-11 rounded-lg overflow-hidden cursor-pointer p-0 transition-all"
                     style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
-                    <img src={src||PLACEHOLDER} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}} className="w-full h-full object-contain"/>
+                    {isOptimizable(src) ? (
+                      <NextImage src={src} alt="" fill sizes="64px" className="object-contain" style={{position:"absolute"}}
+                        onError={e=>{(e.target as HTMLImageElement).src=PLACEHOLDER;}}/>
+                    ) : (
+                      <img src={src||PLACEHOLDER} alt="" className="w-full h-full object-contain"/>
+                    )}
                   </button>
                 ))}
               </div>
@@ -428,4 +456,5 @@ export function ProductDetailModal({
     </div>
   );
 }
+
 
