@@ -2,11 +2,10 @@
  * Service Worker — Fit +58 Caracas PWA
  * Estrategia: network-first para páginas, cache-first para assets estáticos
  */
-const CACHE_NAME   = "fit58-v3";
-const STATIC_CACHE = "fit58-static-v3";
+const CACHE_NAME   = "fit58-v5";
+const STATIC_CACHE = "fit58-static-v5";
 
 const STATIC_ASSETS = [
-  "/",
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
