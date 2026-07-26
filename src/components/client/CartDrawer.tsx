@@ -119,7 +119,7 @@ export function CartDrawer({
     reader.readAsDataURL(file);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const mapsLink = `https://maps.google.com/?q=${form.lat},${form.lng}`;
     const oid = Date.now().toString(36).toUpperCase();
     setOrderId(oid);
@@ -136,36 +136,39 @@ export function CartDrawer({
 
     onSaveOrder({ cart, total: finalTotal, form: orderForm, mapsLink });
 
-    // Registrar uso del código de referido y acumular descuento para el referidor
+    // Registrar uso del código de referido usado por el cliente
     if (referralId) {
-      import("@/app/utils/supabase/client").then(({ createClient }) => {
-        const sb = createClient();
-        sb.rpc("use_referral_code", { referral_id: referralId, order_id: oid });
-      });
+      const { createClient: cc1 } = await import("@/app/utils/supabase/client");
+      const sb1 = cc1();
+      await sb1.rpc("use_referral_code", { referral_id: referralId, order_id: oid }).catch(() => {});
     }
 
-    // Generar código propio del cliente para que él también pueda referir
-    import("@/app/utils/supabase/client").then(({ createClient }) => {
-      const sb = createClient();
+    // Generar código propio ANTES de armar el mensaje — await para tener el valor
+    let generatedCode = "";
+    try {
+      const { createClient: cc2 } = await import("@/app/utils/supabase/client");
+      const sb2 = cc2();
       const clean = form.name.trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5);
       const rand  = Math.random().toString(36).slice(2,5).toUpperCase();
       const code  = `FIT-${clean}-${rand}`;
-      sb.from("referrals").upsert({
+      const { data } = await sb2.from("referrals").upsert({
         code,
         owner_name:  form.name,
         owner_phone: form.phone,
-        discount:    3,    // 3% para el cliente nuevo que lo use
-        referrer_discount_per_use: 2.5, // 2.5% acumulable para el referidor
+        discount:    3,
         uses:        0,
         active:      true,
       }, { onConflict: "owner_phone", ignoreDuplicates: true })
-      .select("code").single()
-      .then(({ data }) => { if (data?.code) setMyRefCode(data.code); });
-    });
+      .select("code").single();
+      if (data?.code) {
+        generatedCode = data.code;
+        setMyRefCode(data.code);
+      }
+    } catch (_) {}
 
-    // Armar mensaje WhatsApp
+    // Armar mensaje WhatsApp CON el código ya generado
     const paymentLines = payments.filter(p => p.method).map(p =>
-      `💳 ${p.method}: ${fmt$(p.amount)}${p.amount < cartTotal && payments.length > 1 ? "" : ""}`
+      `💳 ${p.method}: ${fmt$(p.amount)}`
     );
 
     const msg = encodeURIComponent([
@@ -175,13 +178,16 @@ export function CartDrawer({
       ...cart.map(i => `• ${i.name} ×${i.qty} → ${fmt$(i.price * i.qty)}`),
       "─────────────────────────",
       `💰 *Total: ${fmt$(finalTotal)} | ${fmtBs(finalTotal, rate)}*`,
-      referralCode ? `🏷️ Código referido: ${referralCode} (-${referralDisc}%)` : "",
+      referralCode ? `🏷️ Código usado: ${referralCode} (-${referralDisc}%)` : "",
       ...paymentLines,
       balance > 0 ? `⚠️ Saldo pendiente: ${fmt$(balance)}` : `✅ Pagado completo`,
       "─────────────────────────",
-      `👤 ${form.name}`, `📱 ${form.phone}`, `⏰ ${form.time}`,
-      `📍 ${form.address}`, `🗺 ${mapsLink}`,
-      myRefCode ? `\n🎁 Tu código referido: *${myRefCode}* — compártelo y acumula descuentos` : "",
+      `👤 ${form.name}`,
+      `📱 ${form.phone}`,
+      `⏰ ${form.time}`,
+      `📍 ${form.address}`,
+      `🗺 ${mapsLink}`,
+      generatedCode ? `─────────────────────────\n🎁 Código referido del cliente: *${generatedCode}*\nCompártelo: 3% OFF a sus amigos, 2.5% acumulable para él.` : "",
     ].filter(Boolean).join("\n"));
 
     import("@/lib/notifications").then(({ notifyNewOrder }) => {
@@ -216,7 +222,7 @@ export function CartDrawer({
       `📍 Dirección: ${form.address}`,
       "─────────────────────────",
       `Guarda este ticket para consultar el estado de tu pedido.`,
-      myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra que generes.` : "",
+      myRefCode ? `\n─────────────────────────\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo con tus amigos — ellos obtienen 3% OFF y tú acumulas 2.5% por cada compra que generes.` : "",
     ].filter(Boolean).join("\n");
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2000); });
   };
@@ -642,3 +648,4 @@ export function CartDrawer({
     </div>
   );
 }
+
