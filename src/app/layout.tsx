@@ -111,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <link rel="icon"             href="/favicon.ico" type="image/x-icon"/>
         <link rel="icon"             href="/icons/icon-192.png" type="image/png"/>
@@ -124,10 +124,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title" content="Fit +58"/>
         <script
           type="application/ld+json"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
       </head>
-      <body className="font-[Inter,sans-serif] bg-[#f0f2f5] antialiased">
+      <body suppressHydrationWarning className="font-[Inter,sans-serif] bg-[#f0f2f5] antialiased">
         {children}
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
@@ -143,4 +144,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
 
