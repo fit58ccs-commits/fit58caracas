@@ -8,7 +8,6 @@ import { CartDrawer }                      from "./CartDrawer";
 import { ReviewSection }                   from "./ReviewSection";
 import { OrderTracker }                    from "./OrderTracker";
 import { MyReferralPanel }                 from "./MyReferralPanel";
-import { FloatingButtons }                 from "./FloatingButtons";
 import { DEFAULT_TICKER_ITEMS, DEFAULT_TRUST_ITEMS } from "@/lib/data";
 import { fmt$, fmtBs }                    from "@/lib/store";
 import type { Product }                    from "@/lib/types";
@@ -400,11 +399,6 @@ export function ClientView({ store }: { store: Store }) {
           design={{ whatsappNumber: store.design.whatsappNumber, paymentMethods: store.design.paymentMethods }}/>
       )}
 
-      {/* ── Botones flotantes WhatsApp e Instagram ── */}
-      <FloatingButtons
-        whatsappNumber={store.design.whatsappNumber || "584141013137"}
-        instagramHandle="fit58caracas"
-      />
     </div>
   );
 }
