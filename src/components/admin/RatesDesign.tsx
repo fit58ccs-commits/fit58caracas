@@ -1,6 +1,6 @@
 "use client";
 import { NotifSettings } from "./NotifSettings";
-import { useState, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   RefreshCw, Save, Plus, Trash2, ExternalLink, Upload,
   Navigation, Star, Globe, DollarSign,
@@ -26,6 +26,103 @@ const genId = () => Math.random().toString(36).slice(2, 9);
  *              NEVER visible to the client — only admins see it here.
  *
  * ──────────────────────────────────────────────────────────────────────── */
+/* ── RichEditor — componente estable sin bug de contentEditable+React ── */
+function RichEditor({
+  label, value, onChange, defaultVal, minSize, maxSize,
+}: {
+  label: string;
+  value: string;
+  onChange: (html: string) => void;
+  defaultVal: string;
+  minSize: number;
+  maxSize: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const midSize = Math.round((minSize + maxSize) / 2);
+
+  // Inicializar contenido UNA SOLA VEZ al montar — nunca más
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.innerHTML = value || defaultVal;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const exec = (cmd: string, val?: string) => {
+    ref.current?.focus();
+    document.execCommand(cmd, false, val);
+    if (ref.current) onChange(ref.current.innerHTML);
+  };
+
+  const setSize = (px: number) => {
+    ref.current?.focus();
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+      // Aplicar tamaño solo a la selección
+      document.execCommand("fontSize", false, "7");
+      ref.current?.querySelectorAll("font[size='7']").forEach(el => {
+        const e = el as HTMLElement;
+        e.removeAttribute("size");
+        e.style.fontSize = px + "px";
+      });
+    } else {
+      // Sin selección → cambiar todo el contenedor
+      if (ref.current) ref.current.style.fontSize = px + "px";
+    }
+    if (ref.current) onChange(ref.current.innerHTML);
+  };
+
+  const adjLineHeight = (delta: number) => {
+    if (!ref.current) return;
+    const cur = parseFloat(ref.current.style.lineHeight || "1.4");
+    ref.current.style.lineHeight = Math.max(1, Math.min(3, +(cur + delta).toFixed(1))).toString();
+    onChange(ref.current.innerHTML);
+  };
+
+  const TOOL_BTN = "w-7 h-7 flex items-center justify-center rounded border border-neutral-200 bg-white cursor-pointer text-black hover:bg-neutral-50 active:scale-95 transition-all shrink-0";
+  const SZ_BTN  = "px-2 h-7 flex items-center justify-center rounded border border-neutral-200 bg-white cursor-pointer text-[10px] font-black text-black hover:bg-neutral-50 active:scale-95 transition-all shrink-0";
+
+  return (
+    <div className="flex flex-col gap-0">
+      <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">{label}</label>
+
+      {/* Barra herramientas */}
+      <div className="flex items-center gap-1 flex-wrap bg-neutral-50 border border-neutral-200 border-b-0 rounded-t-lg px-2 py-1.5">
+        <button type="button" className={TOOL_BTN} onMouseDown={e => { e.preventDefault(); exec("bold"); }}>
+          <strong style={{ fontSize: 13 }}>B</strong>
+        </button>
+        <button type="button" className={TOOL_BTN} onMouseDown={e => { e.preventDefault(); exec("italic"); }}>
+          <em style={{ fontSize: 13 }}>I</em>
+        </button>
+        <button type="button" className={TOOL_BTN} onMouseDown={e => { e.preventDefault(); exec("underline"); }}>
+          <span className="underline" style={{ fontSize: 12 }}>U</span>
+        </button>
+        <div className="w-px h-5 bg-neutral-200 mx-0.5"/>
+        <button type="button" className={SZ_BTN} onMouseDown={e => { e.preventDefault(); setSize(minSize); }}>{minSize}px</button>
+        <button type="button" className={SZ_BTN} onMouseDown={e => { e.preventDefault(); setSize(midSize); }}>{midSize}px</button>
+        <button type="button" className={SZ_BTN} onMouseDown={e => { e.preventDefault(); setSize(maxSize); }}>{maxSize}px</button>
+        <div className="w-px h-5 bg-neutral-200 mx-0.5"/>
+        <button type="button" className={SZ_BTN} title="Reducir interlineado" onMouseDown={e => { e.preventDefault(); adjLineHeight(-0.1); }}>↕−</button>
+        <button type="button" className={SZ_BTN} title="Aumentar interlineado" onMouseDown={e => { e.preventDefault(); adjLineHeight(+0.1); }}>↕+</button>
+        <div className="w-px h-5 bg-neutral-200 mx-0.5"/>
+        <button type="button" className={SZ_BTN} title="Salto de línea" onMouseDown={e => { e.preventDefault(); exec("insertHTML", "<br/>"); }}>↵</button>
+        <button type="button" className={SZ_BTN} title="Limpiar formato" onMouseDown={e => { e.preventDefault(); exec("removeFormat"); }}>✕</button>
+      </div>
+
+      {/* Área editable */}
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={() => { if (ref.current) onChange(ref.current.innerHTML); }}
+        className="field-input w-full border border-neutral-200 px-3 py-2.5 bg-white rounded-b-lg outline-none min-h-[56px] text-sm"
+        style={{ lineHeight: 1.4 }}
+      />
+      <p className="text-[9px] text-neutral-400 mt-1">Selecciona texto y aplica formato · ↵ inserta salto de línea</p>
+    </div>
+  );
+}
+
 export function RatesSection({
   rate,    onSaveRate,
   rateBCV, onSaveRateBCV,
@@ -501,170 +598,89 @@ export function DesignSection({
 
           <div className="grid gap-6" style={{ gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))" }}>
 
-            {/* Tagline / Divisor — Rich Text Editor */}
-            {(() => {
-              const RichEditor = ({
-                label, value, onSave, defaultVal, minSize = 12, maxSize = 48, defaultSize = 18,
-              }: {
-                label: string; value: string; onSave: (html: string) => void;
-                defaultVal: string; minSize?: number; maxSize?: number; defaultSize?: number;
-              }) => {
-                const edRef = useRef<HTMLDivElement>(null);
-                const fmt = (cmd: string, val?: string) => {
-                  edRef.current?.focus();
-                  document.execCommand(cmd, false, val);
-                  setTimeout(() => onSave(edRef.current?.innerHTML ?? ""), 0);
-                };
-                const setSz = (sz: number) => {
-                  edRef.current?.focus();
-                  const sel = window.getSelection();
-                  if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-                    document.execCommand("fontSize", false, "7");
-                    edRef.current?.querySelectorAll("font[size='7']").forEach(el => {
-                      (el as HTMLElement).removeAttribute("size");
-                      (el as HTMLElement).style.fontSize = sz + "px";
-                    });
-                  } else {
-                    if (edRef.current) edRef.current.style.fontSize = sz + "px";
-                  }
-                  setTimeout(() => onSave(edRef.current?.innerHTML ?? ""), 0);
-                };
-                const setLh = (lh: number) => {
-                  if (edRef.current) {
-                    edRef.current.style.lineHeight = String(lh);
-                    onSave(edRef.current.innerHTML);
-                  }
-                };
-                const currentLh = () => parseFloat(edRef.current?.style.lineHeight || "1.3");
-                return (
-                  <div className="flex flex-col gap-1.5">
-                    <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase">{label}</label>
-                    {/* Barra de herramientas */}
-                    <div className="flex items-center gap-1 flex-wrap bg-neutral-100/80 rounded-t-lg px-2 py-1.5 border border-neutral-200/80 border-b-0">
-                      <button type="button" onMouseDown={e => { e.preventDefault(); fmt("bold"); }}
-                        className="w-7 h-7 flex items-center justify-center rounded font-black text-sm cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-black">B</button>
-                      <button type="button" onMouseDown={e => { e.preventDefault(); fmt("italic"); }}
-                        className="w-7 h-7 flex items-center justify-center rounded italic font-semibold text-sm cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-black">I</button>
-                      <button type="button" onMouseDown={e => { e.preventDefault(); fmt("underline"); }}
-                        className="w-7 h-7 flex items-center justify-center rounded underline font-semibold text-sm cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-black">U</button>
-                      <div className="w-px h-4 bg-neutral-300 mx-0.5"/>
-                      {[minSize, Math.round((minSize+maxSize)/2), maxSize].map(sz => (
-                        <button key={sz} type="button" onMouseDown={e => { e.preventDefault(); setSz(sz); }}
-                          className="px-2 h-7 flex items-center justify-center rounded text-[10px] font-black cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-black">
-                          {sz}px
-                        </button>
-                      ))}
-                      <div className="w-px h-4 bg-neutral-300 mx-0.5"/>
-                      <button type="button" title="Interlineado -" onMouseDown={e => { e.preventDefault(); setLh(Math.max(1, currentLh() - 0.1)); }}
-                        className="w-7 h-7 flex items-center justify-center rounded text-xs cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-black font-bold">↕−</button>
-                      <button type="button" title="Interlineado +" onMouseDown={e => { e.preventDefault(); setLh(Math.min(3, currentLh() + 0.1)); }}
-                        className="w-7 h-7 flex items-center justify-center rounded text-xs cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-black font-bold">↕+</button>
-                      <div className="w-px h-4 bg-neutral-300 mx-0.5"/>
-                      <button type="button" title="Salto de linea" onMouseDown={e => { e.preventDefault(); fmt("insertHTML", "<br/>"); }}
-                        className="px-2 h-7 flex items-center justify-center rounded text-[9px] font-black cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-black">↵</button>
-                      <button type="button" title="Limpiar formato" onMouseDown={e => { e.preventDefault(); fmt("removeFormat"); }}
-                        className="px-2 h-7 flex items-center justify-center rounded text-[9px] font-black cursor-pointer border-none bg-white/70 hover:bg-white shadow-sm text-neutral-500">✕</button>
-                    </div>
-                    {/* Área editable */}
-                    <div
-                      ref={edRef}
-                      contentEditable
-                      suppressContentEditableWarning
-                      onInput={() => onSave(edRef.current?.innerHTML ?? "")}
-                      dangerouslySetInnerHTML={{ __html: value || defaultVal }}
-                      className="field-input w-full border border-neutral-200/80 px-3 py-2.5 text-sm bg-white/90 rounded-b-lg font-[inherit] outline-none min-h-[60px]"
-                      style={{ lineHeight: 1.4 }}
-                    />
-                    <p className="text-[9px] text-neutral-400">Selecciona texto para aplicar formato. ↵ inserta salto de línea.</p>
-                  </div>
-                );
-              };
+            {/* Tagline / Divisor */}
+            <div className="flex flex-col gap-3">
+              <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase">Divisor Editorial</p>
 
-              return (
-                <div className="flex flex-col gap-3">
-                  <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase">Divisor Editorial</p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox"
+                  checked={draft.editorial?.taglineVisible !== false}
+                  onChange={e => F("editorial", { ...draft.editorial, taglineVisible: e.target.checked })}
+                  className="accent-green-600"/>
+                <span className="text-xs font-bold text-neutral-600">Visible</span>
+              </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox"
-                      checked={draft.editorial?.taglineVisible !== false}
-                      onChange={e => F("editorial", { ...draft.editorial, taglineVisible: e.target.checked })}
-                      className="accent-green-600"/>
-                    <span className="text-xs font-bold text-neutral-600">Visible</span>
-                  </label>
+              <RichEditor
+                label="Titular (texto grande)"
+                value={draft.editorial?.taglineHtml ?? ""}
+                defaultVal="<strong>Nutre tu cuerpo</strong><br/>con lo <em>mejor</em> del mundo."
+                onChange={html => F("editorial", { ...draft.editorial, taglineHtml: html })}
+                minSize={14} maxSize={48}
+              />
 
-                  <RichEditor
-                    label="Titular (texto grande)"
-                    value={draft.editorial?.taglineHtml ?? ""}
-                    defaultVal="<strong>Nutre tu cuerpo</strong><br/>con lo <em>mejor</em> del mundo."
-                    onSave={html => F("editorial", { ...draft.editorial, taglineHtml: html })}
-                    minSize={14} maxSize={48} defaultSize={22}
-                  />
+              <RichEditor
+                label="Descripcion (columna derecha)"
+                value={draft.editorial?.taglineDescHtml ?? ""}
+                defaultVal="En Fit +58 Caracas importamos los suplementos y productos gourmet que antes no conseguias. Calidad garantizada, entrega directa a tu puerta."
+                onChange={html => F("editorial", { ...draft.editorial, taglineDescHtml: html })}
+                minSize={9} maxSize={18}
+              />
 
-                  <RichEditor
-                    label="Descripcion (columna derecha)"
-                    value={draft.editorial?.taglineDescHtml ?? ""}
-                    defaultVal="En Fit +58 Caracas importamos los suplementos y productos gourmet que antes no conseguias. Calidad garantizada, entrega directa a tu puerta."
-                    onSave={html => F("editorial", { ...draft.editorial, taglineDescHtml: html })}
-                    minSize={9} maxSize={18} defaultSize={11}
-                  />
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Color titular</label>
-                      <div className="flex items-center gap-2">
-                        <input type="color"
-                          value={draft.editorial?.taglineColor ?? "#0d0d0d"}
-                          onChange={e => F("editorial", { ...draft.editorial, taglineColor: e.target.value })}
-                          className="w-9 h-9 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
-                        <span className="text-xs text-neutral-500">{draft.editorial?.taglineColor ?? "#0d0d0d"}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Color descripcion</label>
-                      <div className="flex items-center gap-2">
-                        <input type="color"
-                          value={draft.editorial?.taglineDescColor ?? "#585757"}
-                          onChange={e => F("editorial", { ...draft.editorial, taglineDescColor: e.target.value })}
-                          className="w-9 h-9 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
-                        <span className="text-xs text-neutral-500">{draft.editorial?.taglineDescColor ?? "#585757"}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Tamano base titular (px)</label>
-                    <input type="range" min={12} max={48} step={1}
-                      value={draft.editorial?.taglineFontSize ?? 22}
-                      onChange={e => F("editorial", { ...draft.editorial, taglineFontSize: Number(e.target.value) })}
-                      className="w-full"/>
-                    <span className="text-[10px] text-neutral-400">{draft.editorial?.taglineFontSize ?? 22}px</span>
-                  </div>
-
-                  <div>
-                    <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Fuente</label>
-                    <select
-                      value={draft.editorial?.taglineFontFamily ?? "inherit"}
-                      onChange={e => F("editorial", { ...draft.editorial, taglineFontFamily: e.target.value })}
-                      className="field-input w-full border border-neutral-200/80 px-3 py-2 text-sm bg-white/72 rounded-lg font-[inherit]">
-                      {["inherit","Bebas Neue","Barlow Condensed","DM Sans","Inter","Georgia","Montserrat","Poppins","Raleway"].map(f => (
-                        <option key={f} value={f}>{f}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Preview */}
-                  <div className="neumorph rounded-xl p-4 mt-1"
-                    style={{ background: draft.editorial?.taglineBg ?? "#fff" }}>
-                    <div className="leading-snug"
-                      style={{ color: draft.editorial?.taglineColor ?? "#0d0d0d", fontSize: draft.editorial?.taglineFontSize ?? 22, fontFamily: draft.editorial?.taglineFontFamily ?? "inherit" }}
-                      dangerouslySetInnerHTML={{ __html: draft.editorial?.taglineHtml ?? "<strong>Nutre tu cuerpo</strong><br/>con lo <em>mejor</em> del mundo." }}/>
-                    <div className="mt-2 leading-relaxed"
-                      style={{ color: draft.editorial?.taglineDescColor ?? "#585757", fontSize: 11 }}
-                      dangerouslySetInnerHTML={{ __html: draft.editorial?.taglineDescHtml ?? "Descripcion del negocio..." }}/>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Color texto</label>
+                  <div className="flex items-center gap-2">
+                    <input type="color"
+                      value={draft.editorial?.taglineColor ?? "#0d0d0d"}
+                      onChange={e => F("editorial", { ...draft.editorial, taglineColor: e.target.value })}
+                      className="w-9 h-9 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
+                    <span className="text-xs text-neutral-500">{draft.editorial?.taglineColor ?? "#0d0d0d"}</span>
                   </div>
                 </div>
-              );
-            })()}
+                <div>
+                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Color descripcion</label>
+                  <div className="flex items-center gap-2">
+                    <input type="color"
+                      value={draft.editorial?.taglineDescColor ?? "#585757"}
+                      onChange={e => F("editorial", { ...draft.editorial, taglineDescColor: e.target.value })}
+                      className="w-9 h-9 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
+                    <span className="text-xs text-neutral-500">{draft.editorial?.taglineDescColor ?? "#585757"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Tamano fuente (px base)</label>
+                <input type="range" min={12} max={40} step={1}
+                  value={draft.editorial?.taglineFontSize ?? 18}
+                  onChange={e => F("editorial", { ...draft.editorial, taglineFontSize: Number(e.target.value) })}
+                  className="w-full"/>
+                <span className="text-[10px] text-neutral-400">{draft.editorial?.taglineFontSize ?? 18}px</span>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1">Fuente</label>
+                <select
+                  value={draft.editorial?.taglineFontFamily ?? "inherit"}
+                  onChange={e => F("editorial", { ...draft.editorial, taglineFontFamily: e.target.value })}
+                  className="field-input w-full border border-neutral-200/80 px-3 py-2 text-sm bg-white/72 rounded-lg font-[inherit]">
+                  {["inherit","Bebas Neue","Barlow Condensed","DM Sans","Inter","Georgia","Montserrat","Poppins","Raleway"].map(f => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Preview divisor */}
+              <div className="neumorph rounded-xl p-4 mt-1"
+                style={{ background: draft.editorial?.taglineBg ?? "#fff" }}>
+                <div className="leading-snug"
+                  style={{ color: draft.editorial?.taglineColor ?? "#0d0d0d", fontSize: draft.editorial?.taglineFontSize ?? 22, fontFamily: draft.editorial?.taglineFontFamily ?? "inherit" }}
+                  dangerouslySetInnerHTML={{ __html: draft.editorial?.taglineHtml ?? "<strong>Nutre tu cuerpo</strong><br/>con lo <em>mejor</em> del mundo." }}/>
+                <div className="mt-2 leading-relaxed"
+                  style={{ color: draft.editorial?.taglineDescColor ?? "#585757", fontSize: 11 }}
+                  dangerouslySetInnerHTML={{ __html: draft.editorial?.taglineDescHtml ?? "Descripcion del negocio..." }}/>
+              </div>
+            </div>
 
             {/* Watermark */}
             <div className="flex flex-col gap-3">
