@@ -132,11 +132,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js').then(
-                function(reg) { console.log('[PWA] SW registrado:', reg.scope); },
-                function(err) { console.warn('[PWA] SW error:', err); }
-              );
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            });
+            caches.keys().then(function(keys) {
+              keys.forEach(function(k) { caches.delete(k); });
             });
           }
         `}</Script>
