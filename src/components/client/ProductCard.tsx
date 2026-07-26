@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { Heart, AlertCircle, ShoppingCart, Check, ChevronLeft, ChevronRight, X, Shield, Truck, Star, MessageSquare, ZoomIn, Send } from "lucide-react";
 import { fmt$, fmtBs } from "@/lib/store";
-import type { Product, Review } from "@/lib/types";
+import type { Product, Review, CardTypography } from "@/lib/types";
 
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='none' stroke='%23ddd' stroke-width='1'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='m21 15-5-5L5 21'/%3E%3C/svg%3E";
 
@@ -19,13 +19,14 @@ function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
 
 /* ── ProductCard ────────────────────────────────────────────────── */
 export function ProductCard({
-  product, rate, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [],
+  product, rate, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [], ct = {},
 }: {
   product: Product; rate: number;
   onAdd: () => void; inCart: number;
   wishlisted: boolean; onWishlist: () => void;
   onDetail: () => void;
   reviews?: Review[];
+  ct?: CardTypography;
 }) {
   const [imgIdx,   setImgIdx]   = useState(0);
   const [heartKey, setHeartKey] = useState(0);
@@ -44,7 +45,12 @@ export function ProductCard({
   }[b] ?? "bg-neutral-700/85");
 
   return (
-    <div className="prod-card bg-white border border-neutral-200/80 rounded-xl flex flex-col relative overflow-hidden hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-shadow">
+    <div className="prod-card flex flex-col relative overflow-hidden hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-shadow"
+      style={{
+        background:   ct.cardBg     ?? "#fff",
+        border:       `1px solid ${ct.cardBorder ?? "rgba(229,231,235,0.8)"}`,
+        borderRadius: ct.cardRadius ?? 12,
+      }}>
       {product.badge && (
         <div className={`${badgeColor(product.badge)} absolute top-3 left-3 z-[3] text-white text-[8px] font-black tracking-[1.5px] uppercase px-2 py-1 rounded-md`}>
           {product.badge}
@@ -57,7 +63,7 @@ export function ProductCard({
       </button>
 
       {/* Image — imagen completa sobre blanco, sin recorte */}
-      <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height:220}} onClick={onDetail}>
+      <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height: ct.imgHeight ?? 220}} onClick={onDetail}>
         <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
           onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
           loading="lazy" decoding="async"
@@ -78,8 +84,20 @@ export function ProductCard({
 
       {/* Info — minimalista: sin descripción */}
       <div className="p-3 md:p-4 flex flex-col gap-1.5 flex-1 bg-white border-t border-neutral-100">
-        <p className="text-[9px] font-bold text-neutral-400 tracking-[1.5px] uppercase m-0">{product.category}</p>
-        <h3 className="text-[12px] md:text-[13px] font-black text-black uppercase tracking-wide m-0 leading-snug cursor-pointer" onClick={onDetail}>
+        <p className="tracking-[1.5px] uppercase m-0"
+          style={{
+            fontFamily: ct.categoryFont   ?? "inherit",
+            fontSize:   ct.categorySize   ?? 9,
+            color:      ct.categoryColor  ?? "#aaaaaa",
+            fontWeight: ct.categoryWeight ?? "700",
+          }}>{product.category}</p>
+        <h3 className="uppercase tracking-wide m-0 leading-snug cursor-pointer"
+          style={{
+            fontFamily: ct.nameFont   ?? "inherit",
+            fontSize:   ct.nameSize   ?? 13,
+            color:      ct.nameColor  ?? "#111111",
+            fontWeight: ct.nameWeight ?? "900",
+          }} onClick={onDetail}>
           {product.name}
         </h3>
 
@@ -92,19 +110,22 @@ export function ProductCard({
         )}
 
         <div className="flex items-baseline gap-1.5 mt-0.5">
-          <span className="text-lg md:text-xl font-black text-black">{fmt$(product.price)}</span>
+          <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??20, color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
           <span className="text-[10px] text-neutral-300 font-bold">/</span>
-          <span className="text-xs md:text-sm font-black text-black">{fmtBs(product.price, rate)}</span>
+          <span style={{ fontFamily:ct.priceBsFont??"inherit", fontSize:ct.priceBsSize??12, color:ct.priceBsColor??"#111", fontWeight:ct.priceBsWeight??"900" }}>{fmtBs(product.price, rate)}</span>
         </div>
 
         {/* No mostrar stock al cliente */}
 
         <button key={addKey} onClick={()=>{setAddKey(k=>k+1);onAdd();}}
-          className={`${addKey>0?"animate-cart-pop":""} mt-auto flex items-center justify-center gap-1.5 py-2.5 text-[9px] md:text-[10px] font-black tracking-[1.2px] uppercase rounded-lg transition-all duration-200 border cursor-pointer`}
+          className={`${addKey>0?"animate-cart-pop":""} mt-auto flex items-center justify-center gap-1.5 py-2.5 tracking-[1.2px] uppercase transition-all duration-200 border cursor-pointer`}
           style={{
-            border:`1.5px solid ${inCart>0?"#111":"#ddd"}`,
-            background:inCart>0?"#111":"#fff",
-            color:inCart>0?"#fff":"#111",
+            fontFamily:  ct.btnFont        ?? "inherit",
+            fontSize:    ct.btnSize        ?? 9,
+            borderRadius:ct.btnRadius      ?? 8,
+            border:      `1.5px solid ${inCart>0 ? (ct.btnActiveBg??"#111") : (ct.cardBorder??"#ddd")}`,
+            background:  inCart>0 ? (ct.btnActiveBg    ?? "#111") : (ct.btnBg       ?? "#fff"),
+            color:       inCart>0 ? (ct.btnActiveColor ?? "#fff") : (ct.btnColor    ?? "#111"),
           }}>
           {inCart>0 ? <><Check size={11}/>EN CARRITO ({inCart})</> : <><ShoppingCart size={11}/>AGREGAR</>}
         </button>
@@ -407,3 +428,4 @@ export function ProductDetailModal({
     </div>
   );
 }
+

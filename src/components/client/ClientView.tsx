@@ -187,7 +187,8 @@ export function ClientView({ store }: { store: Store }) {
               wishlisted={store.wishlist.includes(p.id)}
               onWishlist={() => store.toggleWishlist(p.id)}
               onDetail={() => setSelectedProduct(p)}
-              reviews={store.reviews}/>
+              reviews={store.reviews}
+              ct={store.design.cardTypography ?? {}}/>
           ))}
           {filtered.length === 0 && (
             <div className="col-span-full text-center py-16 text-neutral-300">

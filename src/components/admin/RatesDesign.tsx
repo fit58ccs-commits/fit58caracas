@@ -9,7 +9,7 @@ import { fileToBase64, fmt$, fmtBs } from "@/lib/store";
 import { DEFAULT_DESIGN } from "@/lib/data";
 import { Btn, Field, Select, ColorRow } from "../ui/Primitives";
 import { useToast } from "../ui/Toast";
-import type { ExchangeRate, DesignConfig, NavLink, EditorialConfig } from "@/lib/types";
+import type { ExchangeRate, DesignConfig, NavLink, EditorialConfig, CardTypography } from "@/lib/types";
 
 const genId = () => Math.random().toString(36).slice(2, 9);
 
@@ -671,6 +671,230 @@ export function DesignSection({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Tipografia tarjetas de producto ── */}
+        <div className="glass-card p-6 rounded-2xl" style={{ gridColumn:"1 / -1" }}>
+          <p className="text-[10px] font-black text-neutral-300 tracking-[2px] uppercase mb-1 flex items-center gap-1.5">
+            🃏 Tipografia de Tarjetas de Producto
+          </p>
+          <p className="text-[10px] text-neutral-400 mb-5">
+            Controla fuente, tamaño, peso y colores de cada texto en las tarjetas del catalogo.
+          </p>
+
+          {(() => {
+            const CT = draft.cardTypography || {};
+            const FC = <K extends keyof CardTypography>(k: K, v: CardTypography[K]) =>
+              F("cardTypography", { ...CT, [k]: v } as CardTypography);
+
+            const FONTS = ["inherit","Bebas Neue","Barlow Condensed","DM Sans","Inter","Georgia","Montserrat","Poppins","Raleway","Nunito"];
+            const WEIGHTS = [["400","Regular"],["600","Semibold"],["700","Bold"],["900","Black"]] as const;
+
+            const TextRow = ({ label, fKey, sKey, cKey, wKey, defFont, defSize, defColor, defWeight }: {
+              label: string;
+              fKey: keyof CardTypography; sKey: keyof CardTypography;
+              cKey: keyof CardTypography; wKey: keyof CardTypography;
+              defFont: string; defSize: number; defColor: string; defWeight: string;
+            }) => (
+              <div className="glass-card rounded-xl p-4 flex flex-col gap-3">
+                <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase m-0">{label}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {/* Fuente */}
+                  <div>
+                    <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">Fuente</label>
+                    <select value={(CT[fKey] as string) ?? defFont}
+                      onChange={e => FC(fKey, e.target.value as CardTypography[typeof fKey])}
+                      className="field-input w-full border border-neutral-200/80 px-2 py-1.5 text-xs bg-white/72 rounded-lg font-[inherit]">
+                      {FONTS.map(f => <option key={f} value={f}>{f === "inherit" ? "Por defecto" : f}</option>)}
+                    </select>
+                  </div>
+                  {/* Tamaño */}
+                  <div>
+                    <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">
+                      Tamaño: {(CT[sKey] as number) ?? defSize}px
+                    </label>
+                    <input type="range" min={8} max={40} step={1}
+                      value={(CT[sKey] as number) ?? defSize}
+                      onChange={e => FC(sKey, Number(e.target.value) as CardTypography[typeof sKey])}
+                      className="w-full"/>
+                  </div>
+                  {/* Peso */}
+                  <div>
+                    <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">Peso</label>
+                    <select value={(CT[wKey] as string) ?? defWeight}
+                      onChange={e => FC(wKey, e.target.value as CardTypography[typeof wKey])}
+                      className="field-input w-full border border-neutral-200/80 px-2 py-1.5 text-xs bg-white/72 rounded-lg font-[inherit]">
+                      {WEIGHTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </div>
+                  {/* Color */}
+                  <div>
+                    <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">Color</label>
+                    <div className="flex items-center gap-1.5">
+                      <input type="color" value={(CT[cKey] as string) ?? defColor}
+                        onChange={e => FC(cKey, e.target.value as CardTypography[typeof cKey])}
+                        className="w-8 h-8 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
+                      <span className="text-[9px] text-neutral-400">{(CT[cKey] as string) ?? defColor}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+
+            return (
+              <div className="flex flex-col gap-4">
+                <TextRow label="Categoria" fKey="categoryFont" sKey="categorySize" cKey="categoryColor" wKey="categoryWeight"
+                  defFont="inherit" defSize={9} defColor="#aaaaaa" defWeight="700"/>
+                <TextRow label="Nombre del producto" fKey="nameFont" sKey="nameSize" cKey="nameColor" wKey="nameWeight"
+                  defFont="inherit" defSize={12} defColor="#111111" defWeight="900"/>
+                <TextRow label="Precio €" fKey="priceFont" sKey="priceSize" cKey="priceColor" wKey="priceWeight"
+                  defFont="inherit" defSize={20} defColor="#111111" defWeight="900"/>
+                <TextRow label="Precio Bs" fKey="priceBsFont" sKey="priceBsSize" cKey="priceBsColor" wKey="priceBsWeight"
+                  defFont="inherit" defSize={12} defColor="#111111" defWeight="900"/>
+
+                {/* Boton y tarjeta */}
+                <div className="glass-card rounded-xl p-4 flex flex-col gap-3">
+                  <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase m-0">Boton Agregar</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div>
+                      <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">Fuente</label>
+                      <select value={CT.btnFont ?? "inherit"}
+                        onChange={e => FC("btnFont", e.target.value)}
+                        className="field-input w-full border border-neutral-200/80 px-2 py-1.5 text-xs bg-white/72 rounded-lg font-[inherit]">
+                        {FONTS.map(f => <option key={f} value={f}>{f === "inherit" ? "Por defecto" : f}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">
+                        Tamaño: {CT.btnSize ?? 9}px
+                      </label>
+                      <input type="range" min={8} max={18} step={1}
+                        value={CT.btnSize ?? 9}
+                        onChange={e => FC("btnSize", Number(e.target.value))}
+                        className="w-full"/>
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">
+                        Radio: {CT.btnRadius ?? 8}px
+                      </label>
+                      <input type="range" min={0} max={999} step={1}
+                        value={CT.btnRadius ?? 8}
+                        onChange={e => FC("btnRadius", Number(e.target.value))}
+                        className="w-full"/>
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">Alto imagen: {CT.imgHeight ?? 220}px</label>
+                      <input type="range" min={100} max={400} step={10}
+                        value={CT.imgHeight ?? 220}
+                        onChange={e => FC("imgHeight", Number(e.target.value))}
+                        className="w-full"/>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
+                    {[
+                      { label:"Fondo inactivo",  key:"btnBg",          def:"#ffffff" },
+                      { label:"Texto inactivo",  key:"btnColor",       def:"#111111" },
+                      { label:"Fondo activo",    key:"btnActiveBg",    def:"#111111" },
+                      { label:"Texto activo",    key:"btnActiveColor", def:"#ffffff" },
+                    ].map(({ label, key, def }) => (
+                      <div key={key}>
+                        <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">{label}</label>
+                        <div className="flex items-center gap-1.5">
+                          <input type="color"
+                            value={(CT[key as keyof CardTypography] as string) ?? def}
+                            onChange={e => FC(key as keyof CardTypography, e.target.value as CardTypography[keyof CardTypography])}
+                            className="w-8 h-8 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
+                          <span className="text-[9px] text-neutral-400">{(CT[key as keyof CardTypography] as string) ?? def}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tarjeta general */}
+                <div className="glass-card rounded-xl p-4 flex flex-col gap-3">
+                  <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase m-0">Tarjeta General</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div>
+                      <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">
+                        Radio tarjeta: {CT.cardRadius ?? 12}px
+                      </label>
+                      <input type="range" min={0} max={32} step={1}
+                        value={CT.cardRadius ?? 12}
+                        onChange={e => FC("cardRadius", Number(e.target.value))}
+                        className="w-full"/>
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">Fondo tarjeta</label>
+                      <div className="flex items-center gap-1.5">
+                        <input type="color" value={CT.cardBg ?? "#ffffff"}
+                          onChange={e => FC("cardBg", e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
+                        <span className="text-[9px] text-neutral-400">{CT.cardBg ?? "#ffffff"}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-black text-neutral-400 tracking-wide uppercase mb-1">Borde tarjeta</label>
+                      <div className="flex items-center gap-1.5">
+                        <input type="color" value={CT.cardBorder ?? "#e5e7eb"}
+                          onChange={e => FC("cardBorder", e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-neutral-200/80 cursor-pointer bg-transparent p-0.5"/>
+                        <span className="text-[9px] text-neutral-400">{CT.cardBorder ?? "#e5e7eb"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview tarjeta */}
+                <div>
+                  <p className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-2">Preview</p>
+                  <div className="flex justify-center">
+                    <div className="flex flex-col overflow-hidden w-48"
+                      style={{
+                        background: CT.cardBg ?? "#fff",
+                        border: `1px solid ${CT.cardBorder ?? "#e5e7eb"}`,
+                        borderRadius: CT.cardRadius ?? 12,
+                      }}>
+                      <div className="flex items-center justify-center bg-neutral-50"
+                        style={{ height: Math.min(CT.imgHeight ?? 220, 120) }}>
+                        <span className="text-neutral-300 text-xs">[ imagen ]</span>
+                      </div>
+                      <div className="p-3 flex flex-col gap-1.5">
+                        <p className="m-0 uppercase"
+                          style={{ fontFamily: CT.categoryFont ?? "inherit", fontSize: CT.categorySize ?? 9, color: CT.categoryColor ?? "#aaa", fontWeight: CT.categoryWeight ?? "700" }}>
+                          Categoria
+                        </p>
+                        <p className="m-0 uppercase leading-snug"
+                          style={{ fontFamily: CT.nameFont ?? "inherit", fontSize: CT.nameSize ?? 12, color: CT.nameColor ?? "#111", fontWeight: CT.nameWeight ?? "900" }}>
+                          Nombre del Producto
+                        </p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span style={{ fontFamily: CT.priceFont ?? "inherit", fontSize: CT.priceSize ?? 20, color: CT.priceColor ?? "#111", fontWeight: CT.priceWeight ?? "900" }}>
+                            €25.00
+                          </span>
+                          <span style={{ fontFamily: CT.priceBsFont ?? "inherit", fontSize: CT.priceBsSize ?? 12, color: CT.priceBsColor ?? "#111", fontWeight: CT.priceBsWeight ?? "900" }}>
+                            Bs.900
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center py-2 text-center"
+                          style={{
+                            fontFamily: CT.btnFont ?? "inherit",
+                            fontSize: CT.btnSize ?? 9,
+                            borderRadius: CT.btnRadius ?? 8,
+                            background: CT.btnBg ?? "#fff",
+                            color: CT.btnColor ?? "#111",
+                            border: `1.5px solid ${CT.cardBorder ?? "#ddd"}`,
+                          }}>
+                          AGREGAR
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
         </div>
 
       </div>

@@ -126,6 +126,47 @@ export interface EditorialConfig {
   watermarkBg?: string;
 }
 
+export interface CardTypography {
+  // Categoría (texto pequeño arriba del nombre)
+  categoryFont?:   string;  // fuente
+  categorySize?:   number;  // px
+  categoryColor?:  string;
+  categoryWeight?: string;  // "400"|"600"|"700"|"900"
+
+  // Nombre del producto
+  nameFont?:   string;
+  nameSize?:   number;
+  nameColor?:  string;
+  nameWeight?: string;
+
+  // Precio principal (€)
+  priceFont?:   string;
+  priceSize?:   number;
+  priceColor?:  string;
+  priceWeight?: string;
+
+  // Precio Bs
+  priceBsFont?:   string;
+  priceBsSize?:   number;
+  priceBsColor?:  string;
+  priceBsWeight?: string;
+
+  // Botón agregar
+  btnFont?:       string;
+  btnSize?:       number;
+  btnRadius?:     number;  // px border-radius
+  btnBg?:         string;  // color fondo inactivo
+  btnColor?:      string;  // color texto inactivo
+  btnActiveBg?:   string;  // fondo cuando está en carrito
+  btnActiveColor?: string; // texto cuando está en carrito
+
+  // Tarjeta general
+  cardRadius?:    number;  // border-radius de la tarjeta
+  cardBg?:        string;
+  cardBorder?:    string;
+  imgHeight?:     number;  // altura zona imagen px
+}
+
 export interface DesignConfig {
   primaryColor: string;
   secondaryColor: string;
@@ -149,6 +190,7 @@ export interface DesignConfig {
   paymentMethods: PaymentMethod[]; // Métodos de pago con datos
   whatsappNumber: string;        // Número WhatsApp del negocio
   editorial?: EditorialConfig;   // Divisor + watermark editable
+  cardTypography?: CardTypography; // Tipografia de tarjetas de producto
 }
 
 export interface NavLink {
@@ -175,4 +217,5 @@ export interface TrustItem {
   text: string;
   active: boolean;
 }
+
 
