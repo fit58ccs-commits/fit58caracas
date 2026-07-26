@@ -54,28 +54,30 @@ export const fileToBase64 = (file: File): Promise<string> =>
 
 // ─── App Store hook ──────────────────────────────────────────────────────────
 export function useAppStore() {
-  // Arranca vacío — Supabase es la fuente de verdad
-  // localStorage solo como caché de velocidad si ya existe
-  // Inicializar SIEMPRE con defaults — igual en server y client (evita error #418)
-  // localStorage se carga en useEffect despues del montaje
-  const [products,  setProductsState]  = useState<Product[]>([]);
-  const [orders,    setOrdersState]    = useState<Order[]>([]);
-  const [rate,      setRateState]      = useState<ExchangeRate>({ value: 36.5,  mode: "custom" as const });
-  const [rateBCV,   setRateBCVState]   = useState<ExchangeRate>({ value: 46.20, mode: "bcv"    as const });
+  // ESTRATEGIA ANTI-FLASH:
+  // 1) useState con función lazy — corre SOLO en el cliente (no en SSR)
+  //    Lee localStorage instantáneamente → UI arranca con datos reales, sin página vacía
+  // 2) useEffect → Supabase actualiza en background (fuente de verdad)
+  // Esto es hydration-safe porque ClientApp está marcado "use client"
+  // y page.tsx lo importa directamente (sin ssr:false que causaba el flash)
+
+  const [products,  setProductsState]  = useState<Product[]>(        () => LS.get("products",  []));
+  const [orders,    setOrdersState]    = useState<Order[]>(           () => LS.get("orders",    []));
+  const [rate,      setRateState]      = useState<ExchangeRate>(      () => LS.get("rate",      { value: 36.5,  mode: "custom" as const }));
+  const [rateBCV,   setRateBCVState]   = useState<ExchangeRate>(      () => LS.get("rateBCV",   { value: 46.20, mode: "bcv"    as const }));
   const [cart,      setCart]           = useState<CartItem[]>([]);
-  const [wishlist,  setWishlistState]  = useState<string[]>([]);
-  const [design,    setDesignState]    = useState<DesignConfig>(DEFAULT_DESIGN);
-  const [banners,   setBannersState]   = useState<Banner[]>(DEFAULT_BANNERS);
-  const [reviews,   setReviewsState]   = useState<Review[]>([]);
-  const [purchases, setPurchasesState] = useState<Purchase[]>([]);
+  const [wishlist,  setWishlistState]  = useState<string[]>(          () => LS.get("wishlist",  []));
+  const [design,    setDesignState]    = useState<DesignConfig>(      () => LS.get("design",    DEFAULT_DESIGN));
+  const [banners,   setBannersState]   = useState<Banner[]>(          () => LS.get("banners",   DEFAULT_BANNERS));
+  const [reviews,   setReviewsState]   = useState<Review[]>(          () => LS.get("reviews",   []));
+  const [purchases, setPurchasesState] = useState<Purchase[]>(        () => LS.get("purchases", []));
   const [loading,   setLoading]        = useState(true);
 
-  // ── Carga inicial desde Supabase ─────────────────────────────────────────
+  // ── Supabase en background — actualiza encima del caché de localStorage ──
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        // Cargar todo en paralelo para máxima velocidad
         const [prods, ords, bans, r, rBCV, des] = await Promise.all([
           sbGetProducts(),
           sbGetOrders(),
@@ -86,36 +88,17 @@ export function useAppStore() {
         ]);
         if (cancelled) return;
 
-        // Siempre usar los datos de Supabase (fuente de verdad)
-        // Si Supabase devuelve vacío, no sobrescribir con datos demo
         if (prods.length) { setProductsState(prods); LS.set("products", prods); }
         if (ords.length)  { setOrdersState(ords);    LS.set("orders",   ords);  }
-        // Banners: siempre usar los de Supabase si existen
         if (bans.length) {
-          const lightBans = bans.map(b => ({ ...b, imgBase64: "" }));
           setBannersState(bans);
-          LS.set("banners", lightBans);
+          LS.set("banners", bans.map(b => ({ ...b, imgBase64: "" })));
         }
         setRateState(r);       LS.set("rate",    r);
         setRateBCVState(rBCV); LS.set("rateBCV", rBCV);
         setDesignState(des);   LS.set("design",  des);
       } catch (e) {
         console.warn("[store] Supabase load failed, using localStorage cache:", e);
-        // Fallback: cargar desde localStorage si Supabase falla
-        if (!cancelled) {
-          const cachedProducts = LS.get<typeof products>("products", []);
-          const cachedOrders   = LS.get<typeof orders>("orders", []);
-          const cachedRate     = LS.get<typeof rate>("rate", { value: 36.5, mode: "custom" as const });
-          const cachedRateBCV  = LS.get<typeof rateBCV>("rateBCV", { value: 46.20, mode: "bcv" as const });
-          const cachedDesign   = LS.get<typeof design>("design", DEFAULT_DESIGN);
-          const cachedBanners  = LS.get<typeof banners>("banners", DEFAULT_BANNERS);
-          if (cachedProducts.length) setProductsState(cachedProducts);
-          if (cachedOrders.length)   setOrdersState(cachedOrders);
-          setRateState(cachedRate);
-          setRateBCVState(cachedRateBCV);
-          setDesignState(cachedDesign);
-          if (cachedBanners.length)  setBannersState(cachedBanners);
-        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -346,3 +329,4 @@ export function useAppStore() {
     setBanners, updateBanner,
   };
 }
+
