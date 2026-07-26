@@ -140,7 +140,7 @@ export function CartDrawer({
     if (referralId) {
       const { createClient: cc1 } = await import("@/app/utils/supabase/client");
       const sb1 = cc1();
-      await sb1.rpc("use_referral_code", { referral_id: referralId, order_id: oid }).catch(() => {});
+      await sb1.rpc("use_referral_code", { referral_id: referralId, order_id: oid });
     }
 
     // Generar código propio ANTES de armar el mensaje — await para tener el valor
