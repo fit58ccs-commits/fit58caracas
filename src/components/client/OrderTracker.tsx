@@ -1,4 +1,16 @@
 "use client";
+
+const fmtDate = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
+};
+const fmtDateTime = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const hh = String(dt.getHours()).padStart(2,"0");
+  const mi = String(dt.getMinutes()).padStart(2,"0");
+  return `${fmtDate(dt)}, ${hh}:${mi}`;
+};
+
 import { useState } from "react";
 import { Search, Package, CheckCircle2, Clock, XCircle, ChevronRight, X } from "lucide-react";
 import { sbGetOrderById } from "@/lib/supabase";
@@ -88,7 +100,7 @@ export function OrderTracker({ rate, onClose }: { rate: number; onClose: () => v
 
               {/* Fecha */}
               <p className="text-[10px] text-neutral-400 text-center">
-                Realizado el {new Date(order.date).toLocaleString("es-VE", {dateStyle:"long", timeStyle:"short"})}
+                Realizado el {fmtDateTime(order.date)}
               </p>
 
               {/* Productos */}
