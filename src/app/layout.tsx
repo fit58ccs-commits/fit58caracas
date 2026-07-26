@@ -121,14 +121,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body suppressHydrationWarning className="font-[Inter,sans-serif] bg-[#f0f2f5] antialiased">
         {children}
-        <Script id="sw-register" strategy="afterInteractive">{`
+        <Script id="sw-cleanup" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js').then(
-                function(reg) { console.log('[PWA] SW registrado:', reg.scope); },
-                function(err) { console.warn('[PWA] SW error:', err); }
-              );
-            });
+            navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister();});});
+            caches.keys().then(function(k){k.forEach(function(x){caches.delete(x);});});
           }
         `}</Script>
       </body>

@@ -228,7 +228,7 @@ export function useAppStore() {
       ["#","Fecha","Cliente","Teléfono","Dirección","Productos","Total (€)","Total Bs.","Método","Estado"],
       ...orders.map(o => [
         o.id,
-        new Date(o.date).toLocaleString("es-VE"),
+        (()=>{const d=new Date(o.date);return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;})(),
         o.form?.name || "",
         o.form?.phone || "",
         o.form?.address || "",
@@ -243,7 +243,7 @@ export function useAppStore() {
     ws["!cols"] = [{wch:12},{wch:18},{wch:20},{wch:14},{wch:28},{wch:40},{wch:10},{wch:14},{wch:16},{wch:12}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
-    XLSX.writeFile(wb, `Pedidos_Fit58_${new Date().toLocaleDateString("es-VE").replace(/\//g,"-")}.xlsx`);
+    XLSX.writeFile(wb, `Pedidos_Fit58_${`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}-${String(new Date().getDate()).padStart(2,"0")}`}.xlsx`);
   }, [orders]);
 
   // ── WISHLIST ──────────────────────────────────────────────────────────────
