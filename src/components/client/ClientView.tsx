@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package, Heart, ShoppingCart, X, ChevronRight, Award, Globe, Truck, Shield, ClipboardList, Tag } from "lucide-react";
 import { Navbar }                          from "./Navbar";
 import { HeroBanner }                      from "./HeroBanner";
@@ -31,6 +31,8 @@ export function ClientView({ store }: { store: Store }) {
   const [category,        setCategory]        = useState("Todos");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeNav,       setActiveNav]       = useState("Tienda");
+  const [mounted,         setMounted]         = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const filtered = store.products.filter(p => {
     if (p.stock <= 0) return false;
@@ -112,8 +114,8 @@ export function ClientView({ store }: { store: Store }) {
                 color: store.design.editorial?.taglineColor ?? "#0d0d0d",
                 fontFamily: store.design.editorial?.taglineFontFamily ?? "inherit",
               }}>
-              {store.design.editorial?.taglineHtml ? (
-                <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineHtml }}/>
+              {mounted && store.design.editorial?.taglineHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineHtml }}/>
               ) : (
                 <p className="font-black m-0 leading-snug">
                   {store.design.editorial?.taglineMain ?? "Nutre tu cuerpo"}<br/>
@@ -125,8 +127,8 @@ export function ClientView({ store }: { store: Store }) {
             {/* Descripcion */}
             <div className="editorial-desc leading-relaxed shrink-0"
               style={{ color: store.design.editorial?.taglineDescColor ?? "#585757" }}>
-              {store.design.editorial?.taglineDescHtml ? (
-                <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineDescHtml }}/>
+              {mounted && store.design.editorial?.taglineDescHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineDescHtml }}/>
               ) : (
                 <p className="m-0">
                   {store.design.editorial?.taglineDesc ?? "En Fit +58 Caracas importamos los suplementos y productos gourmet que antes no conseguias. Calidad garantizada, entrega directa a tu puerta."}
