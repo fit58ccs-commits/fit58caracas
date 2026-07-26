@@ -145,3 +145,9 @@ button:not(.no-round) {
 .product-desc hr          { border: none; border-top: 1px solid #e5e7eb; margin: 10px 0; }
 .product-desc p           { margin: 0 0 6px; }
 
+/* ── Barra de carga superior (reemplaza spinner bloqueante) ── */
+@keyframes slideRight {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(150%); }
+  100% { transform: translateX(400%); }
+}

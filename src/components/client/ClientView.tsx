@@ -110,7 +110,7 @@ export function ClientView({ store }: { store: Store }) {
             {store.design.editorial?.taglineHtml ? (
               <div className="m-0 leading-snug"
                 style={{
-                  fontSize: `clamp(${store.design.editorial?.taglineFontSize ?? 15}px, 4vw, ${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 1.6)}px)`,
+                  fontSize: `clamp(${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 0.75)}px, 3.5vw, ${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 1.6)}px)`,
                   color: store.design.editorial?.taglineColor ?? "#0d0d0d",
                   fontFamily: store.design.editorial?.taglineFontFamily ?? "inherit",
                 }}
@@ -118,7 +118,7 @@ export function ClientView({ store }: { store: Store }) {
             ) : (
               <p className="font-black m-0 leading-snug"
                 style={{
-                  fontSize: `clamp(${store.design.editorial?.taglineFontSize ?? 15}px, 4vw, ${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 1.6)}px)`,
+                  fontSize: `clamp(${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 0.75)}px, 3.5vw, ${Math.round((store.design.editorial?.taglineFontSize ?? 15) * 1.6)}px)`,
                   color: store.design.editorial?.taglineColor ?? "#0d0d0d",
                   fontFamily: store.design.editorial?.taglineFontFamily ?? "inherit",
                 }}>

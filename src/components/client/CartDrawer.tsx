@@ -181,7 +181,8 @@ export function CartDrawer({
       "─────────────────────────",
       `👤 ${form.name}`, `📱 ${form.phone}`, `⏰ ${form.time}`,
       `📍 ${form.address}`, `🗺 ${mapsLink}`,
-    ].join("\n"));
+      myRefCode ? `\n🎁 Tu código referido: *${myRefCode}* — compártelo y acumula descuentos` : "",
+    ].filter(Boolean).join("\n"));
 
     import("@/lib/notifications").then(({ notifyNewOrder }) => {
       notifyNewOrder({ id: oid, total: cartTotal, cart, form: orderForm });
@@ -215,7 +216,7 @@ export function CartDrawer({
       `📍 Dirección: ${form.address}`,
       "─────────────────────────",
       `Guarda este ticket para consultar el estado de tu pedido.`,
-      myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra.` : "",
+      myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra que generes.` : "",
     ].filter(Boolean).join("\n");
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2000); });
   };
@@ -227,7 +228,7 @@ export function CartDrawer({
   return (
     <div className="fixed inset-0 z-[150] flex">
       <div className="animate-overlay-in absolute inset-0 bg-black/45 backdrop-blur-md" onClick={step==="success"?onClose:undefined}/>
-      <div className="animate-drawer-in glass absolute right-0 top-0 bottom-0 w-full max-w-[440px] flex flex-col shadow-2xl overflow-y-auto rounded-none">
+      <div className="animate-drawer-in glass absolute right-0 top-0 bottom-0 w-full max-w-[440px] flex flex-col shadow-2xl overflow-y-auto rounded-none" style={{ paddingBottom: 72 }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/40 sticky top-0 bg-white/88 backdrop-blur-2xl z-10">
@@ -235,7 +236,7 @@ export function CartDrawer({
             <p className="text-[9px] font-black text-neutral-400 tracking-[2px] uppercase mb-0.5">
               {step==="cart"?"Carrito":step==="delivery"?"Datos y Ubicación":step==="payment"?"Pago":"Pedido Confirmado"}
             </p>
-            <h2 className="text-lg font-black text-black uppercase tracking-tight">
+            <h2 className="text-lg font-black text-black uppercase tracking-tight" style={{ fontFamily:"DM Sans, system-ui, sans-serif" }}>
               {step==="cart"   ? `${cart.length} PRODUCTO${cart.length!==1?"S":""}`
                :step==="delivery" ? "¿DÓNDE TE LO ENVIAMOS?"
                :step==="payment"  ? "MÉTODO DE PAGO"
