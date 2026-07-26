@@ -112,16 +112,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
-        <link rel="icon"             href="/favicon.ico" type="image/x-icon"/>
-        <link rel="icon"             href="/icons/icon-192.png" type="image/png"/>
-        <link rel="shortcut icon"    href="/favicon.ico"/>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
-        <link rel="manifest"         href="/manifest.json"/>
-        <meta name="mobile-web-app-capable" content="yes"/>
-        <meta name="apple-mobile-web-app-capable" content="yes"/>
-        <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-        <meta name="apple-mobile-web-app-title" content="Fit +58"/>
+      <head suppressHydrationWarning>
         <script
           type="application/ld+json"
           suppressHydrationWarning
@@ -132,11 +123,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              regs.forEach(function(r) { r.unregister(); });
-            });
-            caches.keys().then(function(keys) {
-              keys.forEach(function(k) { caches.delete(k); });
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js').then(
+                function(reg) { console.log('[PWA] SW registrado:', reg.scope); },
+                function(err) { console.warn('[PWA] SW error:', err); }
+              );
             });
           }
         `}</Script>
