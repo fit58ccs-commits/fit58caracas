@@ -7,6 +7,7 @@ import { ProductDetailModal }              from "./ProductCard";
 import { CartDrawer }                      from "./CartDrawer";
 import { ReviewSection }                   from "./ReviewSection";
 import { OrderTracker }                    from "./OrderTracker";
+import { FloatingButtons }                 from "./FloatingButtons";
 import { DEFAULT_TICKER_ITEMS }            from "@/lib/data";
 import { fmt$, fmtBs }                    from "@/lib/store";
 import type { Product }                    from "@/lib/types";
@@ -279,6 +280,12 @@ export function ClientView({ store }: { store: Store }) {
           </span>
         </button>
       )}
+
+      {/* ── Botones flotantes WhatsApp e Instagram ── */}
+      <FloatingButtons
+        whatsappNumber={store.design.whatsappNumber || "584141013137"}
+        instagramHandle="fit58caracas"
+      />
 
       {/* Wishlist drawer */}
       {wishlistOpen && (
