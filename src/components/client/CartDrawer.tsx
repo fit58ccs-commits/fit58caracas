@@ -136,22 +136,22 @@ export function CartDrawer({
 
     onSaveOrder({ cart, total: finalTotal, form: orderForm, mapsLink });
 
-    // Registrar uso del código de referido usado por el cliente
+    // Registrar uso del código de referido (sin await, no bloquea)
     if (referralId) {
-      const { createClient: cc1 } = await import("@/app/utils/supabase/client");
-      const sb1 = cc1();
-      await sb1.rpc("use_referral_code", { referral_id: referralId, order_id: oid });
+      import("@/app/utils/supabase/client").then(({ createClient }) => {
+        createClient().rpc("use_referral_code", { referral_id: referralId, order_id: oid });
+      });
     }
 
-    // Generar código propio ANTES de armar el mensaje — await para tener el valor
+    // Generar código propio ANTES de armar el mensaje — await garantiza que esté listo
     let generatedCode = "";
     try {
-      const { createClient: cc2 } = await import("@/app/utils/supabase/client");
-      const sb2 = cc2();
+      const { createClient } = await import("@/app/utils/supabase/client");
+      const sb    = createClient();
       const clean = form.name.trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5);
       const rand  = Math.random().toString(36).slice(2,5).toUpperCase();
       const code  = `FIT-${clean}-${rand}`;
-      const { data } = await sb2.from("referrals").upsert({
+      const { data } = await sb.from("referrals").upsert({
         code,
         owner_name:  form.name,
         owner_phone: form.phone,
@@ -159,14 +159,15 @@ export function CartDrawer({
         uses:        0,
         active:      true,
       }, { onConflict: "owner_phone", ignoreDuplicates: true })
-      .select("code").single();
+      .select("code")
+      .single();
       if (data?.code) {
         generatedCode = data.code;
         setMyRefCode(data.code);
       }
-    } catch (_) {}
+    } catch (_) { /* si falla Supabase el pedido igual se completa */ }
 
-    // Armar mensaje WhatsApp CON el código ya generado
+    // Armar mensaje WhatsApp con generatedCode ya disponible
     const paymentLines = payments.filter(p => p.method).map(p =>
       `💳 ${p.method}: ${fmt$(p.amount)}`
     );
@@ -187,7 +188,7 @@ export function CartDrawer({
       `⏰ ${form.time}`,
       `📍 ${form.address}`,
       `🗺 ${mapsLink}`,
-      generatedCode ? `─────────────────────────\n🎁 Código referido del cliente: *${generatedCode}*\nCompártelo: 3% OFF a sus amigos, 2.5% acumulable para él.` : "",
+      generatedCode ? `─────────────────────────\n🎁 Código referido del cliente: *${generatedCode}*\nCompártelo: 3% OFF a sus amigos.` : "",
     ].filter(Boolean).join("\n"));
 
     import("@/lib/notifications").then(({ notifyNewOrder }) => {
@@ -222,7 +223,7 @@ export function CartDrawer({
       `📍 Dirección: ${form.address}`,
       "─────────────────────────",
       `Guarda este ticket para consultar el estado de tu pedido.`,
-      myRefCode ? `\n─────────────────────────\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo con tus amigos — ellos obtienen 3% OFF y tú acumulas 2.5% por cada compra que generes.` : "",
+      myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra que generes.` : "",
     ].filter(Boolean).join("\n");
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2000); });
   };
