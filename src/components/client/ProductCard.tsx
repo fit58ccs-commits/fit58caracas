@@ -6,6 +6,25 @@ import { fmt$, fmtBs } from "@/lib/store";
 import type { Product, Review, CardTypography } from "@/lib/types";
 
 
+
+// Formatea fecha sin locale — evita hydration mismatch server/cliente
+const fmtDate = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const dd = String(dt.getDate()).padStart(2,"0");
+  const mm = String(dt.getMonth()+1).padStart(2,"0");
+  const yy = dt.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+};
+const fmtDateTime = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const dd = String(dt.getDate()).padStart(2,"0");
+  const mm = String(dt.getMonth()+1).padStart(2,"0");
+  const yy = dt.getFullYear();
+  const hh = String(dt.getHours()).padStart(2,"0");
+  const mi = String(dt.getMinutes()).padStart(2,"0");
+  return `${dd}/${mm}/${yy}, ${hh}:${mi}`;
+};
+
 /* Detecta si la URL puede optimizarse con Next/Image */
 const isOptimizable = (src: string) =>
   src && !src.startsWith("data:") && !src.includes("svg+xml") && src.startsWith("http");
@@ -422,7 +441,7 @@ export function ProductDetailModal({
                     <div key={r.id} className="glass-card rounded-xl p-4 flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-black text-black">{r.author}</span>
-                        <span className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleDateString("es-VE")}</span>
+                        <span className="text-[9px] text-neutral-400">{fmtDate(r.date)}</span>
                       </div>
                       <Stars rating={r.rating} size={11}/>
                       <p className="text-xs text-neutral-500 leading-relaxed">{r.comment}</p>

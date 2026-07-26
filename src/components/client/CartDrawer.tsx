@@ -1,4 +1,23 @@
 "use client";
+
+// Formatea fecha sin locale — evita hydration mismatch server/cliente
+const fmtDate = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const dd = String(dt.getDate()).padStart(2,"0");
+  const mm = String(dt.getMonth()+1).padStart(2,"0");
+  const yy = dt.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+};
+const fmtDateTime = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const dd = String(dt.getDate()).padStart(2,"0");
+  const mm = String(dt.getMonth()+1).padStart(2,"0");
+  const yy = dt.getFullYear();
+  const hh = String(dt.getHours()).padStart(2,"0");
+  const mi = String(dt.getMinutes()).padStart(2,"0");
+  return `${dd}/${mm}/${yy}, ${hh}:${mi}`;
+};
+
 import { useState, useRef, useEffect } from "react";
 import {
   X, Minus, Plus, ChevronRight, Check, Phone, User, Clock,
@@ -206,7 +225,7 @@ export function CartDrawer({
     const text = [
       `🧾 TICKET DE COMPRA — Fit +58 Caracas`,
       `🆔 Pedido #${orderId}`,
-      `📅 Fecha: ${new Date().toLocaleString("es-VE")}`,
+      `📅 Fecha: ${fmtDateTime(new Date())}`,
       "─────────────────────────",
       itemLines,
       "─────────────────────────",
@@ -566,7 +585,7 @@ export function CartDrawer({
                   <p className="text-[9px] font-black text-neutral-400 tracking-[2px] uppercase">🧾 Ticket de Compra</p>
                   <span className="text-[10px] font-black text-neutral-500">#{orderId}</span>
                 </div>
-                <p className="text-[10px] text-neutral-400 mb-3">{new Date().toLocaleString("es-VE")}</p>
+                <p className="text-[10px] text-neutral-400 mb-3">{fmtDateTime(new Date())}</p>
 
                 {/* Productos comprados */}
                 <div className="flex flex-col gap-1.5 mb-3">

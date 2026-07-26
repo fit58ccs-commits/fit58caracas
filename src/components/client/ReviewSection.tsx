@@ -1,4 +1,23 @@
 "use client";
+
+// Formatea fecha sin locale — evita hydration mismatch server/cliente
+const fmtDate = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const dd = String(dt.getDate()).padStart(2,"0");
+  const mm = String(dt.getMonth()+1).padStart(2,"0");
+  const yy = dt.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+};
+const fmtDateTime = (d: string | Date) => {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const dd = String(dt.getDate()).padStart(2,"0");
+  const mm = String(dt.getMonth()+1).padStart(2,"0");
+  const yy = dt.getFullYear();
+  const hh = String(dt.getHours()).padStart(2,"0");
+  const mi = String(dt.getMinutes()).padStart(2,"0");
+  return `${dd}/${mm}/${yy}, ${hh}:${mi}`;
+};
+
 /**
  * ReviewSection.tsx
  * Sección pública donde el cliente puede:
@@ -154,7 +173,7 @@ export function ReviewSection({ products, reviews, onSubmitReview }: Props) {
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-xs font-black text-black mb-0.5">{r.author}</p>
-                        <p className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleDateString("es-VE")}</p>
+                        <p className="text-[9px] text-neutral-400">{fmtDate(r.date)}</p>
                       </div>
                       <div className="flex gap-0.5">
                         {[1,2,3,4,5].map(i=><Star key={i} size={11} color="#f59e0b" fill={i<=r.rating?"#f59e0b":"none"}/>)}
