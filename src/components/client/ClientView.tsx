@@ -113,7 +113,7 @@ export function ClientView({ store }: { store: Store }) {
                 fontFamily: store.design.editorial?.taglineFontFamily ?? "inherit",
               }}>
               {store.design.editorial?.taglineHtml ? (
-                <div dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineHtml }}/>
+                <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineHtml }}/>
               ) : (
                 <p className="font-black m-0 leading-snug">
                   {store.design.editorial?.taglineMain ?? "Nutre tu cuerpo"}<br/>
@@ -126,7 +126,7 @@ export function ClientView({ store }: { store: Store }) {
             <div className="editorial-desc leading-relaxed shrink-0"
               style={{ color: store.design.editorial?.taglineDescColor ?? "#585757" }}>
               {store.design.editorial?.taglineDescHtml ? (
-                <div dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineDescHtml }}/>
+                <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: store.design.editorial.taglineDescHtml }}/>
               ) : (
                 <p className="m-0">
                   {store.design.editorial?.taglineDesc ?? "En Fit +58 Caracas importamos los suplementos y productos gourmet que antes no conseguias. Calidad garantizada, entrega directa a tu puerta."}
