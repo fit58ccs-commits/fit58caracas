@@ -3,8 +3,8 @@ import "./globals.css";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title:       "Fit +58 Caracas — Suplementos y productos gourmet importados",
-  description: "Tienda online de suplementos deportivos y productos gourmet importados en Caracas, Venezuela. Envío a domicilio. Paga en Bs., Zelle o Pago Móvil.",
+  title:       "Fit +58 Caracas — Suplementos Originales de la tia @saschafitness",
+  description: "E-commerce de Suplementos Importados en Caracas. Envío a Domicilio Gratis.",
   manifest:    "/manifest.json",
   keywords:    ["suplementos Caracas", "proteína Venezuela", "tienda gourmet Caracas", "Fit 58", "suplementos deportivos Venezuela", "comprar proteína Caracas"],
   robots:      { index: true, follow: true },
@@ -13,14 +13,14 @@ export const metadata: Metadata = {
     locale:      "es_VE",
     url:         "https://fit58caracas.vercel.app",
     siteName:    "Fit +58 Caracas",
-    title:       "Fit +58 Caracas — Suplementos y productos gourmet importados",
-    description: "Tienda online de suplementos deportivos y productos gourmet importados en Caracas. Envío a domicilio.",
+    title:       "Fit +58 Caracas — Suplementos Originales de la tia @saschafitness",
+    description: "E-commerce de Suplementos Importados en Caracas. Envío a Domicilio Gratis.",
     images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "Fit +58 Caracas" }],
   },
   twitter: {
     card:        "summary_large_image",
-    title:       "Fit +58 Caracas — Suplementos y productos gourmet importados",
-    description: "Tienda online de suplementos deportivos y productos gourmet importados en Caracas.",
+    title:       "Fit +58 Caracas — Suplementos Originales de la tia @saschafitness",
+    description: "E-commerce de Suplementos Importados en Caracas. Envío a Domicilio Gratis.",
     images:      ["/icons/icon-512.png"],
   },
   appleWebApp: {
@@ -56,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         "@type": ["LocalBusiness", "Store"],
         "@id": "https://fit58caracas.vercel.app/#business",
         "name": "Fit +58 Caracas",
-        "description": "Tienda online de suplementos deportivos y productos gourmet importados en Caracas, Venezuela.",
+        "description": "E-commerce de Suplementos Importados en Caracas. Envío a Domicilio Gratis.",
         "url": "https://fit58caracas.vercel.app",
         "logo": "https://fit58caracas.vercel.app/icons/icon-512.png",
         "image": "https://fit58caracas.vercel.app/icons/icon-512.png",
@@ -99,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         "@id": "https://fit58caracas.vercel.app/#website",
         "url": "https://fit58caracas.vercel.app",
         "name": "Fit +58 Caracas",
-        "description": "Tienda online de suplementos deportivos y productos gourmet importados",
+        "description": "E-commerce de Suplementos Importados en Caracas. Envío a Domicilio Gratis.",
         "publisher": { "@id": "https://fit58caracas.vercel.app/#business" },
         "potentialAction": {
           "@type": "SearchAction",
@@ -143,3 +143,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
