@@ -193,7 +193,7 @@ export function ClientView({ store }: { store: Store }) {
         <div className="grid gap-3 md:gap-5"
           style={{ gridTemplateColumns:"repeat(auto-fill, minmax(min(100%/2 - 8px, 280px), 1fr))" }}>
           {filtered.map(p => (
-            <ProductCard key={p.id} product={p} rate={store.rate.value}
+            <ProductCard key={p.id} product={p} rate={store.rate.value} rateBCV={store.rateBCV.value}
               onAdd={() => store.addToCart(p)}
               inCart={store.cart.find(i => i.id === p.id)?.qty ?? 0}
               wishlisted={store.wishlist.includes(p.id)}
@@ -373,7 +373,7 @@ export function ClientView({ store }: { store: Store }) {
       )}
 
       {selectedProduct && (
-        <ProductDetailModal product={selectedProduct} rate={store.rate.value}
+        <ProductDetailModal product={selectedProduct} rate={store.rate.value} rateBCV={store.rateBCV.value}
           onAdd={() => store.addToCart(selectedProduct)}
           inCart={store.cart.find(i=>i.id===selectedProduct.id)?.qty??0}
           onClose={() => setSelectedProduct(null)}

@@ -44,9 +44,9 @@ function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
 
 /* ── ProductCard ────────────────────────────────────────────────── */
 export function ProductCard({
-  product, rate, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [], ct = {},
+  product, rate, rateBCV, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [], ct = {},
 }: {
-  product: Product; rate: number;
+  product: Product; rate: number; rateBCV: number;
   onAdd: () => void; inCart: number;
   wishlisted: boolean; onWishlist: () => void;
   onDetail: () => void;
@@ -146,10 +146,16 @@ export function ProductCard({
           </div>
         )}
 
-        <div className="flex items-baseline gap-1.5 mt-0.5">
-          <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??20, color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
-          <span className="text-[10px] text-neutral-300 font-bold">/</span>
-          <span style={{ fontFamily:ct.priceBsFont??"inherit", fontSize:ct.priceBsSize??12, color:ct.priceBsColor??"#111", fontWeight:ct.priceBsWeight??"900" }}>{fmtBs(product.price, rate)}</span>
+        <div className="flex items-end gap-1.5 mt-0.5">
+          <div className="flex flex-col">
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Divisa / Euro</span>
+            <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??20, color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
+          </div>
+          <span className="text-[10px] text-neutral-300 font-bold mb-0.5">/</span>
+          <div className="flex flex-col">
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+            <span style={{ fontFamily:ct.priceBsFont??"inherit", fontSize:ct.priceBsSize??12, color:ct.priceBsColor??"#111", fontWeight:ct.priceBsWeight??"900" }}>{fmtBs(product.price, rate)}</span>
+          </div>
         </div>
 
         {/* No mostrar stock al cliente */}
@@ -173,9 +179,9 @@ export function ProductCard({
 
 /* ── ProductDetailModal ─────────────────────────────────────────── */
 export function ProductDetailModal({
-  product, rate, onAdd, inCart, onClose, reviews = [], wishlisted, onWishlist, onSubmitReview,
+  product, rate, rateBCV, onAdd, inCart, onClose, reviews = [], wishlisted, onWishlist, onSubmitReview,
 }: {
-  product: Product; rate: number;
+  product: Product; rate: number; rateBCV: number;
   onAdd: () => void; inCart: number;
   onClose: () => void;
   reviews?: Review[];
@@ -311,10 +317,16 @@ export function ProductDetailModal({
               )}
             </div>
 
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
-              <span className="text-sm text-neutral-300 font-bold">/</span>
-              <span className="text-xl font-black text-black">{fmtBs(product.price, rate)}</span>
+            <div className="flex items-end gap-2.5">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Divisa / Euro</span>
+                <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
+              </div>
+              <span className="text-sm text-neutral-300 font-bold mb-1">/</span>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+                <span className="text-xl font-black text-black">{fmtBs(product.price, rate)}</span>
+              </div>
             </div>
             {product.stock <= 0 && (
               <p className="text-[10px] text-red-500 font-bold -mt-2 flex items-center gap-1">
