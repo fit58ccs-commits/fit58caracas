@@ -17,20 +17,16 @@ export default function ClientApp() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "#F5ECE4",
+        background: "#000",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <div style={{
-          width: 28,
-          height: 28,
-          border: "2.5px solid rgba(41,41,41,0.12)",
-          borderTopColor: "#292929",
-          borderRadius: "50%",
-          animation: "spin 0.65s linear infinite",
-        }}/>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <img
+          src="/logo-splash.png"
+          alt="FIT 58"
+          style={{ width: 160, height: "auto", opacity: 0.95 }}
+        />
       </div>
     );
   }
