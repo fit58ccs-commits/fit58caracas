@@ -57,6 +57,7 @@ export function CartDrawer({
   const [locating,   setLocating]   = useState(false);
   const [orderId,    setOrderId]    = useState("");
   const [copied,     setCopied]     = useState(false);
+  const [copiedIdx,  setCopiedIdx]  = useState<number|null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [referralId,   setReferralId]   = useState("");
   const [referralDisc, setReferralDisc] = useState(0);
@@ -495,6 +496,26 @@ export function CartDrawer({
                         <div className="bg-neutral-50/80 rounded-lg p-3">
                           <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide mb-1.5">Datos para {selected.name}</p>
                           <pre className="text-[11px] text-neutral-700 font-[inherit] whitespace-pre-wrap leading-relaxed m-0">{selected.details}</pre>
+                          <button
+                            onClick={async () => {
+                              const txt = [
+                                `📋 Datos de pago — ${selected.name}`,
+                                ``,
+                                selected.details.trim(),
+                                ``,
+                                `💰 Monto: ${fmt$(pm.amount || cartTotal)}`,
+                              ].join("\n");
+                              try { await navigator.clipboard.writeText(txt); } catch {}
+                              setCopiedIdx(idx);
+                              setTimeout(() => setCopiedIdx(null), 2000);
+                            }}
+                            className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all cursor-pointer border-none"
+                            style={{
+                              background: copiedIdx === idx ? "#16a34a" : "rgba(17,17,17,0.08)",
+                              color:      copiedIdx === idx ? "#fff"     : "#444",
+                            }}>
+                            {copiedIdx === idx ? "✓ ¡Copiado!" : "📋 Copiar datos de pago"}
+                          </button>
                         </div>
                       )}
 
