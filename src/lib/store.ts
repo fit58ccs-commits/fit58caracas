@@ -65,7 +65,7 @@ export function useAppStore() {
   const [orders,    setOrdersState]    = useState<Order[]>(           () => LS.get("orders",    []));
   const [rate,      setRateState]      = useState<ExchangeRate>(      () => LS.get("rate",      { value: 36.5,  mode: "custom" as const }));
   const [rateBCV,   setRateBCVState]   = useState<ExchangeRate>(      () => LS.get("rateBCV",   { value: 46.20, mode: "bcv"    as const }));
-  const [cart,      setCart]           = useState<CartItem[]>([]);
+  const [cart,      setCart]           = useState<CartItem[]>(          () => LS.get("cart",      []));
   const [wishlist,  setWishlistState]  = useState<string[]>(          () => LS.get("wishlist",  []));
   const [design,    setDesignState]    = useState<DesignConfig>(      () => LS.get("design",    DEFAULT_DESIGN));
   const [banners,   setBannersState]   = useState<Banner[]>(          () => LS.get("banners",   DEFAULT_BANNERS));
@@ -113,6 +113,7 @@ export function useAppStore() {
   useEffect(() => { LS.set("rate",     rate);     }, [rate]);
   useEffect(() => { LS.set("rateBCV",  rateBCV);  }, [rateBCV]);
   useEffect(() => { LS.set("wishlist", wishlist); }, [wishlist]);
+  useEffect(() => { LS.set("cart",     cart);     }, [cart]);
   useEffect(() => { LS.set("design",   design);   }, [design]);
   // Sync localStorage — banners sin base64 (demasiado pesado para LS)
   useEffect(() => {
