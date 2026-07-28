@@ -19,9 +19,9 @@ function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
 
 /* ── ProductCard ────────────────────────────────────────────────── */
 export function ProductCard({
-  product, rate, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [],
+  product, rate, rateBCV, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [],
 }: {
-  product: Product; rate: number;
+  product: Product; rate: number; rateBCV: number;
   onAdd: () => void; inCart: number;
   wishlisted: boolean; onWishlist: () => void;
   onDetail: () => void;
@@ -98,7 +98,7 @@ export function ProductCard({
           </div>
           <span className="text-[10px] text-neutral-300 font-bold mb-0.5">/</span>
           <div className="flex flex-col">
-            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV (€1 = Bs.{rate.toFixed(0)})</span>
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV (€1 = Bs.{rateBCV.toFixed(2)})</span>
             <span className="text-xs md:text-sm font-black text-black">{fmtBs(product.price, rate)}</span>
           </div>
         </div>
@@ -121,9 +121,9 @@ export function ProductCard({
 
 /* ── ProductDetailModal ─────────────────────────────────────────── */
 export function ProductDetailModal({
-  product, rate, onAdd, inCart, onClose, reviews = [], wishlisted, onWishlist, onSubmitReview,
+  product, rate, rateBCV, onAdd, inCart, onClose, reviews = [], wishlisted, onWishlist, onSubmitReview,
 }: {
-  product: Product; rate: number;
+  product: Product; rate: number; rateBCV: number;
   onAdd: () => void; inCart: number;
   onClose: () => void;
   reviews?: Review[];
@@ -256,7 +256,7 @@ export function ProductDetailModal({
               </div>
               <span className="text-sm text-neutral-300 font-bold mb-1">/</span>
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV (€1 = Bs.{rate.toFixed(0)})</span>
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV (€1 = Bs.{rateBCV.toFixed(2)})</span>
                 <span className="text-xl font-black text-black">{fmtBs(product.price, rate)}</span>
               </div>
             </div>

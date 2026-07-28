@@ -355,7 +355,7 @@ export function ClientView({ store }: { store: Store }) {
       {trackOpen && <OrderTracker rate={store.rate.value} onClose={() => setTrackOpen(false)} />}
 
       {selectedProduct && (
-        <ProductDetailModal product={selectedProduct} rate={store.rate.value}
+        <ProductDetailModal product={selectedProduct} rate={store.rate.value} rateBCV={store.rateBCV.value}
           onAdd={() => store.addToCart(selectedProduct)}
           inCart={store.cart.find(i => i.id === selectedProduct.id)?.qty ?? 0}
           onClose={() => setSelectedProduct(null)}
