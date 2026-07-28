@@ -498,12 +498,19 @@ export function CartDrawer({
                           <pre className="text-[12px] font-black text-neutral-800 whitespace-pre-wrap leading-relaxed m-0" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>{selected.details}</pre>
                           <button
                             onClick={async () => {
+                              const allLines = selected.details.split("\n").filter(Boolean);
+                              const fields = (selected.copyFields ?? []);
+                              const linesToCopy = fields.length === 0 ? allLines : allLines.filter(l => fields.includes(l));
+                              const currency = selected.amountCurrency ?? "EUR";
+                              const amountStr = currency === "BS"
+                                ? fmtBs(pm.amount || cartTotal, rate)
+                                : fmt$(pm.amount || cartTotal);
                               const txt = [
                                 `📋 Datos de pago — ${selected.name}`,
                                 ``,
-                                selected.details.trim(),
+                                ...linesToCopy,
                                 ``,
-                                `💰 Monto: ${fmt$(pm.amount || cartTotal)}`,
+                                `💰 Monto: ${amountStr}`,
                               ].join("\n");
                               try { await navigator.clipboard.writeText(txt); } catch {}
                               setCopiedIdx(idx);

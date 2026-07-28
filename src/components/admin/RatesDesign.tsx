@@ -480,6 +480,57 @@ export function DesignSection({
                   onChange={e => { const a=[...(draft.paymentMethods||[])]; a[idx]={...a[idx],details:e.target.value}; setDraft((d:DesignConfig)=>({...d,paymentMethods:a})); }}
                   className="field-input w-full border border-neutral-200/80 px-3 py-2 text-sm bg-white/72 rounded-lg font-[inherit] resize-none"
                   placeholder={"Banco: Banesco\nNúmero: 04XX-XXXXXXX\nNombre: Tu Nombre\nCédula: V-XXXXXXXX"}/>
+
+                {/* Campos a copiar */}
+                <div className="mt-2">
+                  <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide mb-1.5">Campos que se copian al cliente</p>
+                  <p className="text-[9px] text-neutral-400 mb-2">Deja vacío para copiar todos. Marca solo los que quieres incluir.</p>
+                  <div className="flex flex-col gap-1">
+                    {pm.details.split("\n").filter(Boolean).map((line: string, li: number) => {
+                      const fields = pm.copyFields ?? [];
+                      const checked = fields.length === 0 || fields.includes(line);
+                      return (
+                        <label key={li} className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={checked}
+                            className="accent-black"
+                            onChange={e => {
+                              const a = [...(draft.paymentMethods||[])];
+                              const allLines = pm.details.split("\n").filter(Boolean);
+                              let current = fields.length === 0 ? [...allLines] : [...fields];
+                              if (e.target.checked) {
+                                if (!current.includes(line)) current.push(line);
+                              } else {
+                                current = current.filter((f: string) => f !== line);
+                              }
+                              // Si están todas marcadas, resetear a [] (= todas)
+                              const isAll = allLines.every((l: string) => current.includes(l));
+                              a[idx] = { ...a[idx], copyFields: isAll ? [] : current };
+                              setDraft((d: DesignConfig) => ({ ...d, paymentMethods: a }));
+                            }}/>
+                          <span className="text-[11px] text-neutral-600 font-medium">{line}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Moneda del monto */}
+                <div className="mt-2 flex items-center gap-3">
+                  <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide">Monto a mostrar al copiar:</p>
+                  {(["EUR", "BS"] as const).map(cur => (
+                    <label key={cur} className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" name={`cur-${pm.id}`}
+                        checked={(pm.amountCurrency ?? "EUR") === cur}
+                        className="accent-black"
+                        onChange={() => {
+                          const a = [...(draft.paymentMethods||[])];
+                          a[idx] = { ...a[idx], amountCurrency: cur };
+                          setDraft((d: DesignConfig) => ({ ...d, paymentMethods: a }));
+                        }}/>
+                      <span className="text-[11px] font-bold text-neutral-600">{cur === "EUR" ? "€ Euros" : "Bs. Bolívares"}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

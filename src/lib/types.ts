@@ -104,6 +104,8 @@ export interface PaymentMethod {
   details: string;       // Datos bancarios / número / usuario
   active: boolean;
   needsReceipt: boolean; // Si requiere comprobante
+  copyFields?: string[]; // Qué líneas incluir al copiar (vacío = todas)
+  amountCurrency?: "EUR" | "BS"; // Moneda del monto en el texto copiado
 }
 
 export interface EditorialConfig {
