@@ -472,13 +472,15 @@ export function ProductDetailModal({
       {/* Lightbox de pantalla completa */}
       {lightboxOpen && (
         <div className="fixed inset-0 z-[400] flex items-center justify-center bg-white/95 backdrop-blur-sm p-6 cursor-zoom-out"
+          style={{ touchAction: "none" }}
           onClick={() => setLightboxOpen(false)}>
           <button onClick={() => setLightboxOpen(false)}
             className="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/85 backdrop-blur border border-neutral-200/80 flex items-center justify-center cursor-pointer">
             <X size={20}/>
           </button>
           <img src={galleryImages[imgIdx]||PLACEHOLDER} alt={product.name}
-            className="max-w-full max-h-full object-contain select-none" draggable={false}
+            className="max-w-full max-h-full object-contain"
+            style={{ touchAction: "pinch-zoom" }}
             onClick={e => e.stopPropagation()}/>
         </div>
       )}
