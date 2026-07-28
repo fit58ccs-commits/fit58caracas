@@ -98,7 +98,7 @@ export function ProductCard({
           </div>
           <span className="text-[10px] text-neutral-300 font-bold mb-0.5">/</span>
           <div className="flex flex-col">
-            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV (€1 = Bs.{rateBCV.toFixed(2)})</span>
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
             <span className="text-xs md:text-sm font-black text-black">{fmtBs(product.price, rate)}</span>
           </div>
         </div>
@@ -256,7 +256,7 @@ export function ProductDetailModal({
               </div>
               <span className="text-sm text-neutral-300 font-bold mb-1">/</span>
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV (€1 = Bs.{rateBCV.toFixed(2)})</span>
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
                 <span className="text-xl font-black text-black">{fmtBs(product.price, rate)}</span>
               </div>
             </div>
