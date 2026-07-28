@@ -149,11 +149,11 @@ export function ProductCard({
         <div className="flex flex-col gap-0.5 mt-0.5">
           <div className="flex items-baseline gap-1.5">
             <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Divisa / Euro</span>
-            <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??16, color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
+            <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??"clamp(13px,3.5vw,18px)", color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
-            <span style={{ fontFamily:ct.priceBsFont??ct.priceFont??"inherit", fontSize:ct.priceBsSize??ct.priceSize??16, color:ct.priceBsColor??ct.priceColor??"#111", fontWeight:ct.priceBsWeight??ct.priceWeight??"900" }}>{fmtBs(product.price, rate)}</span>
+            <span style={{ fontFamily:ct.priceBsFont??ct.priceFont??"inherit", fontSize:ct.priceBsSize??ct.priceSize??"clamp(13px,3.5vw,18px)", color:ct.priceBsColor??ct.priceColor??"#111", fontWeight:ct.priceBsWeight??ct.priceWeight??"900" }}>{fmtBs(product.price, rate)}</span>
           </div>
         </div>
 
@@ -214,7 +214,7 @@ export function ProductDetailModal({
 
         <div className="flex flex-col md:flex-row overflow-auto">
           {/* Gallery — protagonista */}
-          <div className="relative flex-1 md:flex-[1.4] bg-white flex p-5 md:p-10 gap-4 md:gap-6 min-h-[320px] md:min-h-[560px]">
+          <div className="relative flex-1 md:flex-[1.4] bg-white flex p-3 sm:p-5 md:p-10 gap-3 md:gap-6 min-h-[240px] sm:min-h-[320px] md:min-h-[560px]">
             {/* Miniaturas verticales (desktop) */}
             {galleryImages.length > 1 && (
               <div className="hidden md:flex flex-col gap-3 overflow-y-auto">
@@ -307,10 +307,10 @@ export function ProductDetailModal({
           </div>
 
           {/* Info */}
-          <div className="flex-none w-full md:w-[340px] p-6 md:p-8 flex flex-col gap-4 overflow-y-auto border-t md:border-t-0 md:border-l border-neutral-100">
+          <div className="flex-none w-full md:w-[320px] lg:w-[360px] p-4 sm:p-5 md:p-8 flex flex-col gap-3 md:gap-4 overflow-y-auto border-t md:border-t-0 md:border-l border-neutral-100">
             <div>
               <p className="text-[10px] font-bold text-neutral-400 tracking-[2px] uppercase mb-1">{product.category}</p>
-              <h2 className="text-xl md:text-2xl font-black text-black uppercase tracking-tight leading-tight mb-2">{product.name}</h2>
+              <h2 className="text-base sm:text-xl md:text-2xl font-black text-black uppercase tracking-tight leading-tight mb-2">{product.name}</h2>
               {product.badge && (
                 <span className="text-[9px] font-black bg-black/8 text-neutral-600 px-3 py-1 rounded-md tracking-wide uppercase">{product.badge}</span>
               )}
@@ -319,11 +319,11 @@ export function ProductDetailModal({
             <div className="flex flex-col gap-0.5">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Divisa / Euro</span>
-                <span className="text-2xl font-black text-black">{fmt$(product.price)}</span>
+                <span className="text-xl sm:text-2xl font-black text-black">{fmt$(product.price)}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
-                <span className="text-2xl font-black text-black">{fmtBs(product.price, rate)}</span>
+                <span className="text-[10px] sm:text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+                <span className="text-xl sm:text-2xl font-black text-black">{fmtBs(product.price, rate)}</span>
               </div>
             </div>
             {product.stock <= 0 && (

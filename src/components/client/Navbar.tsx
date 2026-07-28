@@ -36,7 +36,7 @@ export function Navbar({ design, cartCount, search, onSearch, onCartOpen, onTrac
 
   return (
     <header className="glass border-b border-white/70 sticky top-0 z-[100] rounded-none">
-      <div className="max-w-[1280px] mx-auto px-7 h-16 flex items-center gap-8">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-7 h-14 md:h-16 flex items-center gap-3 md:gap-8">
 
         {/* Brand */}
         <div className="flex items-center gap-3 shrink-0">

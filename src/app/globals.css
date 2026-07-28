@@ -185,3 +185,34 @@ button:not(.no-round) {
   overflow: hidden;
   max-width: 100%;
 }
+
+/* ── Responsive refinements ── */
+@media (max-width: 400px) {
+  .prod-card { border-radius: 12px; }
+  .prod-card .p-3 { padding: 8px; }
+}
+
+@media (max-width: 640px) {
+  /* Modal full height on mobile */
+  .glass.animate-drawer-in.rounded-3xl {
+    border-radius: 16px !important;
+    max-height: 96vh !important;
+  }
+  /* Bottom nav safe area */
+  nav.fixed.bottom-0 {
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  }
+}
+
+/* Navbar brand text scales on tiny screens */
+@media (max-width: 360px) {
+  .text-sm.font-black.text-black.tracking-wide { font-size: 11px; }
+  .text-\[8px\].font-bold.text-neutral-400 { font-size: 7px; }
+}
+
+/* Cart drawer full-width on mobile */
+@media (max-width: 480px) {
+  .animate-drawer-in.glass.absolute.right-0 {
+    max-width: 100vw !important;
+  }
+}
