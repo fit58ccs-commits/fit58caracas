@@ -495,7 +495,7 @@ export function CartDrawer({
                       {selected && selected.details && (
                         <div className="bg-neutral-50/80 rounded-lg p-3">
                           <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide mb-1.5">Datos para {selected.name}</p>
-                          <pre className="text-[11px] text-neutral-700 font-[inherit] whitespace-pre-wrap leading-relaxed m-0">{selected.details}</pre>
+                          <pre className="text-[12px] font-black text-neutral-800 whitespace-pre-wrap leading-relaxed m-0" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>{selected.details}</pre>
                           <button
                             onClick={async () => {
                               const txt = [
