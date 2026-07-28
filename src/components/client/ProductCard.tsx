@@ -146,14 +146,13 @@ export function ProductCard({
           </div>
         )}
 
-        <div className="flex items-end gap-1.5 mt-0.5">
-          <div className="flex flex-col">
-            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Divisa / Euro</span>
+        <div className="flex flex-col gap-0 mt-0.5">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none">Divisa / Euro</span>
             <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??20, color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
           </div>
-          <span className="text-[10px] text-neutral-300 font-bold mb-0.5">/</span>
-          <div className="flex flex-col">
-            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
             <span style={{ fontFamily:ct.priceBsFont??ct.priceFont??"inherit", fontSize:ct.priceBsSize??ct.priceSize??20, color:ct.priceBsColor??ct.priceColor??"#111", fontWeight:ct.priceBsWeight??ct.priceWeight??"900" }}>{fmtBs(product.price, rate)}</span>
           </div>
         </div>
@@ -317,14 +316,13 @@ export function ProductDetailModal({
               )}
             </div>
 
-            <div className="flex items-end gap-2.5">
-              <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Divisa / Euro</span>
+            <div className="flex flex-col gap-0">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none">Divisa / Euro</span>
                 <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
               </div>
-              <span className="text-sm text-neutral-300 font-bold mb-1">/</span>
-              <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
                 <span className="text-3xl font-black text-black">{fmtBs(product.price, rate)}</span>
               </div>
             </div>
