@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Script from "next/script";
+import { Poppins } from "next/font/google";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-poppins",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title:       "Fit +58 Caracas — Suplementos y productos gourmet importados",
@@ -62,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       {/* bg #F5ECE4 = color real de la app — evita flash de color distinto */}
       <body suppressHydrationWarning style={{ background: "#F5ECE4" }}
-        className="font-[Inter,sans-serif] antialiased">
+        className={`${poppins.variable} font-[Inter,sans-serif] antialiased`}>
         {children}
         <Script id="sw-cleanup" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {

@@ -148,11 +148,11 @@ export function ProductCard({
 
         <div className="flex flex-col gap-0.5 mt-0.5">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none">Divisa / Euro</span>
+            <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Divisa / Euro</span>
             <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??16, color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+            <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
             <span style={{ fontFamily:ct.priceBsFont??ct.priceFont??"inherit", fontSize:ct.priceBsSize??ct.priceSize??16, color:ct.priceBsColor??ct.priceColor??"#111", fontWeight:ct.priceBsWeight??ct.priceWeight??"900" }}>{fmtBs(product.price, rate)}</span>
           </div>
         </div>
@@ -318,11 +318,11 @@ export function ProductDetailModal({
 
             <div className="flex flex-col gap-0.5">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none">Divisa / Euro</span>
+                <span className="text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Divisa / Euro</span>
                 <span className="text-2xl font-black text-black">{fmt$(product.price)}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+                <span className="text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
                 <span className="text-2xl font-black text-black">{fmtBs(product.price, rate)}</span>
               </div>
             </div>
