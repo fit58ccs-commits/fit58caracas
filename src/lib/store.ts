@@ -42,7 +42,7 @@ const LS = {
 
 export const genId  = () => Math.random().toString(36).slice(2, 9);
 export const fmt$   = (n: number) => `€${Number(n).toFixed(2)}`;
-export const fmtBs  = (n: number, rate: number) => `Bs. ${(Number(n) * rate).toFixed(2)}`;
+export const fmtBs  = (n: number, rate: number) => { const val = (Number(n) * rate).toFixed(2); const [int, dec] = val.split("."); const intFmt = int.replace(/\B(?=(\d{3})+(?!\d))/g, "."); return `Bs. ${intFmt},${dec}`; };
 
 export const fileToBase64 = (file: File): Promise<string> =>
   new Promise((res, rej) => {
