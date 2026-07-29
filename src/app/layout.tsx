@@ -63,6 +63,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="shortcut icon"    href="/favicon.ico"/>
         <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
         <link rel="manifest"         href="/manifest.json"/>
+        {/* Preconnect — reduce DNS + TLS handshake time for banner images */}
+        <link rel="preconnect"    href="https://images.unsplash.com"/>
+        <link rel="dns-prefetch"  href="https://images.unsplash.com"/>
+        <link rel="preconnect"    href={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}  crossOrigin="anonymous"/>
+        <link rel="dns-prefetch"  href={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/>
         <meta name="mobile-web-app-capable"              content="yes"/>
         <meta name="apple-mobile-web-app-capable"        content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
