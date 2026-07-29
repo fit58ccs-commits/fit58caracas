@@ -38,10 +38,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/icons/icon-96.png",  sizes: "96x96",   type: "image/png" },
+      { url: "/icons/icon-144.png", sizes: "144x144", type: "image/png" },
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple:   [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple:   [{ url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" }],
     shortcut: "/icons/icon-192.png",
   },
 };
@@ -50,8 +52,8 @@ export const viewport: Viewport = {
   themeColor:   "#111111",
   width:        "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -61,7 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon"             href="/favicon.ico" type="image/x-icon"/>
         <link rel="icon"             href="/icons/icon-192.png" type="image/png"/>
         <link rel="shortcut icon"    href="/favicon.ico"/>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+        <link rel="apple-touch-icon" href="/icons/icon-180.png"/>
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png"/>
         <link rel="manifest"         href="/manifest.json"/>
         {/* Preconnect — reduce DNS + TLS handshake time for banner images */}
         <link rel="preconnect"    href="https://images.unsplash.com"/>
@@ -77,10 +80,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body suppressHydrationWarning style={{ background: "#F5ECE4" }}
         className={`${poppins.variable} font-[Inter,sans-serif] antialiased`}>
         {children}
-        <Script id="sw-cleanup" strategy="afterInteractive">{`
+        <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister()));
-            caches.keys().then(k=>k.forEach(x=>caches.delete(x)));
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+              .catch(() => {});
           }
         `}</Script>
       </body>
