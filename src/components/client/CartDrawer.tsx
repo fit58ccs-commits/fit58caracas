@@ -39,6 +39,7 @@ type Step = typeof STEPS[number];
 interface CartDrawerProps {
   cart:        CartItem[];
   rate:        number;
+  rateBCV:     number;
   cartTotal:   number;
   onRemove:    (id: string) => void;
   onUpdateQty: (id: string, delta: number) => void;
@@ -48,7 +49,7 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({
-  cart, rate, cartTotal, onRemove, onUpdateQty, onClose, onSaveOrder, design,
+  cart, rate, rateBCV, cartTotal, onRemove, onUpdateQty, onClose, onSaveOrder, design,
 }: CartDrawerProps) {
   const [step,     setStep]     = useState<Step>("cart");
   const [form,     setForm]     = useState({ name:"", phone:"", time:"", address:"", lat:10.4806, lng:-66.9036 });
@@ -474,38 +475,81 @@ export function CartDrawer({
                       {/* Monto */}
                       <div>
                         <label className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wide mb-1">
-                          Monto a pagar con este método
+                          {selected?.amountCurrency === "BS" ? "Monto a abonar en Bs." : "Monto a pagar con este método"}
                         </label>
-                        <input type="number" step="0.01" min="0"
-                          value={pm.amount || ""}
-                          onChange={e=>{
-                            const amount = parseFloat(e.target.value)||0;
-                            setPayments(prev=>prev.map((p,i)=>i===idx?{...p,amount}:p));
-                          }}
-                          className="field-input border border-neutral-200/80 px-3 py-2.5 text-sm bg-white/72 rounded-lg font-[inherit]"
-                          placeholder={`${fmt$(autoAmt ?? cartTotal)}`}/>
-                        {idx===0 && payments.length===1 && pm.amount > 0 && pm.amount < cartTotal && (
+                        <div className="flex items-center gap-2">
+                          {selected?.amountCurrency === "BS" && (
+                            <span className="text-sm font-black text-neutral-500 shrink-0">Bs.</span>
+                          )}
+                          <input type="number" step="100" min="0"
+                            value={pm.amount || ""}
+                            onChange={e=>{
+                              const amount = parseFloat(e.target.value)||0;
+                              setPayments(prev=>prev.map((p,i)=>i===idx?{...p,amount}:p));
+                            }}
+                            className="field-input border border-neutral-200/80 px-3 py-2.5 text-sm bg-white/72 rounded-lg font-[inherit] flex-1"
+                            placeholder={selected?.amountCurrency === "BS"
+                              ? `${(cartTotal * rate).toFixed(0)}`
+                              : `${fmt$(autoAmt ?? cartTotal)}`}/>
+                        </div>
+
+                        {/* Bloque BS — abono + equivalencia + saldo */}
+                        {selected?.amountCurrency === "BS" && pm.amount > 0 && (() => {
+                          const totalBs   = cartTotal * rate;
+                          const abonoBs   = Math.min(pm.amount, totalBs);
+                          const equivEur  = abonoBs / rateBCV;
+                          const restoBs   = Math.max(0, totalBs - abonoBs);
+                          const restoEur  = restoBs / rateBCV;
+                          const completo  = restoBs === 0;
+                          return (
+                            <div className="mt-2 rounded-xl overflow-hidden border border-neutral-200/60"
+                              style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
+
+                              {/* Abono */}
+                              <div className="flex items-center justify-between px-4 py-3"
+                                style={{ background: "rgba(17,17,17,0.05)" }}>
+                                <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide m-0">
+                                  Abono en Bs.
+                                </p>
+                                <p className="text-xl font-black text-black m-0">
+                                  {fmtBs(abonoBs, 1)}
+                                </p>
+                              </div>
+
+                              {/* Equivalencia BCV */}
+                              <div className="flex items-center justify-between px-4 py-2.5 border-t border-neutral-200/60">
+                                <div>
+                                  <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide m-0 mb-0.5">
+                                    Equivale en divisa
+                                  </p>
+                                  <p className="text-[10px] text-neutral-400 m-0">
+                                    {fmtBs(abonoBs, 1)} ÷ {rateBCV.toLocaleString("es-VE", {minimumFractionDigits:2})} (BCV Euro)
+                                  </p>
+                                </div>
+                                <p className="text-base font-black text-black m-0">{fmt$(equivEur)}</p>
+                              </div>
+
+                              {/* Saldo restante */}
+                              <div className="flex items-center justify-between px-4 py-2.5 border-t border-neutral-200/60">
+                                <p className="text-[9px] font-black uppercase tracking-wide m-0"
+                                  style={{ color: completo ? "#16a34a" : "#d97706" }}>
+                                  {completo ? "Pago completo" : "Saldo restante"}
+                                </p>
+                                <p className="text-base font-black m-0"
+                                  style={{ color: completo ? "#16a34a" : "#d97706" }}>
+                                  {completo ? "✓" : `${fmtBs(restoBs, 1)} / ${fmt$(restoEur)}`}
+                                </p>
+                              </div>
+
+                            </div>
+                          );
+                        })()}
+
+                        {/* Alerta saldo para métodos EUR */}
+                        {(!selected || selected.amountCurrency !== "BS") && idx===0 && payments.length===1 && pm.amount > 0 && pm.amount < cartTotal && (
                           <p className="text-[9px] text-amber-600 mt-1 flex items-center gap-1">
                             <AlertCircle size={9}/>Saldo restante: {fmt$(cartTotal-pm.amount)} — añade otro método
                           </p>
-                        )}
-
-                        {/* Monto en Bs destacado — visible si método es BS */}
-                        {selected && (selected.amountCurrency === "BS") && (
-                          <div className="mt-2 rounded-xl px-4 py-3 flex items-center justify-between"
-                            style={{ background: "rgba(17,17,17,0.06)" }}>
-                            <div>
-                              <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide leading-none mb-0.5">
-                                Total a cancelar en Bs.
-                              </p>
-                              <p className="text-[9px] text-neutral-400" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
-                                Tasa BCV aplicada
-                              </p>
-                            </div>
-                            <p className="text-2xl font-black text-black" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
-                              {fmtBs(pm.amount || cartTotal, rate)}
-                            </p>
-                          </div>
                         )}
                       </div>
 

@@ -393,7 +393,7 @@ export function ClientView({ store }: { store: Store }) {
       )}
 
       {cartOpen && (
-        <CartDrawer cart={store.cart} rate={store.rate.value} cartTotal={store.cartTotal}
+        <CartDrawer cart={store.cart} rate={store.rate.value} rateBCV={store.rateBCV.value} cartTotal={store.cartTotal}
           onRemove={store.removeFromCart} onUpdateQty={store.updateCartQty}
           onClose={() => setCartOpen(false)} onSaveOrder={store.saveOrder}
           design={{ whatsappNumber: store.design.whatsappNumber, paymentMethods: store.design.paymentMethods }}/>
