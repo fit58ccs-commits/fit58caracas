@@ -17,22 +17,21 @@ export default function ClientApp() {
       <div style={{
         position:       "fixed",
         inset:          0,
-        background:     "#333333",
         display:        "flex",
         alignItems:     "center",
         justifyContent: "center",
       }}>
-        <img
-          src="/logo-splash.png"
-          alt="FIT 58 Caracas"
-          fetchPriority="high"
-          decoding="sync"
-          style={{
-            width:     "clamp(160px, 55vw, 280px)",
-            height:    "auto",
-            display:   "block",
-          }}
-        />
+        <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
+        <div style={{
+          width:        36,
+          height:       36,
+          borderRadius: "50%",
+          border:       "3px solid rgba(0,0,0,0.08)",
+          borderTopColor: "#292929",
+          animation:    "spin 0.7s linear infinite",
+        }}/>
       </div>
     );
   }
