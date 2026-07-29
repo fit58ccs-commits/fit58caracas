@@ -21,7 +21,6 @@ export default function ClientApp() {
         display:        "flex",
         alignItems:     "center",
         justifyContent: "center",
-        overflow:       "hidden",
       }}>
         <img
           src="/logo-splash.png"
@@ -29,10 +28,9 @@ export default function ClientApp() {
           fetchPriority="high"
           decoding="sync"
           style={{
-            width:      "100%",
-            height:     "100%",
-            objectFit:  "cover",
-            objectPosition: "center",
+            width:     "clamp(160px, 55vw, 280px)",
+            height:    "auto",
+            display:   "block",
           }}
         />
       </div>
