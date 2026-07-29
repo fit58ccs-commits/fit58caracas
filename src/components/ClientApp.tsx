@@ -4,8 +4,6 @@ import { useAppStore } from "@/lib/store";
 import { ToastProvider } from "./ui/Toast";
 import { ClientView } from "./client/ClientView";
 
-const SPLASH_BG = "#333333";
-
 export default function ClientApp() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -17,11 +15,13 @@ export default function ClientApp() {
   if (showSplash) {
     return (
       <div style={{
-        minHeight:      "100vh",
-        background:     SPLASH_BG,
+        position:       "fixed",
+        inset:          0,
+        background:     "#333333",
         display:        "flex",
         alignItems:     "center",
         justifyContent: "center",
+        overflow:       "hidden",
       }}>
         <img
           src="/logo-splash.png"
@@ -29,8 +29,10 @@ export default function ClientApp() {
           fetchPriority="high"
           decoding="sync"
           style={{
-            width:    "clamp(180px, 50vw, 320px)",
-            height:   "auto",
+            width:      "100%",
+            height:     "100%",
+            objectFit:  "cover",
+            objectPosition: "center",
           }}
         />
       </div>
