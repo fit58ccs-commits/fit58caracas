@@ -77,7 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title"          content="Fit +58"/>
       </head>
       {/* bg #F5ECE4 = color real de la app — evita flash de color distinto */}
-      <body suppressHydrationWarning style={{ background: "#F5ECE4" }}
+      <body suppressHydrationWarning
         className={`${poppins.variable} font-sans antialiased`}>
         {children}
         <Script id="sw-register" strategy="afterInteractive">{`

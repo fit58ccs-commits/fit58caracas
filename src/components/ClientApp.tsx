@@ -15,22 +15,23 @@ export default function ClientApp() {
   if (showSplash) {
     return (
       <div style={{
-        position:       "fixed",
-        inset:          0,
-        display:        "flex",
-        alignItems:     "center",
-        justifyContent: "center",
+        position:        "fixed",
+        inset:           0,
+        display:         "flex",
+        alignItems:      "center",
+        justifyContent:  "center",
+        background:      "rgba(255,255,255,0.18)",
+        backdropFilter:  "blur(18px) saturate(160%)",
+        WebkitBackdropFilter: "blur(18px) saturate(160%)",
       }}>
-        <style>{`
-          @keyframes spin { to { transform: rotate(360deg); } }
-        `}</style>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <div style={{
-          width:        36,
-          height:       36,
-          borderRadius: "50%",
-          border:       "3px solid rgba(0,0,0,0.08)",
-          borderTopColor: "#292929",
-          animation:    "spin 0.7s linear infinite",
+          width:          36,
+          height:         36,
+          borderRadius:   "50%",
+          border:         "3px solid rgba(255,255,255,0.25)",
+          borderTopColor: "rgba(0,0,0,0.55)",
+          animation:      "spin 0.7s linear infinite",
         }}/>
       </div>
     );
