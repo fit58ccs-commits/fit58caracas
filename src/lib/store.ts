@@ -71,7 +71,11 @@ export function useAppStore() {
   const [banners,   setBannersState]   = useState<Banner[]>(          () => LS.get("banners",   DEFAULT_BANNERS));
   const [reviews,   setReviewsState]   = useState<Review[]>(          () => LS.get("reviews",   []));
   const [purchases, setPurchasesState] = useState<Purchase[]>(        () => LS.get("purchases", []));
-  const [loading,   setLoading]        = useState(true);
+  const [loading,   setLoading]        = useState(() => {
+    // Si ya hay productos en caché → abrir instantáneo, Supabase actualiza en background
+    const cached = LS.get("products", []);
+    return cached.length === 0;
+  });
 
   // ── Supabase en background — actualiza encima del caché de localStorage ──
   useEffect(() => {
