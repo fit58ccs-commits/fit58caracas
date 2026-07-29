@@ -76,20 +76,23 @@ export function useAppStore() {
   // ── Supabase en background — actualiza encima del caché de localStorage ──
   useEffect(() => {
     let cancelled = false;
+    // Timeout para no quedarse colgado si Supabase tarda
+    const withTimeout = <T,>(p: Promise<T>, ms = 4000): Promise<T> =>
+      Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+
     async function load() {
       try {
-        const [prods, ords, bans, r, rBCV, des] = await Promise.all([
+        // Crítico primero — lo que ve el cliente (sin órdenes que son pesadas)
+        const [prods, bans, r, rBCV, des] = await withTimeout(Promise.all([
           sbGetProducts(),
-          sbGetOrders(),
           sbGetBanners(),
           sbGetRate(),
           sbGetRateBCV(),
           sbGetDesign(DEFAULT_DESIGN),
-        ]);
+        ]));
         if (cancelled) return;
 
         if (prods.length) { setProductsState(prods); LS.set("products", prods); }
-        if (ords.length)  { setOrdersState(ords);    LS.set("orders",   ords);  }
         if (bans.length) {
           setBannersState(bans);
           LS.set("banners", bans.map(b => ({ ...b, imgBase64: "" })));
@@ -98,9 +101,18 @@ export function useAppStore() {
         setRateBCVState(rBCV); LS.set("rateBCV", rBCV);
         setDesignState(des);   LS.set("design",  des);
       } catch (e) {
-        console.warn("[store] Supabase load failed, using localStorage cache:", e);
+        console.warn("[store] Supabase timed out or failed, using cache:", e);
       } finally {
+        // Desbloquear UI inmediatamente — órdenes cargan en segundo plano
         if (!cancelled) setLoading(false);
+      }
+
+      // Órdenes en segundo plano — no bloquean el splash
+      if (!cancelled) {
+        try {
+          const ords = await withTimeout(sbGetOrders(), 8000);
+          if (!cancelled && ords.length) { setOrdersState(ords); LS.set("orders", ords); }
+        } catch {}
       }
     }
     load();
