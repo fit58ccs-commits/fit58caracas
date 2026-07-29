@@ -17,7 +17,6 @@ body {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
-}
 
 /* Bebas Neue solo donde se llama explicitamente con .brand-heading */
 /* NO aplicar a h1/h2/h3 globalmente — rompe admin, drawers y modals */

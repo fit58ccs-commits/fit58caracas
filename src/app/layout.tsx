@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       {/* bg #F5ECE4 = color real de la app — evita flash de color distinto */}
       <body suppressHydrationWarning style={{ background: "#F5ECE4" }}
-        className={`${poppins.variable} font-[Inter,sans-serif] antialiased`}>
+        className={`${poppins.variable} font-sans antialiased`}>
         {children}
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {

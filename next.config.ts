@@ -2,30 +2,90 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // Formatos modernos — Next.js convierte automaticamente a WebP/AVIF
     formats: ["image/avif", "image/webp"],
-
-    // Tamanos de pantalla para srcset responsive
     deviceSizes: [390, 640, 750, 828, 1080, 1200, 1920],
     imageSizes:  [64, 128, 256, 384],
-
-    // Calidad por defecto (75 es buen balance calidad/peso)
     qualities: [75],
-
     remotePatterns: [
-      // Supabase Storage — imagenes de productos y banners
       { protocol: "https", hostname: "dbxpgbphtxhejjdkdgza.supabase.co" },
-      // Unsplash — imagenes de muestra
       { protocol: "https", hostname: "images.unsplash.com" },
-      // Sascha Fitness CDN y otros posibles origenes de productos
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "**.supabase.in" },
-      // Imagenes subidas por URL directa (cualquier HTTPS)
       { protocol: "https", hostname: "**" },
     ],
+    minimumCacheTTL: 86400,
+  },
 
-    // Minimizar re-optimizaciones en desarrollo
-    minimumCacheTTL: 86400, // 24h cache en Vercel
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          // Permite cargar la app en cualquier país y dispositivo
+          // Sin X-Frame-Options ni CSP restrictivo que bloquee browsers
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(self), payment=()",
+          },
+          // Cache control para HTML — siempre fresco
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      // Cache agresivo para assets estáticos (iconos, fuentes, imágenes)
+      {
+        source: "/icons/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/logo-splash.png",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Service Worker — nunca cacheado para que siempre sea fresco
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+        ],
+      },
+      // Manifest — cache corto
+      {
+        source: "/manifest.json",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600",
+          },
+        ],
+      },
+    ];
   },
 };
 
