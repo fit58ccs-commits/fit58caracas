@@ -489,6 +489,24 @@ export function CartDrawer({
                             <AlertCircle size={9}/>Saldo restante: {fmt$(cartTotal-pm.amount)} — añade otro método
                           </p>
                         )}
+
+                        {/* Monto en Bs destacado — visible si método es BS */}
+                        {selected && (selected.amountCurrency === "BS") && (
+                          <div className="mt-2 rounded-xl px-4 py-3 flex items-center justify-between"
+                            style={{ background: "rgba(17,17,17,0.06)" }}>
+                            <div>
+                              <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide leading-none mb-0.5">
+                                Total a cancelar en Bs.
+                              </p>
+                              <p className="text-[9px] text-neutral-400" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
+                                Tasa BCV aplicada
+                              </p>
+                            </div>
+                            <p className="text-2xl font-black text-black" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
+                              {fmtBs(pm.amount || cartTotal, rate)}
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Datos bancarios */}
