@@ -53,6 +53,10 @@ export function CartDrawer({
 }: CartDrawerProps) {
   const [step,     setStep]     = useState<Step>("cart");
   const [form,     setForm]     = useState({ name:"", phone:"", time:"", address:"", lat:10.4806, lng:-66.9036 });
+  const [shipType, setShipType] = useState<"delivery"|"nacional">("delivery");
+  const [agency,   setAgency]   = useState<"Zoom"|"MRW"|"Liberty Express"|"">("");
+  const [shipForm, setShipForm] = useState({ nombre:"", cedula:"", telefono:"", estado:"", agencia:"", codAgencia:"" });
+  const SF = (k: string, v: string) => setShipForm(f => ({ ...f, [k]: v }));
   const [payments, setPayments] = useState<PaymentEntry[]>([{ method:"", amount:0, receipt:null }]);
   const [mapLoaded,  setMapLoaded]  = useState(false);
   const [locating,   setLocating]   = useState(false);
@@ -149,8 +153,12 @@ export function CartDrawer({
     setOrderId(oid);
 
     const orderForm = {
-      name: form.name, phone: form.phone, time: form.time,
-      address: form.address, lat: form.lat, lng: form.lng,
+      name:    shipType === "delivery" ? form.name    : shipForm.nombre,
+      phone:   shipType === "delivery" ? form.phone   : shipForm.telefono,
+      time:    shipType === "delivery" ? form.time    : "",
+      address: shipType === "delivery" ? form.address : `${shipForm.estado} — ${agency}: ${shipForm.agencia}${agency === "MRW" ? " (Cód: "+shipForm.codAgencia+")" : ""}`,
+      lat: form.lat, lng: form.lng,
+      shipType, agency: agency || undefined,
       method:    mainMethod,
       receipt:   payments[0]?.receipt || null,
       payments,
@@ -212,10 +220,19 @@ export function CartDrawer({
       ...paymentLines,
       balance > 0 ? `⚠️ Saldo pendiente: ${fmt$(balance)}` : `✅ Pagado completo`,
       "─────────────────────────",
-      `👤 ${form.name}`,
-      `📱 ${form.phone}`,
-      `⏰ ${form.time}`,
-      `📍 ${form.address}`,
+      shipType === "nacional"
+        ? `📦 ENVÍO NACIONAL — ${agency}`
+        : `🏠 Delivery`,
+      shipType === "delivery" ? `👤 ${form.name}` : `👤 ${shipForm.nombre}`,
+      shipType === "delivery" ? `📱 ${form.phone}` : `📱 ${shipForm.telefono}`,
+      ...(shipType === "delivery"
+        ? [`⏰ ${form.time}`, `📍 ${form.address}`]
+        : [
+            `🪪 Cédula/Rif: ${shipForm.cedula}`,
+            `📍 ${shipForm.estado}`,
+            `🏢 Agencia: ${shipForm.agencia}`,
+            ...(agency === "MRW" ? [`🔢 Código: ${shipForm.codAgencia}`] : []),
+          ]),
       `🗺 ${mapsLink}`,
       generatedCode ? `─────────────────────────\n🎁 Código referido del cliente: *${generatedCode}*\nCompártelo: 3% OFF a sus amigos.` : "",
     ].filter(Boolean).join("\n"));
@@ -246,10 +263,19 @@ export function CartDrawer({
       payLines,
       balance > 0 ? `⚠️ SALDO PENDIENTE: ${fmt$(balance)}` : `✅ PAGO COMPLETADO`,
       "─────────────────────────",
-      `👤 Cliente: ${form.name}`,
-      `📱 Teléfono: ${form.phone}`,
-      `⏰ Horario: ${form.time}`,
-      `📍 Dirección: ${form.address}`,
+      shipType === "nacional"
+        ? `📦 ENVÍO NACIONAL — ${agency}`
+        : `🏠 Delivery`,
+      shipType === "delivery" ? `👤 Cliente: ${form.name}` : `👤 Cliente: ${shipForm.nombre}`,
+      shipType === "delivery" ? `📱 Teléfono: ${form.phone}` : `📱 Teléfono: ${shipForm.telefono}`,
+      ...(shipType === "delivery"
+        ? [`⏰ Horario: ${form.time}`, `📍 Dirección: ${form.address}`]
+        : [
+            `🪪 Cédula/Rif: ${shipForm.cedula}`,
+            `📍 Estado/Ciudad: ${shipForm.estado}`,
+            `🏢 Agencia: ${shipForm.agencia}`,
+            ...(agency === "MRW" ? [`🔢 Código agencia: ${shipForm.codAgencia}`] : []),
+          ]),
       "─────────────────────────",
       `Guarda este ticket para consultar el estado de tu pedido.`,
       myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra que generes.` : "",
@@ -370,39 +396,125 @@ export function CartDrawer({
           {/* ── DELIVERY ── */}
           {step === "delivery" && (
             <>
-              {[
-                { label:"Nombre completo", key:"name",  placeholder:"Juan Pérez",       icon:<User size={13}/> },
-                { label:"WhatsApp",        key:"phone", placeholder:"+58 414 000 0000",  icon:<Phone size={13}/> },
-                { label:"Hora límite",     key:"time",  placeholder:"Hasta las 6:00 PM", icon:<Clock size={13}/> },
-              ].map(f => (
-                <div key={f.key}>
-                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1">{f.icon}{f.label}</label>
-                  <input type="text" placeholder={f.placeholder} value={form[f.key as "name"|"phone"|"time"]} onChange={e=>F(f.key,e.target.value)} className={inputCls}/>
-                </div>
-              ))}
-              <div>
-                <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1"><MapPin size={13}/>Dirección</label>
-                <textarea placeholder="Urbanización, calle, edificio, apartamento..." value={form.address} onChange={e=>F("address",e.target.value)} rows={2} className={inputCls+" resize-none"}/>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase flex items-center gap-1">
-                    <MapPin size={13} className="text-green-600"/> Ubicación GPS
-                  </label>
-                  <button onClick={goToMyLocation} disabled={locating}
-                    className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg border-none cursor-pointer">
-                    <Navigation size={11}/> {locating?"Buscando...":"Mi ubicación"}
+              {/* Selector Delivery / Envío Nacional */}
+              <div className="glass-card rounded-2xl p-1 flex gap-1">
+                {(["delivery","nacional"] as const).map(t => (
+                  <button key={t} onClick={() => setShipType(t)}
+                    className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
+                    style={{
+                      background: shipType === t ? "#111" : "transparent",
+                      color:      shipType === t ? "#fff" : "#888",
+                    }}>
+                    {t === "delivery" ? "🏠 Delivery" : "📦 Envío Nacional"}
                   </button>
-                </div>
-                <div ref={mapRef} className="h-[200px] rounded-xl overflow-hidden border border-neutral-200/80 bg-neutral-100"/>
-                {!mapLoaded && <div className="text-center text-[10px] text-neutral-400 mt-1">Cargando mapa...</div>}
-                <div className="glass-card p-2.5 rounded-lg text-[10px] text-neutral-500 mt-1.5 flex items-center gap-1.5">
-                  <MapPin size={11} className="text-green-600"/> Lat: {form.lat} · Lng: {form.lng}
-                </div>
+                ))}
               </div>
+
+              {/* ── DELIVERY local ── */}
+              {shipType === "delivery" && (<>
+                {[
+                  { label:"Nombre completo", key:"name",  placeholder:"Juan Pérez",       icon:<User size={13}/> },
+                  { label:"WhatsApp",        key:"phone", placeholder:"+58 414 000 0000",  icon:<Phone size={13}/> },
+                  { label:"Hora límite",     key:"time",  placeholder:"Hasta las 6:00 PM", icon:<Clock size={13}/> },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1">{f.icon}{f.label}</label>
+                    <input type="text" placeholder={f.placeholder} value={form[f.key as "name"|"phone"|"time"]} onChange={e=>F(f.key,e.target.value)} className={inputCls}/>
+                  </div>
+                ))}
+                <div>
+                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1"><MapPin size={13}/>Dirección</label>
+                  <textarea placeholder="Urbanización, calle, edificio, apartamento..." value={form.address} onChange={e=>F("address",e.target.value)} rows={2} className={inputCls+" resize-none"}/>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase flex items-center gap-1">
+                      <MapPin size={13} className="text-green-600"/> Ubicación GPS
+                    </label>
+                    <button onClick={goToMyLocation} disabled={locating}
+                      className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg border-none cursor-pointer">
+                      <Navigation size={11}/> {locating?"Buscando...":"Mi ubicación"}
+                    </button>
+                  </div>
+                  <div ref={mapRef} className="h-[200px] rounded-xl overflow-hidden border border-neutral-200/80 bg-neutral-100"/>
+                  {!mapLoaded && <div className="text-center text-[10px] text-neutral-400 mt-1">Cargando mapa...</div>}
+                  <div className="glass-card p-2.5 rounded-lg text-[10px] text-neutral-500 mt-1.5 flex items-center gap-1.5">
+                    <MapPin size={11} className="text-green-600"/> Lat: {form.lat} · Lng: {form.lng}
+                  </div>
+                </div>
+              </>)}
+
+              {/* ── ENVÍO NACIONAL ── */}
+              {shipType === "nacional" && (<>
+
+                {/* Nota cobro destino */}
+                <div className="rounded-xl px-4 py-3 flex items-center gap-2"
+                  style={{ background: "rgba(17,17,17,0.05)" }}>
+                  <span className="text-lg">📦</span>
+                  <div>
+                    <p className="text-[10px] font-black text-black uppercase tracking-wide m-0">Cobro en destino</p>
+                    <p className="text-[9px] text-neutral-500 m-0">El flete lo cancelas al recibir el paquete en la agencia.</p>
+                  </div>
+                </div>
+
+                {/* Selector de agencia */}
+                <div>
+                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">Agencia de envío</label>
+                  <div className="flex gap-2">
+                    {(["Zoom","MRW","Liberty Express"] as const).map(a => (
+                      <button key={a} onClick={() => { setAgency(a); SF("codAgencia",""); }}
+                        className="flex-1 py-2.5 rounded-xl text-[10px] font-black border-none cursor-pointer transition-all"
+                        style={{
+                          background: agency === a ? "#111" : "rgba(17,17,17,0.06)",
+                          color:      agency === a ? "#fff" : "#555",
+                        }}>
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Campos envío nacional */}
+                {agency && (<>
+                  {[
+                    { label:"Nombre y Apellido",            key:"nombre",   placeholder:"Juan Pérez",         type:"text"   },
+                    { label:"Cédula / Rif",                  key:"cedula",   placeholder:"V-12345678",          type:"text"   },
+                    { label:"Teléfono",                      key:"telefono", placeholder:"+58 414 000 0000",    type:"tel"    },
+                    { label:"Estado o Ciudad",               key:"estado",   placeholder:"Caracas, Miranda...", type:"text"   },
+                    { label:`Nombre de la Agencia (Ej: ${agency} Las Mercedes)`, key:"agencia", placeholder:`${agency} LAS MERCEDES`, type:"text" },
+                  ].map(f => (
+                    <div key={f.key}>
+                      <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">{f.label}</label>
+                      <input type={f.type} placeholder={f.placeholder}
+                        value={shipForm[f.key as keyof typeof shipForm]}
+                        onChange={e => SF(f.key, e.target.value)}
+                        className={inputCls}/>
+                    </div>
+                  ))}
+
+                  {/* Código de agencia — solo MRW */}
+                  {agency === "MRW" && (
+                    <div>
+                      <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">Código Agencia MRW</label>
+                      <input type="text" placeholder="Ej: 0001"
+                        value={shipForm.codAgencia}
+                        onChange={e => SF("codAgencia", e.target.value)}
+                        className={inputCls}/>
+                    </div>
+                  )}
+                </>)}
+              </>)}
+
+              {/* Botones */}
               <div className="flex gap-2.5 mt-1">
                 <button onClick={()=>setStep("cart")} className={secondBtn}>← VOLVER</button>
-                <button onClick={()=>setStep("payment")} disabled={!form.name||!form.phone||!form.address}
+                <button
+                  onClick={()=>setStep("payment")}
+                  disabled={
+                    shipType === "delivery"
+                      ? !form.name || !form.phone || !form.address
+                      : !agency || !shipForm.nombre || !shipForm.cedula || !shipForm.telefono || !shipForm.estado || !shipForm.agencia || (agency === "MRW" && !shipForm.codAgencia)
+                  }
                   className={primaryBtn+" flex-1"} style={{width:"auto"}}>PAGO →</button>
               </div>
             </>
