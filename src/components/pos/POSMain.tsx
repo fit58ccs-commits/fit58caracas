@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { fmt$, fmtBs } from "@/lib/store";
 import type { POSCashier } from "./POSApp";
 import type { Product, CartItem } from "@/lib/types";
@@ -486,7 +486,7 @@ const styles: Record<string, React.CSSProperties> = {
   grid:           { display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(140px, 1fr))", gap:10, paddingBottom:20 },
   card:           { background:"#fff", border:"none", borderRadius:14, padding:10, cursor:"pointer", textAlign:"left", position:"relative", overflow:"hidden" },
   cardImg:        { width:"100%", height:90, objectFit:"contain", borderRadius:8, marginBottom:6 },
-  cardName:       { fontSize:10, fontWeight:800, color:"#111", textTransform:"uppercase", marginBottom:4, lineHeight:1.3, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" },
+  cardName:       { fontSize:10, fontWeight:800, color:"#111", textTransform:"uppercase", marginBottom:4, lineHeight:1.3, overflow:"hidden", maxHeight: 30 } as React.CSSProperties,
   cardPrices:     { display:"flex", flexDirection:"column", gap:1 },
   cardPrice:      { fontSize:14, fontWeight:900, color:"#111" },
   cardPriceBs:    { fontSize:9, color:"#999" },
