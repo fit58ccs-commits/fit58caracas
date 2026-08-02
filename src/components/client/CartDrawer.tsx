@@ -663,6 +663,45 @@ export function CartDrawer({
                             <AlertCircle size={9}/>Saldo restante: {fmt$(cartTotal-pm.amount)} — añade otro método
                           </p>
                         )}
+
+                        {/* Vuelto — solo para métodos Efectivo */}
+                        {selected && (selected.name?.toLowerCase().includes("efectivo")) && pm.amount > 0 && (() => {
+                          const pagado  = pm.currency === "BS" ? pm.amount / rate : pm.amount;
+                          const vuelto  = pagado - (cartTotal - payments.slice(0,idx).reduce((s,p)=>s+(p.amount||0),0));
+                          if (pagado <= 0) return null;
+                          return (
+                            <div className="mt-2 rounded-xl border overflow-hidden"
+                              style={{ borderColor: vuelto >= 0 ? "rgba(22,163,74,0.2)" : "rgba(245,158,11,0.2)" }}>
+                              {/* Con cuánto cancela */}
+                              <div className="flex items-center justify-between px-3 py-2"
+                                style={{ background: vuelto >= 0 ? "rgba(22,163,74,0.06)" : "rgba(245,158,11,0.06)" }}>
+                                <p className="text-[9px] font-black text-neutral-500 uppercase tracking-wide m-0"
+                                  style={{ fontFamily:"var(--font-poppins),sans-serif" }}>
+                                  Cancela con
+                                </p>
+                                <p className="text-base font-black m-0" style={{ color:"#111" }}>
+                                  {pm.currency === "BS"
+                                    ? fmtBs(pm.amount, 1)
+                                    : fmt$(pm.amount)}
+                                </p>
+                              </div>
+                              {/* Vuelto */}
+                              <div className="flex items-center justify-between px-3 py-2.5 border-t"
+                                style={{ borderColor: vuelto >= 0 ? "rgba(22,163,74,0.15)" : "rgba(245,158,11,0.15)" }}>
+                                <p className="text-[9px] font-black uppercase tracking-wide m-0"
+                                  style={{ color: vuelto >= 0 ? "#16a34a" : "#d97706", fontFamily:"var(--font-poppins),sans-serif" }}>
+                                  {vuelto >= 0 ? "✓ Vuelto" : "⚠ Falta"}
+                                </p>
+                                <p className="text-xl font-black m-0"
+                                  style={{ color: vuelto >= 0 ? "#16a34a" : "#d97706" }}>
+                                  {pm.currency === "BS"
+                                    ? fmtBs(Math.abs(vuelto), rate)
+                                    : fmt$(Math.abs(vuelto))}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Datos bancarios */}
