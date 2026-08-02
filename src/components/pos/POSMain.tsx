@@ -75,13 +75,18 @@ export default function POSMain({ store, cashier, shiftStart, onLogout }: {
     setPaying(true);
     try {
       await saveOrder({
-        name:     cashier.name,
-        phone:    "",
-        address:  "Venta POS",
-        payments: payments.map(p => ({ ...p, receipt: null })),
-        totalPaid,
-        balance:  Math.max(0, change),
-        shipType: "delivery",
+        total: finalTotal,
+        cart:  [...cart],
+        form: {
+          name:     cashier?.name ?? "POS",
+          phone:    "",
+          time:     "",
+          address:  "Venta en tienda — POS",
+          method:   payments[0]?.method ?? "Efectivo USD",
+          payments: payments.map(p => ({ ...p, receipt: null })),
+          totalPaid,
+          balance:  Math.max(0, change),
+        },
       });
       // Update shift
       const method = payments[0]?.method ?? "Efectivo USD";
