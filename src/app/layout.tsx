@@ -1,18 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Script from "next/script";
-import { Poppins } from "next/font/google";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-poppins",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
-  title:       "Fit +58 Caracas — Suplementos y productos importados",
-  description: "Tienda online de suplementos deportivos y otros productos importados en Caracas, Venezuela. Envío a domicilio y envíos nacionales. Paga en Efectivo, Pago Móvil, Binance, Zinli o Zelle.",
+  title:       "Fit +58 Caracas — Suplementos y productos gourmet importados",
+  description: "Tienda online de suplementos deportivos y productos gourmet importados en Caracas, Venezuela. Envío a domicilio. Paga en Bs., Zelle o Pago Móvil.",
   manifest:    "/manifest.json",
   keywords:    ["suplementos Caracas", "proteína Venezuela", "tienda gourmet Caracas", "Fit 58", "suplementos deportivos Venezuela", "comprar proteína Caracas"],
   robots:      { index: true, follow: true },
@@ -21,69 +13,130 @@ export const metadata: Metadata = {
     locale:      "es_VE",
     url:         "https://fit58caracas.vercel.app",
     siteName:    "Fit +58 Caracas",
-    title:       "Fit +58 Caracas — Suplementos y productos importados",
-    description: "Tienda online de suplementos deportivos y otros productos importados en Caracas, Venezuela. Envío a domicilio y envíos nacionales. Paga en Efectivo, Pago Móvil, Binance, Zinli o Zelle.",
+    title:       "Fit +58 Caracas — Suplementos y productos gourmet importados",
+    description: "Tienda online de suplementos deportivos y productos gourmet importados en Caracas. Envío a domicilio.",
     images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "Fit +58 Caracas" }],
   },
   twitter: {
     card:        "summary_large_image",
-    title:       "Fit +58 Caracas — Suplementos y productos importados",
-    description: "Tienda online de suplementos deportivos y otros productos importados en Caracas, Venezuela. Envío a domicilio y envíos nacionales.",
+    title:       "Fit +58 Caracas — Suplementos y productos gourmet importados",
+    description: "Tienda online de suplementos deportivos y productos gourmet importados en Caracas.",
     images:      ["/icons/icon-512.png"],
   },
   appleWebApp: {
-    capable:        true,
-    statusBarStyle: "default",
-    title:          "Fit +58 Caracas",
+    capable:          true,
+    statusBarStyle:   "default",
+    title:            "Fit +58 Caracas",
   },
   icons: {
     icon: [
-      { url: "/icons/icon-96.png",  sizes: "96x96",   type: "image/png" },
-      { url: "/icons/icon-144.png", sizes: "144x144", type: "image/png" },
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple:   [{ url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" }],
+    apple: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     shortcut: "/icons/icon-192.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor:   "#111111",
-  width:        "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
+  themeColor:         "#111111",
+  width:              "device-width",
+  initialScale:       1,
+  maximumScale:       1,
+  userScalable:       false,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const schemaOrg = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": ["LocalBusiness", "Store"],
+        "@id": "https://fit58caracas.vercel.app/#business",
+        "name": "Fit +58 Caracas",
+        "description": "Tienda online de suplementos deportivos y productos gourmet importados en Caracas, Venezuela.",
+        "url": "https://fit58caracas.vercel.app",
+        "logo": "https://fit58caracas.vercel.app/icons/icon-512.png",
+        "image": "https://fit58caracas.vercel.app/icons/icon-512.png",
+        "telephone": "+58-414-1013137",
+        "priceRange": "€€",
+        "currenciesAccepted": "USD, VES",
+        "paymentAccepted": "Zelle, Pago Móvil, Binance Pay, Efectivo",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Caracas",
+          "addressRegion": "Distrito Capital",
+          "addressCountry": "VE"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "10.4806",
+          "longitude": "-66.9036"
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+          "opens": "08:00",
+          "closes": "20:00"
+        },
+        "sameAs": [
+          "https://wa.me/584141013137"
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Suplementos y Gourmet",
+          "itemListElement": [
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Suplementos deportivos importados" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Proteínas y vitaminas" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Productos gourmet importados" } }
+          ]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://fit58caracas.vercel.app/#website",
+        "url": "https://fit58caracas.vercel.app",
+        "name": "Fit +58 Caracas",
+        "description": "Tienda online de suplementos deportivos y productos gourmet importados",
+        "publisher": { "@id": "https://fit58caracas.vercel.app/#business" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://fit58caracas.vercel.app/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  };
+
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es">
       <head>
         <link rel="icon"             href="/favicon.ico" type="image/x-icon"/>
         <link rel="icon"             href="/icons/icon-192.png" type="image/png"/>
         <link rel="shortcut icon"    href="/favicon.ico"/>
-        <link rel="apple-touch-icon" href="/icons/icon-180.png"/>
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png"/>
+        <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
         <link rel="manifest"         href="/manifest.json"/>
-        {/* Preconnect — reduce DNS + TLS handshake time for banner images */}
-        <link rel="preconnect"    href="https://images.unsplash.com"/>
-        <link rel="dns-prefetch"  href="https://images.unsplash.com"/>
-        <link rel="preconnect"    href={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}  crossOrigin="anonymous"/>
-        <link rel="dns-prefetch"  href={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/>
-        <meta name="mobile-web-app-capable"              content="yes"/>
-        <meta name="apple-mobile-web-app-capable"        content="yes"/>
+        <meta name="mobile-web-app-capable" content="yes"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-        <meta name="apple-mobile-web-app-title"          content="Fit +58"/>
+        <meta name="apple-mobile-web-app-title" content="Fit +58"/>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+        />
       </head>
-      {/* bg #F5ECE4 = color real de la app — evita flash de color distinto */}
-      <body suppressHydrationWarning
-        className={`${poppins.variable} font-sans antialiased`}>
+      <body className="font-[Inter,sans-serif] bg-[#f0f2f5] antialiased">
         {children}
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js', { scope: '/' })
-              .catch(() => {});
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js').then(
+                function(reg) { console.log('[PWA] SW registrado:', reg.scope); },
+                function(err) { console.warn('[PWA] SW error:', err); }
+              );
+            });
           }
         `}</Script>
       </body>

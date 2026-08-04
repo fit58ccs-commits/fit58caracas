@@ -3,11 +3,11 @@ import type { Product, Banner, DesignConfig, PaymentMethod } from "./types";
 export const DEFAULT_CATEGORIES = ["Aceites","Bebidas","Dulces","Frutos","Pastas","Pastillas","Suplementos"];
 
 export const DEFAULT_PAYMENT_METHODS: PaymentMethod[] = [
-  { id:"pm1", name:"Pago Móvil",    details:"Banco: Banesco\nNúmero: 0414-1013137\nCédula: V-12345678\nNombre: Anthony Rivera", active:true, needsReceipt:true,  amountCurrency:"BS",  copyFields:[] },
-  { id:"pm2", name:"Zelle",         details:"Email: pagos@fit58.com\nNombre: Fit +58 Caracas",                                  active:true, needsReceipt:true,  amountCurrency:"EUR", copyFields:[] },
-  { id:"pm3", name:"Binance",       details:"UID: 123456789\nMoneda: USDT (TRC20)",                                             active:true, needsReceipt:true,  amountCurrency:"EUR", copyFields:[] },
-  { id:"pm4", name:"Efectivo (USD)",details:"Coordinar entrega con pago en mano",                                              active:true, needsReceipt:false, amountCurrency:"EUR", copyFields:[] },
-  { id:"pm5", name:"Efectivo (Bs)", details:"Coordinar entrega con pago en mano",                                              active:true, needsReceipt:false, amountCurrency:"BS",  copyFields:[] },
+  { id:"pm1", name:"Pago Móvil",    details:"Banco: Banesco\nNúmero: 0414-1013137\nCédula: V-12345678\nNombre: Anthony Rivera", active:true, needsReceipt:true  },
+  { id:"pm2", name:"Zelle",         details:"Email: pagos@fit58.com\nNombre: Fit +58 Caracas",                                  active:true, needsReceipt:true  },
+  { id:"pm3", name:"Binance",       details:"UID: 123456789\nMoneda: USDT (TRC20)",                                             active:true, needsReceipt:true  },
+  { id:"pm4", name:"Efectivo (USD)",details:"Coordinar entrega con pago en mano",                                              active:true, needsReceipt:false },
+  { id:"pm5", name:"Efectivo (Bs)", details:"Coordinar entrega con pago en mano",                                              active:true, needsReceipt:false },
 ];
 
 export const DEFAULT_TICKER_ITEMS = [

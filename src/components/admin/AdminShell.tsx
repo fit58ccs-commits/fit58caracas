@@ -1,9 +1,9 @@
 "use client";
-import { LayoutDashboard, Package, ClipboardList, TrendingUp, Palette, Image, Search, Menu, X, Star, LogOut, BarChart2, ShoppingBag, Users, Gift } from "lucide-react";
+import { LayoutDashboard, Package, ClipboardList, TrendingUp, Palette, Image, Search, Menu, X, Star, LogOut, BarChart2, ShoppingBag, Users } from "lucide-react";
 import { useState } from "react";
 import type { DesignConfig } from "@/lib/types";
 
-export type AdminSection = "bi" | "banners" | "inventory" | "purchases" | "orders" | "reviews" | "rates" | "design" | "referrals" | "giftcards";
+export type AdminSection = "bi" | "banners" | "inventory" | "purchases" | "orders" | "reviews" | "rates" | "design" | "referrals";
 
 const NAV: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: "bi",        label: "BI",         icon: <BarChart2 size={16} /> },
@@ -11,7 +11,6 @@ const NAV: { id: AdminSection; label: string; icon: React.ReactNode }[] = [
   { id: "purchases", label: "Compras",    icon: <ShoppingBag size={16} /> },
   { id: "orders",    label: "Pedidos",    icon: <ClipboardList size={16} /> },
   { id: "referrals", label: "Referidos",  icon: <Users size={16} /> },
-  { id: "giftcards", label: "Tarjetas",    icon: <Gift size={16} /> },
   { id: "reviews",   label: "Reseñas",    icon: <Star size={16} /> },
   { id: "rates",     label: "Tasas",      icon: <TrendingUp size={16} /> },
   { id: "design",    label: "Diseño",     icon: <Palette size={16} /> },

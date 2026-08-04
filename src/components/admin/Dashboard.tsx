@@ -1,27 +1,4 @@
 "use client";
-
-const fmtD = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
-};
-const fmtDT = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-};
-const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-const DAYS   = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-
-
-const fmtDate = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
-};
-const fmtDateTime = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  const hh = String(dt.getHours()).padStart(2,"0");
-  const mi = String(dt.getMinutes()).padStart(2,"0");
-  return `${fmtDate(dt)}, ${hh}:${mi}`;
-};
 import { DollarSign, Package, ClipboardList, AlertCircle } from "lucide-react";
 import { fmt$ } from "@/lib/store";
 import type { Order, Product } from "@/lib/types";
@@ -56,7 +33,7 @@ export function Dashboard({ products, orders }: { products: Product[]; orders: O
     <div className="flex flex-col gap-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-black text-black uppercase tracking-tight m-0">Dashboard</h1>
-        <p className="text-xs text-neutral-400 mt-1">Vista general · {fmtDate(new Date())}</p>
+        <p className="text-xs text-neutral-400 mt-1">Vista general · {new Date().toLocaleDateString("es-VE",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</p>
       </div>
 
       {/* ① KPIs */}
@@ -236,7 +213,7 @@ export function Dashboard({ products, orders }: { products: Product[]; orders: O
             <div key={o.id} className="flex justify-between items-center mb-3.5 pb-3.5 border-b border-neutral-50">
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-black m-0 mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap">{o.form?.name || "Sin nombre"}</p>
-                <p className="text-[10px] text-neutral-400 m-0">{fmtDate(o.date)}</p>
+                <p className="text-[10px] text-neutral-400 m-0">{new Date(o.date).toLocaleDateString()}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-sm font-black text-green-600">{fmt$(o.total)}</span>

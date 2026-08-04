@@ -1,26 +1,4 @@
 "use client";
-
-const fmtD = (d: string | Date) => { const dt = typeof d==="string"?new Date(d):d; return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`; };
-const fmtDT = (d: string | Date) => { const dt = typeof d==="string"?new Date(d):d; return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`; };
-
-// Formatea fecha sin locale — evita hydration mismatch server/cliente
-const fmtDate = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  const dd = String(dt.getDate()).padStart(2,"0");
-  const mm = String(dt.getMonth()+1).padStart(2,"0");
-  const yy = dt.getFullYear();
-  return `${dd}/${mm}/${yy}`;
-};
-const fmtDateTime = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  const dd = String(dt.getDate()).padStart(2,"0");
-  const mm = String(dt.getMonth()+1).padStart(2,"0");
-  const yy = dt.getFullYear();
-  const hh = String(dt.getHours()).padStart(2,"0");
-  const mi = String(dt.getMinutes()).padStart(2,"0");
-  return `${dd}/${mm}/${yy}, ${hh}:${mi}`;
-};
-
 import { useState, useRef, useEffect } from "react";
 import {
   X, Minus, Plus, ChevronRight, Check, Phone, User, Clock,
@@ -39,7 +17,6 @@ type Step = typeof STEPS[number];
 interface CartDrawerProps {
   cart:        CartItem[];
   rate:        number;
-  rateBCV:     number;
   cartTotal:   number;
   onRemove:    (id: string) => void;
   onUpdateQty: (id: string, delta: number) => void;
@@ -49,20 +26,15 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({
-  cart, rate, rateBCV, cartTotal, onRemove, onUpdateQty, onClose, onSaveOrder, design,
+  cart, rate, cartTotal, onRemove, onUpdateQty, onClose, onSaveOrder, design,
 }: CartDrawerProps) {
   const [step,     setStep]     = useState<Step>("cart");
   const [form,     setForm]     = useState({ name:"", phone:"", time:"", address:"", lat:10.4806, lng:-66.9036 });
-  const [shipType, setShipType] = useState<"delivery"|"nacional">("delivery");
-  const [agency,   setAgency]   = useState<"Zoom"|"MRW"|"Liberty Express"|"">("");
-  const [shipForm, setShipForm] = useState({ nombre:"", cedula:"", telefono:"", estado:"", agencia:"", codAgencia:"" });
-  const SF = (k: string, v: string) => setShipForm(f => ({ ...f, [k]: v }));
   const [payments, setPayments] = useState<PaymentEntry[]>([{ method:"", amount:0, receipt:null }]);
   const [mapLoaded,  setMapLoaded]  = useState(false);
   const [locating,   setLocating]   = useState(false);
   const [orderId,    setOrderId]    = useState("");
   const [copied,     setCopied]     = useState(false);
-  const [copiedIdx,  setCopiedIdx]  = useState<number|null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [referralId,   setReferralId]   = useState("");
   const [referralDisc, setReferralDisc] = useState(0);
@@ -147,18 +119,14 @@ export function CartDrawer({
     reader.readAsDataURL(file);
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     const mapsLink = `https://maps.google.com/?q=${form.lat},${form.lng}`;
     const oid = Date.now().toString(36).toUpperCase();
     setOrderId(oid);
 
     const orderForm = {
-      name:    shipType === "delivery" ? form.name    : shipForm.nombre,
-      phone:   shipType === "delivery" ? form.phone   : shipForm.telefono,
-      time:    shipType === "delivery" ? form.time    : "",
-      address: shipType === "delivery" ? form.address : `${shipForm.estado} — ${agency}: ${shipForm.agencia}${agency === "MRW" ? " (Cód: "+shipForm.codAgencia+")" : ""}`,
-      lat: form.lat, lng: form.lng,
-      shipType, agency: agency || undefined,
+      name: form.name, phone: form.phone, time: form.time,
+      address: form.address, lat: form.lat, lng: form.lng,
       method:    mainMethod,
       receipt:   payments[0]?.receipt || null,
       payments,
@@ -168,45 +136,36 @@ export function CartDrawer({
 
     onSaveOrder({ cart, total: finalTotal, form: orderForm, mapsLink });
 
-    // Registrar uso del código de referido (sin await, no bloquea)
+    // Registrar uso del código de referido y acumular descuento para el referidor
     if (referralId) {
       import("@/app/utils/supabase/client").then(({ createClient }) => {
-        createClient().rpc("use_referral_code", { referral_id: referralId, order_id: oid });
+        const sb = createClient();
+        sb.rpc("use_referral_code", { referral_id: referralId, order_id: oid });
       });
     }
 
-    // Generar código propio ANTES de armar el mensaje — await garantiza que esté listo
-    let generatedCode = "";
-    try {
-      const { createClient } = await import("@/app/utils/supabase/client");
+    // Generar código propio del cliente para que él también pueda referir
+    import("@/app/utils/supabase/client").then(({ createClient }) => {
       const sb = createClient();
-      const { data: existing } = await sb
-        .from("referrals").select("code")
-        .eq("owner_phone", form.phone).eq("active", true)
-        .limit(1).maybeSingle();
-      if (existing?.code) {
-        generatedCode = existing.code;
-        setMyRefCode(existing.code);
-      } else {
-        const clean = (form.name.trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)) || "CLI";
-        const rand  = Math.random().toString(36).slice(2,5).toUpperCase();
-        const code  = `FIT-${clean}-${rand}`;
-        const { data: inserted, error: ie } = await sb
-          .from("referrals").insert({
-            code, owner_name: form.name, owner_phone: form.phone,
-            discount: 3, reward_pct: 2.5, uses: 0, active: true, type: "client",
-          }).select("code").single();
-        if (ie) console.warn("[ref]", ie.message);
-        else if (inserted?.code) {
-          generatedCode = inserted.code;
-          setMyRefCode(inserted.code);
-        }
-      }
-    } catch (e) { console.warn("[ref]", e); }
+      const clean = form.name.trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5);
+      const rand  = Math.random().toString(36).slice(2,5).toUpperCase();
+      const code  = `FIT-${clean}-${rand}`;
+      sb.from("referrals").upsert({
+        code,
+        owner_name:  form.name,
+        owner_phone: form.phone,
+        discount:    3,    // 3% para el cliente nuevo que lo use
+        referrer_discount_per_use: 2.5, // 2.5% acumulable para el referidor
+        uses:        0,
+        active:      true,
+      }, { onConflict: "owner_phone", ignoreDuplicates: true })
+      .select("code").single()
+      .then(({ data }) => { if (data?.code) setMyRefCode(data.code); });
+    });
 
-    // Armar mensaje WhatsApp con generatedCode ya disponible
+    // Armar mensaje WhatsApp
     const paymentLines = payments.filter(p => p.method).map(p =>
-      `💳 ${p.method}: ${fmt$(p.amount)}`
+      `💳 ${p.method}: ${fmt$(p.amount)}${p.amount < cartTotal && payments.length > 1 ? "" : ""}`
     );
 
     const msg = encodeURIComponent([
@@ -216,26 +175,13 @@ export function CartDrawer({
       ...cart.map(i => `• ${i.name} ×${i.qty} → ${fmt$(i.price * i.qty)}`),
       "─────────────────────────",
       `💰 *Total: ${fmt$(finalTotal)} | ${fmtBs(finalTotal, rate)}*`,
-      referralCode ? `🏷️ Código usado: ${referralCode} (-${referralDisc}%)` : "",
+      referralCode ? `🏷️ Código referido: ${referralCode} (-${referralDisc}%)` : "",
       ...paymentLines,
       balance > 0 ? `⚠️ Saldo pendiente: ${fmt$(balance)}` : `✅ Pagado completo`,
       "─────────────────────────",
-      shipType === "nacional"
-        ? `📦 ENVÍO NACIONAL — ${agency}`
-        : `🏠 Delivery`,
-      shipType === "delivery" ? `👤 ${form.name}` : `👤 ${shipForm.nombre}`,
-      shipType === "delivery" ? `📱 ${form.phone}` : `📱 ${shipForm.telefono}`,
-      ...(shipType === "delivery"
-        ? [`⏰ ${form.time}`, `📍 ${form.address}`]
-        : [
-            `🪪 Cédula/Rif: ${shipForm.cedula}`,
-            `📍 ${shipForm.estado}`,
-            `🏢 Agencia: ${shipForm.agencia}`,
-            ...(agency === "MRW" ? [`🔢 Código: ${shipForm.codAgencia}`] : []),
-          ]),
-      `🗺 ${mapsLink}`,
-      generatedCode ? `─────────────────────────\n🎁 Código referido del cliente: *${generatedCode}*\nCompártelo: 3% OFF a sus amigos.` : "",
-    ].filter(Boolean).join("\n"));
+      `👤 ${form.name}`, `📱 ${form.phone}`, `⏰ ${form.time}`,
+      `📍 ${form.address}`, `🗺 ${mapsLink}`,
+    ].join("\n"));
 
     import("@/lib/notifications").then(({ notifyNewOrder }) => {
       notifyNewOrder({ id: oid, total: cartTotal, cart, form: orderForm });
@@ -252,7 +198,7 @@ export function CartDrawer({
     const text = [
       `🧾 TICKET DE COMPRA — Fit +58 Caracas`,
       `🆔 Pedido #${orderId}`,
-      `📅 Fecha: ${fmtDateTime(new Date())}`,
+      `📅 Fecha: ${new Date().toLocaleString("es-VE")}`,
       "─────────────────────────",
       itemLines,
       "─────────────────────────",
@@ -263,22 +209,13 @@ export function CartDrawer({
       payLines,
       balance > 0 ? `⚠️ SALDO PENDIENTE: ${fmt$(balance)}` : `✅ PAGO COMPLETADO`,
       "─────────────────────────",
-      shipType === "nacional"
-        ? `📦 ENVÍO NACIONAL — ${agency}`
-        : `🏠 Delivery`,
-      shipType === "delivery" ? `👤 Cliente: ${form.name}` : `👤 Cliente: ${shipForm.nombre}`,
-      shipType === "delivery" ? `📱 Teléfono: ${form.phone}` : `📱 Teléfono: ${shipForm.telefono}`,
-      ...(shipType === "delivery"
-        ? [`⏰ Horario: ${form.time}`, `📍 Dirección: ${form.address}`]
-        : [
-            `🪪 Cédula/Rif: ${shipForm.cedula}`,
-            `📍 Estado/Ciudad: ${shipForm.estado}`,
-            `🏢 Agencia: ${shipForm.agencia}`,
-            ...(agency === "MRW" ? [`🔢 Código agencia: ${shipForm.codAgencia}`] : []),
-          ]),
+      `👤 Cliente: ${form.name}`,
+      `📱 Teléfono: ${form.phone}`,
+      `⏰ Horario: ${form.time}`,
+      `📍 Dirección: ${form.address}`,
       "─────────────────────────",
       `Guarda este ticket para consultar el estado de tu pedido.`,
-      myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra que generes.` : "",
+      myRefCode ? `\n🎁 TU CÓDIGO REFERIDO: ${myRefCode}\nCompártelo: tus amigos obtienen 3% OFF y tú acumulas 2.5% por cada compra.` : "",
     ].filter(Boolean).join("\n");
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(()=>setCopied(false), 2000); });
   };
@@ -290,7 +227,7 @@ export function CartDrawer({
   return (
     <div className="fixed inset-0 z-[150] flex">
       <div className="animate-overlay-in absolute inset-0 bg-black/45 backdrop-blur-md" onClick={step==="success"?onClose:undefined}/>
-      <div className="animate-drawer-in glass absolute right-0 top-0 bottom-0 w-full max-w-[440px] flex flex-col shadow-2xl overflow-y-auto rounded-none" style={{ paddingBottom: 72 }}>
+      <div className="animate-drawer-in glass absolute right-0 top-0 bottom-0 w-full max-w-[440px] flex flex-col shadow-2xl overflow-y-auto rounded-none">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/40 sticky top-0 bg-white/88 backdrop-blur-2xl z-10">
@@ -298,7 +235,7 @@ export function CartDrawer({
             <p className="text-[9px] font-black text-neutral-400 tracking-[2px] uppercase mb-0.5">
               {step==="cart"?"Carrito":step==="delivery"?"Datos y Ubicación":step==="payment"?"Pago":"Pedido Confirmado"}
             </p>
-            <h2 className="text-lg font-black text-black uppercase tracking-tight" style={{ fontFamily:"DM Sans, system-ui, sans-serif" }}>
+            <h2 className="text-lg font-black text-black uppercase tracking-tight">
               {step==="cart"   ? `${cart.length} PRODUCTO${cart.length!==1?"S":""}`
                :step==="delivery" ? "¿DÓNDE TE LO ENVIAMOS?"
                :step==="payment"  ? "MÉTODO DE PAGO"
@@ -396,125 +333,39 @@ export function CartDrawer({
           {/* ── DELIVERY ── */}
           {step === "delivery" && (
             <>
-              {/* Selector Delivery / Envío Nacional */}
-              <div className="glass-card rounded-2xl p-1 flex gap-1">
-                {(["delivery","nacional"] as const).map(t => (
-                  <button key={t} onClick={() => setShipType(t)}
-                    className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wide border-none cursor-pointer transition-all"
-                    style={{
-                      background: shipType === t ? "#111" : "transparent",
-                      color:      shipType === t ? "#fff" : "#888",
-                    }}>
-                    {t === "delivery" ? "🏠 Delivery" : "📦 Envío Nacional"}
-                  </button>
-                ))}
+              {[
+                { label:"Nombre completo", key:"name",  placeholder:"Juan Pérez",       icon:<User size={13}/> },
+                { label:"WhatsApp",        key:"phone", placeholder:"+58 414 000 0000",  icon:<Phone size={13}/> },
+                { label:"Hora límite",     key:"time",  placeholder:"Hasta las 6:00 PM", icon:<Clock size={13}/> },
+              ].map(f => (
+                <div key={f.key}>
+                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1">{f.icon}{f.label}</label>
+                  <input type="text" placeholder={f.placeholder} value={form[f.key as "name"|"phone"|"time"]} onChange={e=>F(f.key,e.target.value)} className={inputCls}/>
+                </div>
+              ))}
+              <div>
+                <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1"><MapPin size={13}/>Dirección</label>
+                <textarea placeholder="Urbanización, calle, edificio, apartamento..." value={form.address} onChange={e=>F("address",e.target.value)} rows={2} className={inputCls+" resize-none"}/>
               </div>
-
-              {/* ── DELIVERY local ── */}
-              {shipType === "delivery" && (<>
-                {[
-                  { label:"Nombre completo", key:"name",  placeholder:"Juan Pérez",       icon:<User size={13}/> },
-                  { label:"WhatsApp",        key:"phone", placeholder:"+58 414 000 0000",  icon:<Phone size={13}/> },
-                  { label:"Hora límite",     key:"time",  placeholder:"Hasta las 6:00 PM", icon:<Clock size={13}/> },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1">{f.icon}{f.label}</label>
-                    <input type="text" placeholder={f.placeholder} value={form[f.key as "name"|"phone"|"time"]} onChange={e=>F(f.key,e.target.value)} className={inputCls}/>
-                  </div>
-                ))}
-                <div>
-                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5 flex items-center gap-1"><MapPin size={13}/>Dirección</label>
-                  <textarea placeholder="Urbanización, calle, edificio, apartamento..." value={form.address} onChange={e=>F("address",e.target.value)} rows={2} className={inputCls+" resize-none"}/>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase flex items-center gap-1">
+                    <MapPin size={13} className="text-green-600"/> Ubicación GPS
+                  </label>
+                  <button onClick={goToMyLocation} disabled={locating}
+                    className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg border-none cursor-pointer">
+                    <Navigation size={11}/> {locating?"Buscando...":"Mi ubicación"}
+                  </button>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase flex items-center gap-1">
-                      <MapPin size={13} className="text-green-600"/> Ubicación GPS
-                    </label>
-                    <button onClick={goToMyLocation} disabled={locating}
-                      className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg border-none cursor-pointer">
-                      <Navigation size={11}/> {locating?"Buscando...":"Mi ubicación"}
-                    </button>
-                  </div>
-                  <div ref={mapRef} className="h-[200px] rounded-xl overflow-hidden border border-neutral-200/80 bg-neutral-100"/>
-                  {!mapLoaded && <div className="text-center text-[10px] text-neutral-400 mt-1">Cargando mapa...</div>}
-                  <div className="glass-card p-2.5 rounded-lg text-[10px] text-neutral-500 mt-1.5 flex items-center gap-1.5">
-                    <MapPin size={11} className="text-green-600"/> Lat: {form.lat} · Lng: {form.lng}
-                  </div>
+                <div ref={mapRef} className="h-[200px] rounded-xl overflow-hidden border border-neutral-200/80 bg-neutral-100"/>
+                {!mapLoaded && <div className="text-center text-[10px] text-neutral-400 mt-1">Cargando mapa...</div>}
+                <div className="glass-card p-2.5 rounded-lg text-[10px] text-neutral-500 mt-1.5 flex items-center gap-1.5">
+                  <MapPin size={11} className="text-green-600"/> Lat: {form.lat} · Lng: {form.lng}
                 </div>
-              </>)}
-
-              {/* ── ENVÍO NACIONAL ── */}
-              {shipType === "nacional" && (<>
-
-                {/* Nota cobro destino */}
-                <div className="rounded-xl px-4 py-3 flex items-center gap-2"
-                  style={{ background: "rgba(17,17,17,0.05)" }}>
-                  <span className="text-lg">📦</span>
-                  <div>
-                    <p className="text-[10px] font-black text-black uppercase tracking-wide m-0">Cobro en destino</p>
-                    <p className="text-[9px] text-neutral-500 m-0">El flete lo cancelas al recibir el paquete en la agencia.</p>
-                  </div>
-                </div>
-
-                {/* Selector de agencia */}
-                <div>
-                  <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">Agencia de envío</label>
-                  <div className="flex gap-2">
-                    {(["Zoom","MRW","Liberty Express"] as const).map(a => (
-                      <button key={a} onClick={() => { setAgency(a); SF("codAgencia",""); }}
-                        className="flex-1 py-2.5 rounded-xl text-[10px] font-black border-none cursor-pointer transition-all"
-                        style={{
-                          background: agency === a ? "#111" : "rgba(17,17,17,0.06)",
-                          color:      agency === a ? "#fff" : "#555",
-                        }}>
-                        {a}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Campos envío nacional */}
-                {agency && (<>
-                  {[
-                    { label:"Nombre y Apellido",            key:"nombre",   placeholder:"Juan Pérez",         type:"text"   },
-                    { label:"Cédula / Rif",                  key:"cedula",   placeholder:"V-12345678",          type:"text"   },
-                    { label:"Teléfono",                      key:"telefono", placeholder:"+58 414 000 0000",    type:"tel"    },
-                    { label:"Estado o Ciudad",               key:"estado",   placeholder:"Caracas, Miranda...", type:"text"   },
-                    { label:`Nombre de la Agencia (Ej: ${agency} Las Mercedes)`, key:"agencia", placeholder:`${agency} LAS MERCEDES`, type:"text" },
-                  ].map(f => (
-                    <div key={f.key}>
-                      <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">{f.label}</label>
-                      <input type={f.type} placeholder={f.placeholder}
-                        value={shipForm[f.key as keyof typeof shipForm]}
-                        onChange={e => SF(f.key, e.target.value)}
-                        className={inputCls}/>
-                    </div>
-                  ))}
-
-                  {/* Código de agencia — solo MRW */}
-                  {agency === "MRW" && (
-                    <div>
-                      <label className="block text-[9px] font-black text-neutral-400 tracking-[1.5px] uppercase mb-1.5">Código Agencia MRW</label>
-                      <input type="text" placeholder="Ej: 0001"
-                        value={shipForm.codAgencia}
-                        onChange={e => SF("codAgencia", e.target.value)}
-                        className={inputCls}/>
-                    </div>
-                  )}
-                </>)}
-              </>)}
-
-              {/* Botones */}
+              </div>
               <div className="flex gap-2.5 mt-1">
                 <button onClick={()=>setStep("cart")} className={secondBtn}>← VOLVER</button>
-                <button
-                  onClick={()=>setStep("payment")}
-                  disabled={
-                    shipType === "delivery"
-                      ? !form.name || !form.phone || !form.address
-                      : !agency || !shipForm.nombre || !shipForm.cedula || !shipForm.telefono || !shipForm.estado || !shipForm.agencia || (agency === "MRW" && !shipForm.codAgencia)
-                  }
+                <button onClick={()=>setStep("payment")} disabled={!form.name||!form.phone||!form.address}
                   className={primaryBtn+" flex-1"} style={{width:"auto"}}>PAGO →</button>
               </div>
             </>
@@ -587,150 +438,28 @@ export function CartDrawer({
                       {/* Monto */}
                       <div>
                         <label className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wide mb-1">
-                          {selected?.amountCurrency === "BS" ? "Monto a abonar en Bs." : "Monto a pagar con este método"}
+                          Monto a pagar con este método
                         </label>
-                        <div className="flex items-center gap-2">
-                          {selected?.amountCurrency === "BS" && (
-                            <span className="text-sm font-black text-neutral-500 shrink-0">Bs.</span>
-                          )}
-                          <input type="number" step="100" min="0"
-                            value={pm.amount || ""}
-                            onChange={e=>{
-                              const amount = parseFloat(e.target.value)||0;
-                              setPayments(prev=>prev.map((p,i)=>i===idx?{...p,amount}:p));
-                            }}
-                            className="field-input border border-neutral-200/80 px-3 py-2.5 text-sm bg-white/72 rounded-lg font-[inherit] flex-1"
-                            placeholder={selected?.amountCurrency === "BS"
-                              ? `${(cartTotal * rate).toFixed(0)}`
-                              : `${fmt$(autoAmt ?? cartTotal)}`}/>
-                        </div>
-
-                        {/* Bloque BS — abono + equivalencia + saldo */}
-                        {selected?.amountCurrency === "BS" && pm.amount > 0 && (() => {
-                          const totalBs   = cartTotal * rate;
-                          const abonoBs   = Math.min(pm.amount, totalBs);
-                          const equivEur  = abonoBs / rateBCV;
-                          const restoBs   = Math.max(0, totalBs - abonoBs);
-                          const restoEur  = restoBs / rateBCV;
-                          const completo  = restoBs === 0;
-                          return (
-                            <div className="mt-2 rounded-xl overflow-hidden border border-neutral-200/60"
-                              style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
-
-                              {/* Abono */}
-                              <div className="flex items-center justify-between px-4 py-3"
-                                style={{ background: "rgba(17,17,17,0.05)" }}>
-                                <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide m-0">
-                                  Abono en Bs.
-                                </p>
-                                <p className="text-xl font-black text-black m-0">
-                                  {fmtBs(abonoBs, 1)}
-                                </p>
-                              </div>
-
-                              {/* Equivalencia BCV */}
-                              <div className="flex items-center justify-between px-4 py-2.5 border-t border-neutral-200/60">
-                                <div>
-                                  <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide m-0 mb-0.5">
-                                    Equivale en divisa
-                                  </p>
-                                  <p className="text-[10px] text-neutral-400 m-0">
-                                    {fmtBs(abonoBs, 1)} ÷ {rateBCV.toLocaleString("es-VE", {minimumFractionDigits:2})} (BCV Euro)
-                                  </p>
-                                </div>
-                                <p className="text-base font-black text-black m-0">{fmt$(equivEur)}</p>
-                              </div>
-
-                              {/* Saldo restante */}
-                              <div className="flex items-center justify-between px-4 py-2.5 border-t border-neutral-200/60">
-                                <p className="text-[9px] font-black uppercase tracking-wide m-0"
-                                  style={{ color: completo ? "#16a34a" : "#d97706" }}>
-                                  {completo ? "Pago completo" : "Saldo restante"}
-                                </p>
-                                <p className="text-base font-black m-0"
-                                  style={{ color: completo ? "#16a34a" : "#d97706" }}>
-                                  {completo ? "✓" : `${fmtBs(restoBs, 1)} / ${fmt$(restoEur)}`}
-                                </p>
-                              </div>
-
-                            </div>
-                          );
-                        })()}
-
-                        {/* Alerta saldo para métodos EUR */}
-                        {(!selected || selected.amountCurrency !== "BS") && idx===0 && payments.length===1 && pm.amount > 0 && pm.amount < cartTotal && (
+                        <input type="number" step="0.01" min="0"
+                          value={pm.amount || ""}
+                          onChange={e=>{
+                            const amount = parseFloat(e.target.value)||0;
+                            setPayments(prev=>prev.map((p,i)=>i===idx?{...p,amount}:p));
+                          }}
+                          className="field-input border border-neutral-200/80 px-3 py-2.5 text-sm bg-white/72 rounded-lg font-[inherit]"
+                          placeholder={`${fmt$(autoAmt ?? cartTotal)}`}/>
+                        {idx===0 && payments.length===1 && pm.amount > 0 && pm.amount < cartTotal && (
                           <p className="text-[9px] text-amber-600 mt-1 flex items-center gap-1">
                             <AlertCircle size={9}/>Saldo restante: {fmt$(cartTotal-pm.amount)} — añade otro método
                           </p>
                         )}
-
-                        {/* Vuelto — solo para métodos Efectivo */}
-                        {selected && (selected.name?.toLowerCase().includes("efectivo")) && pm.amount > 0 && (() => {
-                          const isBs   = selected.amountCurrency === "BS";
-                          const pagado = isBs ? pm.amount / rate : pm.amount;
-                          const vuelto = pagado - (cartTotal - payments.slice(0,idx).reduce((s,p)=>s+(p.amount||0),0));
-                          if (pagado <= 0) return null;
-                          return (
-                            <div className="mt-2 rounded-xl border overflow-hidden"
-                              style={{ borderColor: vuelto >= 0 ? "rgba(22,163,74,0.2)" : "rgba(245,158,11,0.2)" }}>
-                              <div className="flex items-center justify-between px-3 py-2"
-                                style={{ background: vuelto >= 0 ? "rgba(22,163,74,0.06)" : "rgba(245,158,11,0.06)" }}>
-                                <p className="text-[9px] font-black text-neutral-500 uppercase tracking-wide m-0"
-                                  style={{ fontFamily:"var(--font-poppins),sans-serif" }}>
-                                  Cancela con
-                                </p>
-                                <p className="text-base font-black m-0" style={{ color:"#111" }}>
-                                  {isBs ? fmtBs(pm.amount, 1) : fmt$(pm.amount)}
-                                </p>
-                              </div>
-                              <div className="flex items-center justify-between px-3 py-2.5 border-t"
-                                style={{ borderColor: vuelto >= 0 ? "rgba(22,163,74,0.15)" : "rgba(245,158,11,0.15)" }}>
-                                <p className="text-[9px] font-black uppercase tracking-wide m-0"
-                                  style={{ color: vuelto >= 0 ? "#16a34a" : "#d97706", fontFamily:"var(--font-poppins),sans-serif" }}>
-                                  {vuelto >= 0 ? "✓ Vuelto" : "⚠ Falta"}
-                                </p>
-                                <p className="text-xl font-black m-0"
-                                  style={{ color: vuelto >= 0 ? "#16a34a" : "#d97706" }}>
-                                  {isBs ? fmtBs(Math.abs(vuelto) * rate, 1) : fmt$(Math.abs(vuelto))}
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })()}
                       </div>
 
                       {/* Datos bancarios */}
                       {selected && selected.details && (
                         <div className="bg-neutral-50/80 rounded-lg p-3">
                           <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wide mb-1.5">Datos para {selected.name}</p>
-                          <pre className="text-[12px] font-black text-neutral-800 whitespace-pre-wrap leading-relaxed m-0" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>{selected.details}</pre>
-                          <button
-                            onClick={async () => {
-                              const allLines = selected.details.split("\n").filter(Boolean);
-                              const fields = (selected.copyFields ?? []);
-                              const linesToCopy = fields.length === 0 ? allLines : allLines.filter(l => fields.includes(l));
-                              const currency = selected.amountCurrency ?? "EUR";
-                              const amountStr = currency === "BS"
-                                ? fmtBs(pm.amount || cartTotal, rate)
-                                : fmt$(pm.amount || cartTotal);
-                              const txt = [
-                                `📋 Datos de pago — ${selected.name}`,
-                                ``,
-                                ...linesToCopy,
-                                ``,
-                                `💰 Monto: ${amountStr}`,
-                              ].join("\n");
-                              try { await navigator.clipboard.writeText(txt); } catch {}
-                              setCopiedIdx(idx);
-                              setTimeout(() => setCopiedIdx(null), 2000);
-                            }}
-                            className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all cursor-pointer border-none"
-                            style={{
-                              background: copiedIdx === idx ? "#16a34a" : "rgba(17,17,17,0.08)",
-                              color:      copiedIdx === idx ? "#fff"     : "#444",
-                            }}>
-                            {copiedIdx === idx ? "✓ ¡Copiado!" : "📋 Copiar datos de pago"}
-                          </button>
+                          <pre className="text-[11px] text-neutral-700 font-[inherit] whitespace-pre-wrap leading-relaxed m-0">{selected.details}</pre>
                         </div>
                       )}
 
@@ -829,7 +558,7 @@ export function CartDrawer({
                   <p className="text-[9px] font-black text-neutral-400 tracking-[2px] uppercase">🧾 Ticket de Compra</p>
                   <span className="text-[10px] font-black text-neutral-500">#{orderId}</span>
                 </div>
-                <p className="text-[10px] text-neutral-400 mb-3">{fmtDateTime(new Date())}</p>
+                <p className="text-[10px] text-neutral-400 mb-3">{new Date().toLocaleString("es-VE")}</p>
 
                 {/* Productos comprados */}
                 <div className="flex flex-col gap-1.5 mb-3">
@@ -912,4 +641,3 @@ export function CartDrawer({
     </div>
   );
 }
-

@@ -1,13 +1,10 @@
 "use client";
 /**
  * store.ts — Estado global de la app
- * ─────────────────────────────────────────────────────────────────────────────
- * ESTRATEGIA DE DATOS:
- *   1. Al arrancar → carga desde Supabase (fuente de verdad)
- *   2. Mientras carga → muestra datos de localStorage como caché instantáneo
- *   3. Cada acción → actualiza React state + localStorage + Supabase en paralelo
- *   4. Si Supabase falla → la app sigue funcionando con localStorage
- * ─────────────────────────────────────────────────────────────────────────────
+ * FIX: React Error #418 — Hydration mismatch
+ * Los useState initializers NO pueden leer localStorage porque el servidor
+ * no tiene window. Solución: iniciar con valores vacíos/default y cargar
+ * desde localStorage en un useEffect separado (solo en cliente).
  */
 import { useState, useEffect, useCallback } from "react";
 import type { Product, Banner, Order, ExchangeRate, DesignConfig, CartItem, Review } from "./types";
@@ -22,7 +19,7 @@ import {
   sbUploadImage,
 } from "./supabase";
 
-// ─── Re-export para que los componentes no importen desde supabase.ts ────────
+// ─── Re-export ───────────────────────────────────────────────────────────────
 export { sbUploadImage };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -42,7 +39,7 @@ const LS = {
 
 export const genId  = () => Math.random().toString(36).slice(2, 9);
 export const fmt$   = (n: number) => `€${Number(n).toFixed(2)}`;
-export const fmtBs  = (n: number, rate: number) => { const val = (Number(n) * rate).toFixed(2); const [int, dec] = val.split("."); const intFmt = int.replace(/\B(?=(\d{3})+(?!\d))/g, "."); return `Bs. ${intFmt},${dec}`; };
+export const fmtBs  = (n: number, rate: number) => `Bs. ${(Number(n) * rate).toFixed(2)}`;
 
 export const fileToBase64 = (file: File): Promise<string> =>
   new Promise((res, rej) => {
@@ -54,69 +51,73 @@ export const fileToBase64 = (file: File): Promise<string> =>
 
 // ─── App Store hook ──────────────────────────────────────────────────────────
 export function useAppStore() {
-  // ESTRATEGIA ANTI-FLASH:
-  // 1) useState con función lazy — corre SOLO en el cliente (no en SSR)
-  //    Lee localStorage instantáneamente → UI arranca con datos reales, sin página vacía
-  // 2) useEffect → Supabase actualiza en background (fuente de verdad)
-  // Esto es hydration-safe porque ClientApp está marcado "use client"
-  // y page.tsx lo importa directamente (sin ssr:false que causaba el flash)
+  // FIX #418: NUNCA leer localStorage en el initializer de useState.
+  // Siempre arrancar con valores vacíos/default (igual en server y client).
+  // localStorage se carga en useEffect (solo corre en el cliente).
+  const [products,  setProductsState]  = useState<Product[]>([]);
+  const [orders,    setOrdersState]    = useState<Order[]>([]);
+  const [rate,      setRateState]      = useState<ExchangeRate>({ value: 36.5,  mode: "custom" as const });
+  const [rateBCV,   setRateBCVState]   = useState<ExchangeRate>({ value: 46.20, mode: "bcv"    as const });
+  const [cart,      setCart]           = useState<CartItem[]>([]);
+  const [wishlist,  setWishlistState]  = useState<string[]>([]);
+  const [design,    setDesignState]    = useState<DesignConfig>(DEFAULT_DESIGN);
+  const [banners,   setBannersState]   = useState<Banner[]>(DEFAULT_BANNERS);
+  const [reviews,   setReviewsState]   = useState<Review[]>([]);
+  const [purchases, setPurchasesState] = useState<Purchase[]>([]);
+  const [loading,   setLoading]        = useState(true);
 
-  const [products,  setProductsState]  = useState<Product[]>(        () => LS.get("products",  []));
-  const [orders,    setOrdersState]    = useState<Order[]>(           () => LS.get("orders",    []));
-  const [rate,      setRateState]      = useState<ExchangeRate>(      () => LS.get("rate",      { value: 36.5,  mode: "custom" as const }));
-  const [rateBCV,   setRateBCVState]   = useState<ExchangeRate>(      () => LS.get("rateBCV",   { value: 46.20, mode: "bcv"    as const }));
-  const [cart,      setCart]           = useState<CartItem[]>(          () => LS.get("cart",      []));
-  const [wishlist,  setWishlistState]  = useState<string[]>(          () => LS.get("wishlist",  []));
-  const [design,    setDesignState]    = useState<DesignConfig>(      () => LS.get("design",    DEFAULT_DESIGN));
-  const [banners,   setBannersState]   = useState<Banner[]>(          () => LS.get("banners",   DEFAULT_BANNERS));
-  const [reviews,   setReviewsState]   = useState<Review[]>(          () => LS.get("reviews",   []));
-  const [purchases, setPurchasesState] = useState<Purchase[]>(        () => LS.get("purchases", []));
-  const [loading,   setLoading]        = useState(() => {
-    // Si ya hay productos en caché → abrir instantáneo, Supabase actualiza en background
-    const cached = LS.get("products", []);
-    return cached.length === 0;
-  });
+  // ── Paso 1: Cargar localStorage en el cliente (hydration-safe) ────────────
+  useEffect(() => {
+    const lsProducts  = LS.get<Product[]>("products",  []);
+    const lsOrders    = LS.get<Order[]>("orders",    []);
+    const lsRate      = LS.get<ExchangeRate>("rate",    { value: 36.5,  mode: "custom" as const });
+    const lsRateBCV   = LS.get<ExchangeRate>("rateBCV", { value: 46.20, mode: "bcv"    as const });
+    const lsWishlist  = LS.get<string[]>("wishlist", []);
+    const lsDesign    = LS.get<DesignConfig>("design",  DEFAULT_DESIGN);
+    const lsBanners   = LS.get<Banner[]>("banners",  DEFAULT_BANNERS);
+    const lsReviews   = LS.get<Review[]>("reviews",  []);
+    const lsPurchases = LS.get<Purchase[]>("purchases", []);
 
-  // ── Supabase en background — actualiza encima del caché de localStorage ──
+    if (lsProducts.length)  setProductsState(lsProducts);
+    if (lsOrders.length)    setOrdersState(lsOrders);
+    setRateState(lsRate);
+    setRateBCVState(lsRateBCV);
+    if (lsWishlist.length)  setWishlistState(lsWishlist);
+    setDesignState(lsDesign);
+    if (lsBanners.length)   setBannersState(lsBanners);
+    if (lsReviews.length)   setReviewsState(lsReviews);
+    if (lsPurchases.length) setPurchasesState(lsPurchases);
+  }, []);
+
+  // ── Paso 2: Cargar desde Supabase (fuente de verdad) ─────────────────────
   useEffect(() => {
     let cancelled = false;
-    // Timeout para no quedarse colgado si Supabase tarda
-    const withTimeout = <T,>(p: Promise<T>, ms = 4000): Promise<T> =>
-      Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
-
     async function load() {
       try {
-        // Crítico primero — lo que ve el cliente (sin órdenes que son pesadas)
-        const [prods, bans, r, rBCV, des] = await withTimeout(Promise.all([
+        const [prods, ords, bans, r, rBCV, des] = await Promise.all([
           sbGetProducts(),
+          sbGetOrders(),
           sbGetBanners(),
           sbGetRate(),
           sbGetRateBCV(),
           sbGetDesign(DEFAULT_DESIGN),
-        ]));
+        ]);
         if (cancelled) return;
 
         if (prods.length) { setProductsState(prods); LS.set("products", prods); }
+        if (ords.length)  { setOrdersState(ords);    LS.set("orders",   ords);  }
         if (bans.length) {
+          const lightBans = bans.map(b => ({ ...b, imgBase64: "" }));
           setBannersState(bans);
-          LS.set("banners", bans.map(b => ({ ...b, imgBase64: "" })));
+          LS.set("banners", lightBans);
         }
         setRateState(r);       LS.set("rate",    r);
         setRateBCVState(rBCV); LS.set("rateBCV", rBCV);
         setDesignState(des);   LS.set("design",  des);
       } catch (e) {
-        console.warn("[store] Supabase timed out or failed, using cache:", e);
+        console.warn("[store] Supabase load failed, using localStorage cache:", e);
       } finally {
-        // Desbloquear UI inmediatamente — órdenes cargan en segundo plano
         if (!cancelled) setLoading(false);
-      }
-
-      // Órdenes en segundo plano — no bloquean el splash
-      if (!cancelled) {
-        try {
-          const ords = await withTimeout(sbGetOrders(), 8000);
-          if (!cancelled && ords.length) { setOrdersState(ords); LS.set("orders", ords); }
-        } catch {}
       }
     }
     load();
@@ -129,13 +130,13 @@ export function useAppStore() {
   useEffect(() => { LS.set("rate",     rate);     }, [rate]);
   useEffect(() => { LS.set("rateBCV",  rateBCV);  }, [rateBCV]);
   useEffect(() => { LS.set("wishlist", wishlist); }, [wishlist]);
-  useEffect(() => { LS.set("cart",     cart);     }, [cart]);
   useEffect(() => { LS.set("design",   design);   }, [design]);
-  // Sync localStorage — banners sin base64 (demasiado pesado para LS)
   useEffect(() => {
     const lightBanners = banners.map(b => ({ ...b, imgBase64: "" }));
     LS.set("banners", lightBanners);
   }, [banners]);
+  useEffect(() => { LS.set("reviews",   reviews);   }, [reviews]);
+  useEffect(() => { LS.set("purchases", purchases); }, [purchases]);
 
   // ── PRODUCTS ─────────────────────────────────────────────────────────────
   const setProducts = useCallback((fn: (prev: Product[]) => Product[]) => {
@@ -145,10 +146,9 @@ export function useAppStore() {
   const addProduct = useCallback(async (p: Omit<Product, "id">): Promise<Product> => {
     const localId  = genId();
     const newP     = { ...p, id: localId };
-    setProductsState(prev => [...prev, newP]);       // optimistic update
+    setProductsState(prev => [...prev, newP]);
     const saved = await sbAddProduct(p);
     if (saved) {
-      // reemplaza el id local por el de Supabase
       setProductsState(prev => prev.map(x => x.id === localId ? saved : x));
       return saved;
     }
@@ -218,7 +218,6 @@ export function useAppStore() {
 
   const deleteOrder = useCallback((id: string) => {
     setOrdersState(prev => prev.filter(o => o.id !== id));
-    // Note: we don't delete from Supabase to keep history — just hide locally
   }, []);
 
   // ── EXPORT PEDIDOS A EXCEL ────────────────────────────────────────────────
@@ -228,13 +227,13 @@ export function useAppStore() {
       ["#","Fecha","Cliente","Teléfono","Dirección","Productos","Total (€)","Total Bs.","Método","Estado"],
       ...orders.map(o => [
         o.id,
-        (()=>{const d=new Date(o.date);return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;})(),
+        new Date(o.date).toLocaleString("es-VE"),
         o.form?.name || "",
         o.form?.phone || "",
         o.form?.address || "",
         (o.cart||[]).map(i=>`${i.name} ×${i.qty}`).join(" | "),
         o.total.toFixed(2),
-        (o.total * (orders.length ? 36.5 : 36.5)).toFixed(2), // usa tasa actual
+        (o.total * 36.5).toFixed(2),
         o.form?.method || "",
         o.status === "pending" ? "PENDIENTE" : o.status === "processed" ? "PROCESADO" : "ANULADO",
       ])
@@ -243,7 +242,7 @@ export function useAppStore() {
     ws["!cols"] = [{wch:12},{wch:18},{wch:20},{wch:14},{wch:28},{wch:40},{wch:10},{wch:14},{wch:16},{wch:12}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
-    XLSX.writeFile(wb, `Pedidos_Fit58_${`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}-${String(new Date().getDate()).padStart(2,"0")}`}.xlsx`);
+    XLSX.writeFile(wb, `Pedidos_Fit58_${new Date().toLocaleDateString("es-VE").replace(/\//g,"-")}.xlsx`);
   }, [orders]);
 
   // ── WISHLIST ──────────────────────────────────────────────────────────────
@@ -267,9 +266,6 @@ export function useAppStore() {
     setDesignState(d);
     await sbSetDesign(d);
   }, []);
-
-  useEffect(() => { LS.set("reviews",   reviews);   }, [reviews]);
-  useEffect(() => { LS.set("purchases", purchases); }, [purchases]);
 
   const addPurchase = useCallback((p: Purchase) => {
     setPurchasesState(prev => [p, ...prev]);
@@ -295,6 +291,7 @@ export function useAppStore() {
   const deleteReview = useCallback((id: string) => {
     setReviewsState(prev => prev.filter(r => r.id !== id));
   }, []);
+
   const updateBanner = useCallback(async (id: string, updates: Partial<Banner>) => {
     if (updates.imgBase64 && updates.imgBase64.startsWith("data:")) {
       try {
@@ -312,10 +309,8 @@ export function useAppStore() {
   const setBanners = useCallback((fn: (prev: Banner[]) => Banner[]) => {
     setBannersState(prev => {
       const next = fn(prev);
-      // Detectar banners añadidos
       const addedBanners = next.filter(b => !prev.find(p => p.id === b.id));
       addedBanners.forEach(b => sbInsertBanner(b));
-      // Detectar banners eliminados
       const deletedIds = prev.filter(b => !next.find(n => n.id === b.id)).map(b => b.id);
       deletedIds.forEach(id => sbDeleteBanner(id));
       return next;
@@ -323,27 +318,16 @@ export function useAppStore() {
   }, []);
 
   return {
-    // estado
     products, orders, rate, rateBCV, cart, wishlist, design, banners, reviews, purchases,
     cartTotal, cartCount, loading,
-    // productos
     setProducts, addProduct, updateProduct, deleteProduct,
-    // carrito
     addToCart, removeFromCart, updateCartQty, clearCart,
-    // pedidos
     saveOrder, updateOrderStatus, deleteOrder, exportOrdersToExcel,
-    // wishlist
     toggleWishlist,
-    // tasas
     setRate, setRateBCV,
-    // diseño
     setDesign,
-    // compras
     addPurchase, deletePurchase,
-    // reseñas
     addReview, approveReview, rejectReview, deleteReview,
-    // banners
     setBanners, updateBanner,
   };
 }
-

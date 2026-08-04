@@ -1,31 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Fuentes de marca ── */
-:root {
-  --font-display: 'Bebas Neue', sans-serif;        /* titulares, slogans, precios */
-  --font-condensed: 'Barlow Condensed', sans-serif; /* subtitulos, etiquetas, nav */
-  --font-body: 'DM Sans', system-ui, sans-serif;   /* cuerpo, mensajes, descripciones */
-}
-
-body {
-  font-family: var(--font-body);
-  overflow-x: hidden;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-/* Bebas Neue solo donde se llama explicitamente con .brand-heading */
-/* NO aplicar a h1/h2/h3 globalmente — rompe admin, drawers y modals */
-.brand-heading {
-  font-family: var(--font-display);
-  letter-spacing: 0.01em;
-}
-
-/* ── Glass / Neumorph / Fluent ── */
+/* ── Glass / Neumorph / Fluent — CSS puro (sin @apply para valores arbitrarios) ── */
 .glass {
   background: rgba(255,255,255,0.72);
   backdrop-filter: blur(20px) saturate(180%);
@@ -62,19 +40,12 @@ body {
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   transform: translateY(-1px);
 }
-
-/* ── Botones redondeados globales ── */
-button:not(.no-round) {
-  border-radius: 9999px;
-}
-
-.btn-primary { transition: all 0.2s; border-radius: 9999px; }
+.btn-primary { transition: all 0.2s; }
 .btn-primary:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.28); transform: translateY(-1px); }
 .btn-primary:active { transform: scale(0.97); }
-.btn-green { transition: all 0.2s; border-radius: 9999px; }
+.btn-green { transition: all 0.2s; }
 .btn-green:hover { box-shadow: 0 8px 24px rgba(34,168,90,0.4); transform: translateY(-1px); }
 .btn-green:active { transform: scale(0.97); }
-
 .prod-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .prod-card:hover { transform: translateY(-8px); box-shadow: 0 24px 60px rgba(0,0,0,0.13) !important; }
 .kpi-card { transition: all 0.25s ease; }
@@ -92,7 +63,7 @@ button:not(.no-round) {
   border-radius: 1px;
 }
 .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
-.cat-pill { transition: all 0.2s ease; cursor: pointer; border-radius: 9999px; }
+.cat-pill { transition: all 0.2s ease; cursor: pointer; }
 .cat-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .field-input { transition: border-color 0.2s, box-shadow 0.2s; }
 .field-input:focus {
@@ -147,75 +118,3 @@ button:not(.no-round) {
 .product-desc li          { margin-bottom: 3px; }
 .product-desc hr          { border: none; border-top: 1px solid #e5e7eb; margin: 10px 0; }
 .product-desc p           { margin: 0 0 6px; }
-
-/* ── Barra de carga superior (reemplaza spinner bloqueante) ── */
-@keyframes slideRight {
-  0%   { transform: translateX(-100%); }
-  50%  { transform: translateX(150%); }
-  100% { transform: translateX(400%); }
-}
-/* ── Divisor editorial — responsive DEFINITIVO ── */
-/* Estos estilos sobreescriben cualquier font-size inline que meta el rich editor */
-
-.editorial-title {
-  font-size: clamp(13px, 3.8vw, 26px) !important;
-  line-height: 1.2;
-}
-.editorial-title * {
-  font-size: inherit !important;  /* anula font-size hardcodeados del editor */
-  max-width: 100%;
-  word-break: break-word;
-}
-.editorial-title br { display: block; }
-
-.editorial-desc {
-  font-size: clamp(10px, 2.5vw, 13px) !important;
-  max-width: min(300px, 100%);
-}
-.editorial-desc * {
-  font-size: inherit !important;
-}
-
-.editorial-section {
-  max-width: 100vw;
-  box-sizing: border-box;
-}
-
-/* Watermark — nunca desborda */
-.watermark-text {
-  font-size: clamp(20px, 6vw, 100px) !important;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 100%;
-}
-
-/* ── Responsive refinements ── */
-@media (max-width: 400px) {
-  .prod-card { border-radius: 12px; }
-  .prod-card .p-3 { padding: 8px; }
-}
-
-@media (max-width: 640px) {
-  /* Modal full height on mobile */
-  .glass.animate-drawer-in.rounded-3xl {
-    border-radius: 16px !important;
-    max-height: 96vh !important;
-  }
-  /* Bottom nav safe area */
-  nav.fixed.bottom-0 {
-    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
-  }
-}
-
-/* Navbar brand text scales on tiny screens */
-@media (max-width: 360px) {
-  .text-sm.font-black.text-black.tracking-wide { font-size: 11px; }
-  .text-\[8px\].font-bold.text-neutral-400 { font-size: 7px; }
-}
-
-/* Cart drawer full-width on mobile */
-@media (max-width: 480px) {
-  .animate-drawer-in.glass.absolute.right-0 {
-    max-width: 100vw !important;
-  }
-}

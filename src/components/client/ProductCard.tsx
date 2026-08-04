@@ -1,33 +1,8 @@
 "use client";
 import { useState, useRef } from "react";
-import NextImage from "next/image";
 import { Heart, AlertCircle, ShoppingCart, Check, ChevronLeft, ChevronRight, X, Shield, Truck, Star, MessageSquare, ZoomIn, Send } from "lucide-react";
 import { fmt$, fmtBs } from "@/lib/store";
-import type { Product, Review, CardTypography } from "@/lib/types";
-
-
-
-// Formatea fecha sin locale — evita hydration mismatch server/cliente
-const fmtDate = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  const dd = String(dt.getDate()).padStart(2,"0");
-  const mm = String(dt.getMonth()+1).padStart(2,"0");
-  const yy = dt.getFullYear();
-  return `${dd}/${mm}/${yy}`;
-};
-const fmtDateTime = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  const dd = String(dt.getDate()).padStart(2,"0");
-  const mm = String(dt.getMonth()+1).padStart(2,"0");
-  const yy = dt.getFullYear();
-  const hh = String(dt.getHours()).padStart(2,"0");
-  const mi = String(dt.getMinutes()).padStart(2,"0");
-  return `${dd}/${mm}/${yy}, ${hh}:${mi}`;
-};
-
-/* Detecta si la URL puede optimizarse con Next/Image */
-const isOptimizable = (src: string) =>
-  src && !src.startsWith("data:") && !src.includes("svg+xml") && src.startsWith("http");
+import type { Product, Review } from "@/lib/types";
 
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='none' stroke='%23ddd' stroke-width='1'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='m21 15-5-5L5 21'/%3E%3C/svg%3E";
 
@@ -44,14 +19,13 @@ function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
 
 /* ── ProductCard ────────────────────────────────────────────────── */
 export function ProductCard({
-  product, rate, rateBCV, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [], ct = {},
+  product, rate, rateBCV, onAdd, inCart, wishlisted, onWishlist, onDetail, reviews = [],
 }: {
   product: Product; rate: number; rateBCV: number;
   onAdd: () => void; inCart: number;
   wishlisted: boolean; onWishlist: () => void;
   onDetail: () => void;
   reviews?: Review[];
-  ct?: CardTypography;
 }) {
   const [imgIdx,   setImgIdx]   = useState(0);
   const [heartKey, setHeartKey] = useState(0);
@@ -70,12 +44,7 @@ export function ProductCard({
   }[b] ?? "bg-neutral-700/85");
 
   return (
-    <div className="prod-card flex flex-col relative overflow-hidden hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-shadow"
-      style={{
-        background:   ct.cardBg     ?? "#fff",
-        border:       `1px solid ${ct.cardBorder ?? "rgba(229,231,235,0.8)"}`,
-        borderRadius: ct.cardRadius ?? 12,
-      }}>
+    <div className="prod-card bg-white border border-neutral-200/80 rounded-xl flex flex-col relative overflow-hidden hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-shadow">
       {product.badge && (
         <div className={`${badgeColor(product.badge)} absolute top-3 left-3 z-[3] text-white text-[8px] font-black tracking-[1.5px] uppercase px-2 py-1 rounded-md`}>
           {product.badge}
@@ -88,23 +57,11 @@ export function ProductCard({
       </button>
 
       {/* Image — imagen completa sobre blanco, sin recorte */}
-      <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height: ct.imgHeight ?? 220, position:"relative"}} onClick={onDetail}>
-        {isOptimizable(images[imgIdx]) ? (
-          <NextImage
-            src={images[imgIdx]}
-            alt={product.name}
-            fill
-            sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 280px"
-            className="object-contain"
-            style={{ position:"absolute" }}
-            onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }}
-          />
-        ) : (
-          <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
-            onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
-            loading="lazy" decoding="async"
-            className="max-w-full max-h-full object-contain"/>
-        )}
+      <div className="relative overflow-hidden cursor-pointer bg-white flex items-center justify-center p-6" style={{height:220}} onClick={onDetail}>
+        <img src={images[imgIdx]||PLACEHOLDER} alt={product.name}
+          onError={e=>{e.currentTarget.src=PLACEHOLDER;}}
+          loading="lazy" decoding="async"
+          className="max-w-full max-h-full object-contain"/>
         {images.length > 1 && (
           <>
             <button onClick={e=>{e.stopPropagation();setImgIdx(i=>(i-1+images.length)%images.length);}}
@@ -121,20 +78,8 @@ export function ProductCard({
 
       {/* Info — minimalista: sin descripción */}
       <div className="p-3 md:p-4 flex flex-col gap-1.5 flex-1 bg-white border-t border-neutral-100">
-        <p className="tracking-[1.5px] uppercase m-0"
-          style={{
-            fontFamily: ct.categoryFont   ?? "inherit",
-            fontSize:   ct.categorySize   ?? 9,
-            color:      ct.categoryColor  ?? "#aaaaaa",
-            fontWeight: ct.categoryWeight ?? "700",
-          }}>{product.category}</p>
-        <h3 className="uppercase tracking-wide m-0 leading-snug cursor-pointer"
-          style={{
-            fontFamily: ct.nameFont   ?? "inherit",
-            fontSize:   ct.nameSize   ?? 13,
-            color:      ct.nameColor  ?? "#111111",
-            fontWeight: ct.nameWeight ?? "900",
-          }} onClick={onDetail}>
+        <p className="text-[9px] font-bold text-neutral-400 tracking-[1.5px] uppercase m-0">{product.category}</p>
+        <h3 className="text-[12px] md:text-[13px] font-black text-black uppercase tracking-wide m-0 leading-snug cursor-pointer" onClick={onDetail}>
           {product.name}
         </h3>
 
@@ -146,28 +91,26 @@ export function ProductCard({
           </div>
         )}
 
-        <div className="flex flex-col gap-0.5 mt-0.5">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Divisa / Euro</span>
-            <span style={{ fontFamily:ct.priceFont??"inherit", fontSize:ct.priceSize??"clamp(13px,3.5vw,18px)", color:ct.priceColor??"#111", fontWeight:ct.priceWeight??"900" }}>{fmt$(product.price)}</span>
+        <div className="flex items-end gap-1.5 mt-0.5">
+          <div className="flex flex-col">
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Divisa / Euro</span>
+            <span className="text-lg md:text-xl font-black text-black">{fmt$(product.price)}</span>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
-            <span style={{ fontFamily:ct.priceBsFont??ct.priceFont??"inherit", fontSize:ct.priceBsSize??ct.priceSize??"clamp(13px,3.5vw,18px)", color:ct.priceBsColor??ct.priceColor??"#111", fontWeight:ct.priceBsWeight??ct.priceWeight??"900" }}>{fmtBs(product.price, rate)}</span>
+          <span className="text-[10px] text-neutral-300 font-bold mb-0.5">/</span>
+          <div className="flex flex-col">
+            <span className="text-[8px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+            <span className="text-xs md:text-sm font-black text-black">{fmtBs(product.price, rate)}</span>
           </div>
         </div>
 
         {/* No mostrar stock al cliente */}
 
         <button key={addKey} onClick={()=>{setAddKey(k=>k+1);onAdd();}}
-          className={`${addKey>0?"animate-cart-pop":""} mt-auto flex items-center justify-center gap-1.5 py-2.5 tracking-[1.2px] uppercase transition-all duration-200 border cursor-pointer`}
+          className={`${addKey>0?"animate-cart-pop":""} mt-auto flex items-center justify-center gap-1.5 py-2.5 text-[9px] md:text-[10px] font-black tracking-[1.2px] uppercase rounded-lg transition-all duration-200 border cursor-pointer`}
           style={{
-            fontFamily:  ct.btnFont        ?? "inherit",
-            fontSize:    ct.btnSize        ?? 9,
-            borderRadius:ct.btnRadius      ?? 8,
-            border:      `1.5px solid ${inCart>0 ? (ct.btnActiveBg??"#111") : (ct.cardBorder??"#ddd")}`,
-            background:  inCart>0 ? (ct.btnActiveBg    ?? "#111") : (ct.btnBg       ?? "#fff"),
-            color:       inCart>0 ? (ct.btnActiveColor ?? "#fff") : (ct.btnColor    ?? "#111"),
+            border:`1.5px solid ${inCart>0?"#111":"#ddd"}`,
+            background:inCart>0?"#111":"#fff",
+            color:inCart>0?"#fff":"#111",
           }}>
           {inCart>0 ? <><Check size={11}/>EN CARRITO ({inCart})</> : <><ShoppingCart size={11}/>AGREGAR</>}
         </button>
@@ -214,7 +157,7 @@ export function ProductDetailModal({
 
         <div className="flex flex-col md:flex-row overflow-auto">
           {/* Gallery — protagonista */}
-          <div className="relative flex-1 md:flex-[1.4] bg-white flex p-3 sm:p-5 md:p-10 gap-3 md:gap-6 min-h-[240px] sm:min-h-[320px] md:min-h-[560px]">
+          <div className="relative flex-1 md:flex-[1.4] bg-white flex p-5 md:p-10 gap-4 md:gap-6 min-h-[320px] md:min-h-[560px]">
             {/* Miniaturas verticales (desktop) */}
             {galleryImages.length > 1 && (
               <div className="hidden md:flex flex-col gap-3 overflow-y-auto">
@@ -222,12 +165,7 @@ export function ProductDetailModal({
                   <button key={i} onClick={()=>setImgIdx(i)}
                     className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden cursor-pointer p-0 transition-all"
                     style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
-                    {isOptimizable(src) ? (
-                      <NextImage src={src} alt="" fill sizes="64px" className="object-contain" style={{position:"absolute"}}
-                        onError={e=>{(e.target as HTMLImageElement).src=PLACEHOLDER;}}/>
-                    ) : (
-                      <img src={src||PLACEHOLDER} alt="" className="w-full h-full object-contain"/>
-                    )}
+                    <img src={src||PLACEHOLDER} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}} className="w-full h-full object-contain"/>
                     {i===specIdx && (
                       <span className="absolute bottom-0 inset-x-0 bg-black/75 text-white text-[6px] font-black text-center py-0.5 leading-none">FICHA</span>
                     )}
@@ -294,12 +232,7 @@ export function ProductDetailModal({
                   <button key={i} onClick={()=>setImgIdx(i)}
                     className="w-11 h-11 rounded-lg overflow-hidden cursor-pointer p-0 transition-all"
                     style={{border:`2px solid ${i===imgIdx?"#111":"rgba(220,220,220,0.7)"}`,background:"#fff"}}>
-                    {isOptimizable(src) ? (
-                      <NextImage src={src} alt="" fill sizes="64px" className="object-contain" style={{position:"absolute"}}
-                        onError={e=>{(e.target as HTMLImageElement).src=PLACEHOLDER;}}/>
-                    ) : (
-                      <img src={src||PLACEHOLDER} alt="" className="w-full h-full object-contain"/>
-                    )}
+                    <img src={src||PLACEHOLDER} alt="" onError={e=>{e.currentTarget.src=PLACEHOLDER;}} className="w-full h-full object-contain"/>
                   </button>
                 ))}
               </div>
@@ -307,23 +240,24 @@ export function ProductDetailModal({
           </div>
 
           {/* Info */}
-          <div className="flex-none w-full md:w-[320px] lg:w-[360px] p-4 sm:p-5 md:p-8 flex flex-col gap-3 md:gap-4 overflow-y-auto border-t md:border-t-0 md:border-l border-neutral-100">
+          <div className="flex-none w-full md:w-[340px] p-6 md:p-8 flex flex-col gap-4 overflow-y-auto border-t md:border-t-0 md:border-l border-neutral-100">
             <div>
               <p className="text-[10px] font-bold text-neutral-400 tracking-[2px] uppercase mb-1">{product.category}</p>
-              <h2 className="text-base sm:text-xl md:text-2xl font-black text-black uppercase tracking-tight leading-tight mb-2">{product.name}</h2>
+              <h2 className="text-xl md:text-2xl font-black text-black uppercase tracking-tight leading-tight mb-2">{product.name}</h2>
               {product.badge && (
                 <span className="text-[9px] font-black bg-black/8 text-neutral-600 px-3 py-1 rounded-md tracking-wide uppercase">{product.badge}</span>
               )}
             </div>
 
-            <div className="flex flex-col gap-0.5">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Divisa / Euro</span>
-                <span className="text-xl sm:text-2xl font-black text-black">{fmt$(product.price)}</span>
+            <div className="flex items-end gap-2.5">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Divisa / Euro</span>
+                <span className="text-3xl font-black text-black">{fmt$(product.price)}</span>
               </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] sm:text-[11px] font-black text-neutral-500 tracking-wide uppercase leading-none" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
-                <span className="text-xl sm:text-2xl font-black text-black">{fmtBs(product.price, rate)}</span>
+              <span className="text-sm text-neutral-300 font-bold mb-1">/</span>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold text-neutral-400 tracking-wide uppercase leading-none mb-0.5">Bs. BCV ({fmt$(product.price * rate / rateBCV)})</span>
+                <span className="text-xl font-black text-black">{fmtBs(product.price, rate)}</span>
               </div>
             </div>
             {product.stock <= 0 && (
@@ -451,7 +385,7 @@ export function ProductDetailModal({
                     <div key={r.id} className="glass-card rounded-xl p-4 flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-black text-black">{r.author}</span>
-                        <span className="text-[9px] text-neutral-400">{fmtDate(r.date)}</span>
+                        <span className="text-[9px] text-neutral-400">{new Date(r.date).toLocaleDateString("es-VE")}</span>
                       </div>
                       <Stars rating={r.rating} size={11}/>
                       <p className="text-xs text-neutral-500 leading-relaxed">{r.comment}</p>
@@ -472,20 +406,16 @@ export function ProductDetailModal({
       {/* Lightbox de pantalla completa */}
       {lightboxOpen && (
         <div className="fixed inset-0 z-[400] flex items-center justify-center bg-white/95 backdrop-blur-sm p-6 cursor-zoom-out"
-          style={{ touchAction: "none" }}
           onClick={() => setLightboxOpen(false)}>
           <button onClick={() => setLightboxOpen(false)}
             className="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/85 backdrop-blur border border-neutral-200/80 flex items-center justify-center cursor-pointer">
             <X size={20}/>
           </button>
           <img src={galleryImages[imgIdx]||PLACEHOLDER} alt={product.name}
-            className="max-w-full max-h-full object-contain"
-            style={{ touchAction: "pinch-zoom" }}
+            className="max-w-full max-h-full object-contain select-none" draggable={false}
             onClick={e => e.stopPropagation()}/>
         </div>
       )}
     </div>
   );
 }
-
-

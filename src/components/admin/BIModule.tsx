@@ -1,16 +1,4 @@
 "use client";
-
-const fmtD = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()}`;
-};
-const fmtDT = (d: string | Date) => {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  return `${fmtD(dt)} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-};
-const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-const DAYS   = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-
 /**
  * BIModule.tsx — Inteligencia de Negocios
  * Integrado al admin panel de Fit +58 Caracas
@@ -33,8 +21,8 @@ interface Props {
 type BITab = "kpis" | "metas" | "tendencias" | "alertas" | "cierre";
 
 /* ── Helpers ─────────────────────────────────────────────── */
-const fmt$ = (n: number) => `€${Number(n||0).toFixed(2)}`;
-const fmtN = (n: number) => String(Math.round(Number(n||0)));
+const fmt$ = (n: number) => `€${Number(n || 0).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtN = (n: number) => Number(n || 0).toLocaleString("es-VE", { minimumFractionDigits: 0 });
 
 function getMonthKey(dateStr: string) {
   const d = new Date(dateStr);
@@ -185,7 +173,7 @@ function CierreCaja({ orders }: { orders: Order[] }) {
               {allDays.map(dayKey => {
                 const d = dayMap[dayKey];
                 const date = new Date(dayKey + "T12:00:00");
-                const dayName = DAYS[date.getDay()];
+                const dayName = date.toLocaleDateString("es-VE", { weekday: "short" });
                 const dayNum  = date.getDate();
                 const isToday = getDayKey(new Date().toISOString()) === dayKey;
                 const hasData = !!d;
@@ -199,7 +187,7 @@ function CierreCaja({ orders }: { orders: Order[] }) {
                     className="border-t border-neutral-100/60 transition-colors hover:bg-neutral-50/50"
                     style={{ background: isToday ? "rgba(34,168,90,0.04)" : undefined }}>
                     <td className="px-5 py-3 font-semibold text-black text-xs">
-                      {dayNum} {MONTHS[date.getMonth()]} {y}
+                      {dayNum} {date.toLocaleDateString("es-VE", { month: "short" })} {y}
                       {isToday && <span className="ml-2 text-[8px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-black uppercase">Hoy</span>}
                     </td>
                     <td className="px-5 py-3 text-[11px] font-bold text-neutral-500 uppercase">{dayName}</td>

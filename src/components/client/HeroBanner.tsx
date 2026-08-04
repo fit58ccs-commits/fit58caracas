@@ -24,17 +24,25 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
   const btnPaddingY  = slide.btnPaddingY  ?? 12;
   const btnRadius    = slide.btnRadius    ?? 10;
 
+  // Posición del contenido: por defecto izquierda-centro
   const posX = (slide as Banner & { contentX?: string }).contentX ?? "left";
   const posY = (slide as Banner & { contentY?: string }).contentY ?? "center";
 
-  const alignMap:   Record<string, string> = { left: "flex-start", center: "center", right: "flex-end" };
-  const justifyMap: Record<string, string> = { top: "flex-start",  center: "center", bottom: "flex-end" };
+  const alignMap: Record<string, string> = {
+    left: "flex-start", center: "center", right: "flex-end"
+  };
+  const justifyMap: Record<string, string> = {
+    top: "flex-start", center: "center", bottom: "flex-end"
+  };
 
   const handleCta = () => {
     const url = (slide as Banner & { ctaUrl?: string }).ctaUrl;
     if (url) {
-      if (url.startsWith("#")) document.getElementById(url.slice(1))?.scrollIntoView({ behavior: "smooth" });
-      else window.open(url, "_blank");
+      if (url.startsWith("#")) {
+        document.getElementById(url.slice(1))?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        window.open(url, "_blank");
+      }
     } else {
       document.getElementById("tienda")?.scrollIntoView({ behavior: "smooth" });
     }
@@ -44,42 +52,21 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
     <section className="relative overflow-hidden"
       style={{ minHeight: "clamp(200px, 44vw, 500px)" }}>
 
-      {/* Preload oculto de TODOS los banners — el browser los descarga en paralelo */}
-      <div aria-hidden style={{ display: "none" }}>
-        {banners.map((b, i) => b.img ? (
-          <img
-            key={b.img}
-            src={b.img}
-            alt=""
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            fetchPriority={i === 0 ? "high" : "low" as any}
-            decoding="async"
-          />
-        ) : null)}
-      </div>
-
-      {/* Fondo color del slide activo */}
+      {/* Fondo color */}
       <div className="absolute inset-0 z-[0]" style={{ background: slide.bgColor }}/>
 
-      {/* Todas las imágenes apiladas — solo la activa es visible (crossfade sin recrear el DOM) */}
-      {banners.map((b, i) => b.img ? (
-        <img
-          key={b.img}
-          src={b.img}
-          alt=""
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          fetchPriority={i === 0 ? "high" : "low" as any}
-          decoding={i === 0 ? "sync" : "async"}
-          className="absolute inset-0 w-full h-full object-cover"
+      {/* Imagen full-cover */}
+      {slide.img && (
+        <div key={`bg-${idx}-${slide.img}`} className="absolute inset-0 z-[1]"
           style={{
-            zIndex:     1,
-            opacity:    i === idx ? 1 : 0,
-            transition: "opacity 0.6s ease",
-          }}
-        />
-      ) : null)}
+            backgroundImage:    `url(${slide.img})`,
+            backgroundSize:     "cover",
+            backgroundPosition: "center",
+            backgroundRepeat:   "no-repeat",
+          }}/>
+      )}
 
-      {/* Overlay degradado */}
+      {/* Overlay degradado — solo si hay imagen */}
       {slide.img && (
         <div className="absolute inset-0 z-[2]"
           style={{
@@ -89,31 +76,38 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
           }}/>
       )}
 
-      {/* Fade inferior */}
-      <div className="absolute bottom-0 left-0 right-0 z-[3] pointer-events-none"
-        style={{ height: "clamp(60px, 12vw, 120px)", background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.55) 60%, rgba(255,255,255,1) 100%)" }}/>
-
-      {/* Barra acento */}
+      {/* Barra acento izquierda */}
       <div className="absolute left-0 top-0 bottom-0 w-1 md:w-1.5 z-[3]"
         style={{ background: slide.accentColor }}/>
 
-      {/* Contenido */}
+      {/* Contenido — posicionable */}
       <div className="absolute inset-0 z-[3] flex"
         style={{
           alignItems:     justifyMap[posY] || "center",
-          justifyContent: alignMap[posX]   || "flex-start",
+          justifyContent: alignMap[posX]  || "flex-start",
           padding:        "clamp(20px, 4vw, 56px) clamp(24px, 5vw, 72px)",
         }}>
-        <div key={`txt-${idx}`}
-          style={{ maxWidth: "min(520px, 88%)", textAlign: posX === "center" ? "center" : "left" }}>
 
+        <div key={`txt-${idx}`}
+          style={{
+            maxWidth:  "min(520px, 88%)",
+            textAlign: posX === "center" ? "center" : "left",
+          }}>
+
+          {/* Tag */}
           {showTag && slide.tag && (
             <div className="inline-flex items-center gap-1.5 text-white font-black mb-3"
-              style={{ background: slide.accentColor, fontSize: "clamp(7px, 1.4vw, 9px)", letterSpacing: "2.5px", padding: "4px 10px" }}>
+              style={{
+                background:    slide.accentColor,
+                fontSize:      "clamp(7px, 1.4vw, 9px)",
+                letterSpacing: "2.5px",
+                padding:       "4px 10px",
+              }}>
               <Sparkles size={8}/>{slide.tag}
             </div>
           )}
 
+          {/* Título */}
           {showTitle && title && (
             <h1 className="font-black uppercase whitespace-pre-line"
               style={{
@@ -127,6 +121,7 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
             </h1>
           )}
 
+          {/* Subtítulo */}
           {showSubtitle && slide.subtitle && (
             <p style={{
               fontSize:   `clamp(10px, ${subtitleSize * 0.038}vw + 8px, ${subtitleSize}px)`,
@@ -139,23 +134,25 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
             </p>
           )}
 
+          {/* Botones CTA */}
           {showCta && (
             <div className="flex gap-2 flex-wrap"
               style={{ justifyContent: posX === "center" ? "center" : "flex-start" }}>
               <button onClick={handleCta}
                 className="flex items-center gap-2 font-black uppercase border border-white/10 transition-all"
                 style={{
-                  fontSize:       `clamp(8px, ${btnSize * 0.035}vw + 7px, ${btnSize}px)`,
-                  letterSpacing:  "1.2px",
-                  padding:        `${Math.round(btnPaddingY * 0.8)}px ${Math.round(btnPaddingX * 0.8)}px`,
-                  borderRadius:   btnRadius,
-                  background:     slide.btnColor,
-                  color:          slide.btnTextColor,
-                  backdropFilter: "blur(8px)",
-                  boxShadow:      `0 4px 16px ${slide.btnColor}55`,
+                  fontSize:      `clamp(8px, ${btnSize * 0.035}vw + 7px, ${btnSize}px)`,
+                  letterSpacing: "1.2px",
+                  padding:       `${Math.round(btnPaddingY * 0.8)}px ${Math.round(btnPaddingX * 0.8)}px`,
+                  borderRadius:  btnRadius,
+                  background:    slide.btnColor,
+                  color:         slide.btnTextColor,
+                  backdropFilter:"blur(8px)",
+                  boxShadow:     `0 4px 16px ${slide.btnColor}55`,
                 }}>
                 {slide.cta} <ArrowRight size={11}/>
               </button>
+
             </div>
           )}
         </div>
@@ -166,22 +163,22 @@ export function HeroBanner({ banners }: { banners: Banner[] }) {
         {banners.map((_, i) => (
           <button key={i} onClick={() => setIdx(i)}
             className="rounded-full border-none cursor-pointer p-0 transition-all duration-200"
-            style={{ width: i===idx ? 20 : 6, height: 6, background: i===idx ? "#fff" : "rgba(255,255,255,0.4)" }}/>
+            style={{ width:i===idx?20:6, height:6, background:i===idx?"#fff":"rgba(255,255,255,0.4)" }}/>
         ))}
       </div>
 
       {/* Flechas desktop */}
       {[
-        { dir: "left",  fn: () => setIdx(i => (i - 1 + banners.length) % banners.length), icon: <ChevronLeft size={16}/> },
-        { dir: "right", fn: () => setIdx(i => (i + 1) % banners.length),                  icon: <ChevronRight size={16}/> },
+        { dir:"left",  fn:()=>setIdx(i=>(i-1+banners.length)%banners.length), icon:<ChevronLeft size={16}/> },
+        { dir:"right", fn:()=>setIdx(i=>(i+1)%banners.length),                icon:<ChevronRight size={16}/> },
       ].map(({ dir, fn, icon }) => (
         <button key={dir} onClick={fn}
           className="hidden md:flex absolute top-1/2 -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center z-[4] cursor-pointer border-none transition-all"
           style={{
-            [dir]:          16,
-            background:     "rgba(255,255,255,0.75)",
-            backdropFilter: "blur(8px)",
-            boxShadow:      "0 4px 16px rgba(0,0,0,0.12)",
+            [dir]:         16,
+            background:    "rgba(255,255,255,0.75)",
+            backdropFilter:"blur(8px)",
+            boxShadow:     "0 4px 16px rgba(0,0,0,0.12)",
           }}>
           {icon}
         </button>

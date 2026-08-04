@@ -9,7 +9,6 @@ import { PurchasesManager } from "./PurchasesManager";
 import { RatesSection, DesignSection } from "./RatesDesign";
 import { BIModule }         from "./BIModule";
 import { ReferralsManager } from "./ReferralsManager";
-import { GiftCardsManager } from "./GiftCardsManager";
 import { SAMPLE_PRODUCTS, DEFAULT_BANNERS } from "@/lib/data";
 import type { Banner }      from "@/lib/types";
 import type { useAppStore } from "@/lib/store";
@@ -85,9 +84,6 @@ export function AdminView({ store, userEmail, onSignOut }: {
       )}
       {section === "referrals" && (
         <ReferralsManager/>
-      )}
-      {section === "giftcards" && (
-        <GiftCardsManager/>
       )}
       {section === "reviews" && (
         <ReviewsManager reviews={store.reviews} products={store.products}
